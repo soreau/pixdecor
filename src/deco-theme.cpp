@@ -8,6 +8,11 @@ namespace wf
 {
 namespace decor
 {
+wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
+wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
+wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
+wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
 /** Create a new theme with the default parameters */
 decoration_theme_t::decoration_theme_t()
 {
