@@ -130,11 +130,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         {
             toplevel->pending().geometry = wf::expand_geometry_by_margins(
                 toplevel->pending().geometry, pending.margins);
-            if (view->get_output())
-            {
-                toplevel->pending().geometry = wf::clamp(toplevel->pending().geometry,
-                    view->get_output()->workarea->get_workarea());
-            }
         }
     }
 
