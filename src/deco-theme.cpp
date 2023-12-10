@@ -256,9 +256,9 @@ cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
         break;
     }
 
-    theme    = g_settings_get_string(gs, "gtk-theme");
-    iconfile = g_strdup_printf("/usr/share/themes/Greybird-dark/gtk-3.0/assets/titlebutton-%s%s-dark.png",
-        icon_name, state.hover ? "-hover" : "");
+    theme    = g_settings_get_string(gs, "icon-theme");
+    iconfile = g_strdup_printf("/usr/share/icons/%s/%s/ui/window-%s-symbolic.symbolic.png", theme,
+        get_font_height_px() >= LARGE_ICON_THRESHOLD ? "24x24" : "16x16", icon_name);
     g_free(theme);
 
     // read the icon into a surface
