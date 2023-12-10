@@ -29,8 +29,8 @@ class decoration_theme_t
     /** @return The available border for resizing */
     int get_border_size() const;
 
-    gboolean read_colour (const char *name, wf::color_t &col);
-    void update_colours (void);
+    gboolean read_colour(const char *name, wf::color_t & col);
+    void update_colours(void);
 
     /**
      * Fill the given rectangle with the background color(s).
@@ -71,12 +71,12 @@ class decoration_theme_t
     cairo_surface_t *get_button_surface(button_type_t button,
         const button_state_t& state, bool active) const;
 
-    void set_maximize (bool state);
+    void set_maximize(bool state);
 
   private:
     wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
 
-    std::function<void (void)> update_event;
+    std::function<void(void)> update_event;
 
     GSettings *gs;
     wf::color_t fg;

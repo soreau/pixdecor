@@ -90,6 +90,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         {
             return {0, -current_titlebar};
         }
+
         return {-current_thickness, -current_titlebar};
     }
 
@@ -374,6 +375,7 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
     {
         return {0, 0, 0, 0};
     }
+
     int thickness = deco->theme.get_border_size();
     int titlebar  = deco->theme.get_title_height() + thickness;
     if (state.tiled_edges)

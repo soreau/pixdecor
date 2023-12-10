@@ -70,6 +70,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         {
             update_view_decoration(view);
         }
+
         border_size.set_callback([=]
         {
             for (auto& view : wf::get_core().get_all_views())
@@ -79,6 +80,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     continue;
                 }
+
                 remove_decoration(toplevel);
                 adjust_new_decorations(toplevel);
                 wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
@@ -126,10 +128,12 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
         if (!pending.fullscreen && !pending.tiled_edges)
         {
-            toplevel->pending().geometry = wf::expand_geometry_by_margins(toplevel->pending().geometry, pending.margins);
+            toplevel->pending().geometry = wf::expand_geometry_by_margins(
+                toplevel->pending().geometry, pending.margins);
             if (view->get_output())
             {
-                toplevel->pending().geometry = wf::clamp(toplevel->pending().geometry, view->get_output()->workarea->get_workarea());
+                toplevel->pending().geometry = wf::clamp(toplevel->pending().geometry,
+                    view->get_output()->workarea->get_workarea());
             }
         }
     }
@@ -150,7 +154,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     {
         if (auto toplevel = wf::toplevel_cast(view))
         {
-            if (always_decorate.matches(view) || (should_decorate_view(toplevel) && !ignore_views.matches(view)))
+            if (always_decorate.matches(view) ||
+                (should_decorate_view(toplevel) && !ignore_views.matches(view)))
             {
                 adjust_new_decorations(toplevel);
             } else

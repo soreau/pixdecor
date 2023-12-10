@@ -116,7 +116,7 @@ class decoration_layout_t
     /** Limit region to title bar area by region intersection
      *  @param region to limit by title area
      *  @return the intersection between region and the title bar area */
-    wf::region_t limit_region(wf::region_t &region) const;
+    wf::region_t limit_region(wf::region_t & region) const;
 
     struct action_response_t
     {
@@ -142,7 +142,7 @@ class decoration_layout_t
      */
     void handle_focus_lost();
 
-    void set_maximize (bool state);
+    void set_maximize(bool state);
 
   private:
     const int titlebar_size;

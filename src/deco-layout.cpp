@@ -56,8 +56,8 @@ decoration_layout_t::decoration_layout_t(const decoration_theme_t& th,
 
     titlebar_size(th.get_title_height()),
     border_size(th.get_border_size()),
-    button_width(th.get_font_height_px () >= LARGE_ICON_THRESHOLD ? 26 : 18),
-    button_height(th.get_font_height_px () >= LARGE_ICON_THRESHOLD ? 26 : 18),
+    button_width(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
+    button_height(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
     button_padding((titlebar_size - button_height) / 2),
     theme(th),
     damage_callback(callback)
@@ -66,20 +66,29 @@ decoration_layout_t::decoration_layout_t(const decoration_theme_t& th,
 wf::geometry_t decoration_layout_t::create_buttons(int width, int)
 {
     // read the string from settings; start at the colon and replace commas with spaces
-    GSettings *settings = g_settings_new ("org.gnome.desktop.wm.preferences");
-    gchar *b_layout = g_settings_get_string (settings, "button-layout");
-    gchar *ptr = b_layout + strlen (b_layout) - 1;
+    GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
+    gchar *b_layout     = g_settings_get_string(settings, "button-layout");
+    gchar *ptr = b_layout + strlen(b_layout) - 1;
     while (ptr >= b_layout)
     {
-        if (*ptr == ',') *ptr = ' ';
-        if (*ptr == ':') break;
+        if (*ptr == ',')
+        {
+            *ptr = ' ';
+        }
+
+        if (*ptr == ':')
+        {
+            break;
+        }
+
         ptr--;
     }
-    std::string layout = (*ptr == ':') ? ptr + 1 : std::string(b_layout);
-    g_free (b_layout);
-    g_object_unref (settings);
 
-    std::stringstream stream((std::string) layout);
+    std::string layout = (*ptr == ':') ? ptr + 1 : std::string(b_layout);
+    g_free(b_layout);
+    g_object_unref(settings);
+
+    std::stringstream stream((std::string)layout);
     std::vector<button_type_t> buttons;
     std::string button_name;
     while (stream >> button_name)
@@ -101,7 +110,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
     }
 
     int per_button = 2 * BUTTON_W_PAD + button_width;
-    int border = border_size;
+    int border     = border_size;
     wf::geometry_t button_geometry = {
         width - border,
         button_padding + border,
@@ -153,7 +162,7 @@ void decoration_layout_t::resize(int width, int height)
 
         this->cached_titlebar = {
             border, border,
-            width-2*border, height-2*border
+            width - 2 * border, height - 2 * border
         };
     }
 
@@ -182,8 +191,7 @@ void decoration_layout_t::resize(int width, int height)
  * @return The decoration areas which need to be rendered, in top to bottom
  *  order.
  */
-std::vector<nonstd::observer_ptr<decoration_area_t>> decoration_layout_t::
-get_renderable_areas()
+std::vector<nonstd::observer_ptr<decoration_area_t>> decoration_layout_t::get_renderable_areas()
 {
     std::vector<nonstd::observer_ptr<decoration_area_t>> renderable;
     for (auto& area : layout_areas)
@@ -212,7 +220,7 @@ wf::region_t decoration_layout_t::calculate_region() const
     return r;
 }
 
-wf::region_t decoration_layout_t::limit_region(wf::region_t &region) const
+wf::region_t decoration_layout_t::limit_region(wf::region_t & region) const
 {
     wf::region_t out = region & this->cached_titlebar;
     return out;
