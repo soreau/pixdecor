@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="pixdecor">
+		<_short>PiX Decoration</_short>
+		<_long>Default decorations around XWayland windows for RPi.</_long>
+		<category>Effects</category>
+		<option name="border_size" type="int">
+			<_short>Border size</_short>
+			<_long>Sets the border size in pixels.</_long>
+			<default>10</default>
+		</option>
+		<option name="ignore_views" type="string">
+			<_short>Decoration disabled for specified window types</_short>
+			<_long>Disables window decoration for windows matching the specified criteria.</_long>
+			<default>none</default>
+		</option>
+		<option name="always_decorate" type="string">
+			<_short>Decoration applied for specified window types</_short>
+			<_long>Forces window decoration for windows matching the specified criteria.</_long>
+			<default>none</default>
+		</option>
+	</plugin>
+</wayfire>
