@@ -121,7 +121,10 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     {
         auto toplevel = view->toplevel();
 
-        toplevel->store_data(std::make_unique<wf::simple_decorator_t>(view));
+        if (!toplevel->get_data<wf::simple_decorator_t>())
+        {
+            toplevel->store_data(std::make_unique<wf::simple_decorator_t>(view));
+        }
         auto deco     = toplevel->get_data<wf::simple_decorator_t>();
         auto& pending = toplevel->pending();
         pending.margins = deco->get_margins(pending);
