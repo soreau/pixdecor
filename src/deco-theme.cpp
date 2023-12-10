@@ -39,6 +39,14 @@ decoration_theme_t::decoration_theme_t()
     {
         update_colours ();
     };
+
+    // enable watches on xsettings file
+    char *conf_dir = g_build_filename (g_get_user_config_dir (), "xsettingsd/", NULL);
+    char *conf_file = g_build_filename (conf_dir, "xsettingsd.conf", NULL);
+    wd_cfg_dir = inotify_add_watch (inotify_fd, conf_dir, IN_CREATE);
+    wd_cfg_file = inotify_add_watch (inotify_fd, conf_file, IN_CLOSE_WRITE);
+    g_free (conf_file);
+    g_free (conf_dir);
 }
 
 decoration_theme_t::~decoration_theme_t()
@@ -54,14 +62,6 @@ void decoration_theme_t::update_colours (void)
     if (!read_colour ("theme_selected_fg_color", fg_text)) fg_text = {1.0, 1.0, 1.0, 1.0};
     if (!read_colour ("theme_unfocused_bg_color", bg)) bg = {0.2, 0.2, 0.2, 0.87};
     if (!read_colour ("theme_unfocused_fg_color", bg_text)) bg_text = {0.7, 0.7, 0.7, 1.0};
-
-    // re-enable watches on xsettings file
-    char *conf_dir = g_build_filename (g_get_user_config_dir (), "xsettingsd/", NULL);
-    char *conf_file = g_build_filename (conf_dir, "xsettingsd.conf", NULL);
-    wd_cfg_dir = inotify_add_watch (inotify_fd, conf_dir, IN_CREATE);
-    wd_cfg_file = inotify_add_watch (inotify_fd, conf_file, IN_CLOSE_WRITE);
-    g_free (conf_file);
-    g_free (conf_dir);
 }
 
 gboolean decoration_theme_t::read_colour (const char *name, wf::color_t &col)
@@ -124,8 +124,11 @@ int decoration_theme_t::get_title_height() const
     height *= 3;
     height /= 2;
     height += 8;
-    if (height < MIN_BAR_HEIGHT) return MIN_BAR_HEIGHT;
-    else return height;
+    if (height < MIN_BAR_HEIGHT)
+    {
+        height = MIN_BAR_HEIGHT;
+    }
+    return height;
 }
 
 /** @return The available border for resizing */
