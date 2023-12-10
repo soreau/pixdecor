@@ -89,6 +89,11 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
   public:
     wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+    wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
+    wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
+    wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
+    wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
+
     void init() override
     {
         wf::get_core().connect(&on_decoration_state_changed);
@@ -114,6 +119,11 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
             }
         });
+
+        fg_color.set_callback([=] { update_colors(); });
+        bg_color.set_callback([=] { update_colors(); });
+        fg_text_color.set_callback([=] { update_colors(); });
+        bg_text_color.set_callback([=] { update_colors(); });
 
         // set up the watch on the xsettings file
         inotify_fd = inotify_init1(IN_CLOEXEC);
@@ -163,6 +173,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
             auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
             deco->update_colors();
+            view->damage();
         }
     }
 

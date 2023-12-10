@@ -24,22 +24,22 @@ void decoration_theme_t::update_colors(void)
 {
     if (!read_colour("theme_selected_bg_color", fg))
     {
-        fg = {0.13, 0.13, 0.13, 0.67};
+        fg = wf::color_t(fg_color);
     }
 
     if (!read_colour("theme_selected_fg_color", fg_text))
     {
-        fg_text = {1.0, 1.0, 1.0, 1.0};
+        fg_text = wf::color_t(fg_text_color);
     }
 
     if (!read_colour("theme_unfocused_bg_color", bg))
     {
-        bg = {0.2, 0.2, 0.2, 0.87};
+        bg = wf::color_t(bg_color);
     }
 
     if (!read_colour("theme_unfocused_fg_color", bg_text))
     {
-        bg_text = {0.7, 0.7, 0.7, 1.0};
+        bg_text = wf::color_t(bg_text_color);
     }
 }
 
