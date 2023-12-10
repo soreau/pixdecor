@@ -60,7 +60,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     };
 
   public:
-    //wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+    wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
     void init() override
     {
         wf::get_core().connect(&on_decoration_state_changed);
@@ -70,13 +70,20 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         {
             update_view_decoration(view);
         }
-        //border_size.set_callback([=]
-        //{
-        //    for (auto& view : wf::get_core().get_all_views())
-        //    {
-        //        update_view_decoration(view);
-        //    }
-        //});
+        border_size.set_callback([=]
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                auto toplevel = wf::toplevel_cast(view);
+                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                {
+                    continue;
+                }
+                remove_decoration(toplevel);
+                adjust_new_decorations(toplevel);
+                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+            }
+        });
     }
 
     void fini() override
