@@ -7,7 +7,7 @@
 		<option name="border_size" type="int">
 			<_short>Border size</_short>
 			<_long>Sets the border size in pixels.</_long>
-			<default>10</default>
+			<default>5</default>
 		</option>
 		<option name="ignore_views" type="string">
 			<_short>Decoration disabled for specified window types</_short>
