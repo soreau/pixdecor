@@ -143,7 +143,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     {
         if (auto toplevel = wf::toplevel_cast(view))
         {
-            if (always_decorate.matches(view) || should_decorate_view(toplevel) && !ignore_views.matches(view))
+            if (always_decorate.matches(view) || (should_decorate_view(toplevel) && !ignore_views.matches(view)))
             {
                 adjust_new_decorations(toplevel);
             } else
