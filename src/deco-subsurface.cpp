@@ -106,7 +106,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         int border = theme.get_border_size();
         /* Clear background */
-        wlr_box geometry{origin.x, origin.y - border, size.width, size.height};
+        wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
         bool activated = false;
         if (auto view = _view.lock())
