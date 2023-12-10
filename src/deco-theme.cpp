@@ -153,15 +153,6 @@ void decoration_theme_t::render_background(const wf::render_target_t& fb,
     wf::color_t color = active ? fg : bg;
     OpenGL::render_begin(fb);
     fb.logic_scissor(scissor);
-    int border = maximized ? 0 : get_border_size();
-
-    // adjust for invisible border
-    rectangle.x += border;
-    rectangle.y += border;
-    rectangle.width -= 2 * border;
-    rectangle.height = get_title_height();
-
-    // draw background
     OpenGL::render_rectangle(rectangle, color, fb.get_orthographic_projection());
     OpenGL::render_end();
 }
