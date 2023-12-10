@@ -69,7 +69,7 @@ void button_t::render(const wf::render_target_t& fb, wf::geometry_t geometry,
 {
     OpenGL::render_begin(fb);
     fb.logic_scissor(scissor);
-    OpenGL::render_texture(button_texture.tex, fb, geometry, {1, 1, 1, 1},
+    OpenGL::render_texture(button_texture.tex, fb, geometry, {1, 1, 1, is_hovered ? 0.5 : 1.0},
         OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
     OpenGL::render_end();
 
