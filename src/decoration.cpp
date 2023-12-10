@@ -13,11 +13,39 @@
 #include "wayfire/signal-provider.hpp"
 #include "wayfire/toplevel-view.hpp"
 #include "wayfire/toplevel.hpp"
+#include <sys/inotify.h>
+#include <unistd.h>
+#include <gio/gio.h>
+
+int handle_theme_updated(int fd, uint32_t mask, void *data)
+{
+    int bufsz = sizeof(inotify_event) + NAME_MAX + 1;
+    char buf[bufsz];
+
+    if ((mask & WL_EVENT_READABLE) == 0)
+    {
+        return 0;
+    }
+
+    if (read(fd, buf, bufsz) < 0)
+    {
+        return 0;
+    }
+
+    (*((std::function<void(void)>*)data))();
+
+    return 0;
+}
 
 class wayfire_pixdecor : public wf::plugin_interface_t
 {
     wf::view_matcher_t ignore_views{"pixdecor/ignore_views"};
     wf::view_matcher_t always_decorate{"pixdecor/always_decorate"};
+    int inotify_fd;
+    int wd_cfg_file;
+    int wd_cfg_dir;
+    wl_event_source *evsrc;
+    std::function<void(void)> update_event;
 
     wf::signal::connection_t<wf::txn::new_transaction_signal> on_new_tx =
         [=] (wf::txn::new_transaction_signal *ev)
@@ -86,6 +114,24 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
             }
         });
+
+        // set up the watch on the xsettings file
+        inotify_fd = inotify_init1(IN_CLOEXEC);
+        evsrc = wl_event_loop_add_fd(wf::get_core().ev_loop, inotify_fd, WL_EVENT_READABLE,
+            handle_theme_updated, &this->update_event);
+
+        // enable watches on xsettings file
+        char *conf_dir  = g_build_filename(g_get_user_config_dir(), "xsettingsd/", NULL);
+        char *conf_file = g_build_filename(conf_dir, "xsettingsd.conf", NULL);
+        wd_cfg_dir  = inotify_add_watch(inotify_fd, conf_dir, IN_CREATE);
+        wd_cfg_file = inotify_add_watch(inotify_fd, conf_file, IN_CLOSE_WRITE);
+        g_free(conf_file);
+        g_free(conf_dir);
+
+        update_event = [=] (void)
+        {
+            update_colors();
+        };
     }
 
     void fini() override
@@ -97,6 +143,26 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 remove_decoration(toplevel);
                 wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
             }
+        }
+
+        wl_event_source_remove(evsrc);
+        inotify_rm_watch(inotify_fd, wd_cfg_file);
+        inotify_rm_watch(inotify_fd, wd_cfg_dir);
+        close(inotify_fd);
+    }
+
+    void update_colors()
+    {
+        for (auto& view : wf::get_core().get_all_views())
+        {
+            auto toplevel = wf::toplevel_cast(view);
+            if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+            {
+                continue;
+            }
+
+            auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+            deco->update_colors();
         }
     }
 
@@ -125,6 +191,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         {
             toplevel->store_data(std::make_unique<wf::simple_decorator_t>(view));
         }
+
         auto deco     = toplevel->get_data<wf::simple_decorator_t>();
         auto& pending = toplevel->pending();
         pending.margins = deco->get_margins(pending);

@@ -22,6 +22,7 @@ class simple_decorator_t : public wf::custom_data_t
     wf::signal::connection_t<wf::view_fullscreen_signal> on_view_fullscreen;
 
   public:
+    void update_colors();
     simple_decorator_t(wayfire_toplevel_view view);
     ~simple_decorator_t();
     wf::decoration_margins_t get_margins(const wf::toplevel_state_t& state);

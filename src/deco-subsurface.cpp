@@ -369,6 +369,11 @@ wf::simple_decorator_t::~simple_decorator_t()
     wf::scene::remove_child(deco);
 }
 
+void wf::simple_decorator_t::update_colors()
+{
+    deco->theme.update_colors();
+}
+
 wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_state_t& state)
 {
     if (state.fullscreen)

@@ -3,27 +3,6 @@
 #include <wayfire/opengl.hpp>
 #include <map>
 #include <stdlib.h>
-#include <sys/inotify.h>
-
-int handle_theme_updated(int fd, uint32_t mask, void *data)
-{
-    int bufsz = sizeof(inotify_event) + NAME_MAX + 1;
-    char buf[bufsz];
-
-    if ((mask & WL_EVENT_READABLE) == 0)
-    {
-        return 0;
-    }
-
-    if (read(fd, buf, bufsz) < 0)
-    {
-        return 0;
-    }
-
-    (*((std::function<void(void)>*)data))();
-
-    return 0;
-}
 
 namespace wf
 {
@@ -34,41 +13,14 @@ decoration_theme_t::decoration_theme_t()
 {
     gs = g_settings_new("org.gnome.desktop.interface");
 
-    // set up the watch on the xsettings file
-    inotify_fd = inotify_init1(IN_CLOEXEC);
-    evsrc = wl_event_loop_add_fd(wf::get_core().ev_loop, inotify_fd, WL_EVENT_READABLE,
-        handle_theme_updated, &this->update_event);
-
     // read initial colours
-    update_colours();
-
-    this->update_event = [=] (void)
-    {
-        update_colours();
-    };
-
-    // enable watches on xsettings file
-    char *conf_dir  = g_build_filename(g_get_user_config_dir(), "xsettingsd/", NULL);
-    char *conf_file = g_build_filename(conf_dir, "xsettingsd.conf", NULL);
-    wd_cfg_dir  = inotify_add_watch(inotify_fd, conf_dir, IN_CREATE);
-    wd_cfg_file = inotify_add_watch(inotify_fd, conf_file, IN_CLOSE_WRITE);
-    g_free(conf_file);
-    g_free(conf_dir);
+    update_colors();
 }
 
 decoration_theme_t::~decoration_theme_t()
-{
-    if (evsrc)
-    {
-        wl_event_source_remove(evsrc);
-    }
+{}
 
-    inotify_rm_watch(inotify_fd, wd_cfg_file);
-    inotify_rm_watch(inotify_fd, wd_cfg_dir);
-    close(inotify_fd);
-}
-
-void decoration_theme_t::update_colours(void)
+void decoration_theme_t::update_colors(void)
 {
     if (!read_colour("theme_selected_bg_color", fg))
     {

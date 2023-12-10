@@ -30,7 +30,7 @@ class decoration_theme_t
     int get_border_size() const;
 
     gboolean read_colour(const char *name, wf::color_t & col);
-    void update_colours(void);
+    void update_colors(void);
 
     /**
      * Fill the given rectangle with the background color(s).
@@ -76,18 +76,12 @@ class decoration_theme_t
   private:
     wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
 
-    std::function<void(void)> update_event;
-
     GSettings *gs;
     wf::color_t fg;
     wf::color_t bg;
     wf::color_t fg_text;
     wf::color_t bg_text;
     bool maximized;
-    int inotify_fd;
-    int wd_cfg_file;
-    int wd_cfg_dir;
-    wl_event_source *evsrc;
 };
 }
 }
