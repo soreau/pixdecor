@@ -101,7 +101,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
     }
 
     int per_button = 2 * BUTTON_W_PAD + button_width;
-    int border = maximized ? 0 : border_size;
+    int border = border_size;
     wf::geometry_t button_geometry = {
         width - border,
         button_padding + border,
@@ -128,7 +128,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
 /** Regenerate layout using the new size */
 void decoration_layout_t::resize(int width, int height)
 {
-    int border = maximized ? 0 : border_size;
+    int border = border_size;
 
     this->layout_areas.clear();
     if (this->titlebar_size > 0)

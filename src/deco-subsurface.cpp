@@ -88,7 +88,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         auto view = _view.lock();
         if (view && view->pending_tiled_edges())
         {
-            return {0, - (current_titlebar - current_thickness)};
+            return {0, -current_titlebar};
         }
         return {-current_thickness, -current_titlebar};
     }
@@ -106,7 +106,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         int border = theme.get_border_size();
         /* Clear background */
-        wlr_box geometry{origin.x, origin.y, size.width, size.height};
+        wlr_box geometry{origin.x, origin.y - border, size.width, size.height};
 
         bool activated = false;
         if (auto view = _view.lock())
@@ -118,7 +118,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
         /* Draw title & buttons */
         auto renderables = layout.get_renderable_areas();
-        auto offset = wf::point_t{origin.x - border / 2, origin.y - border / 2};
+        auto offset = wf::point_t{origin.x, origin.y - border / 2};
         for (auto item : renderables)
         {
             if (item->get_type() == wf::decor::DECORATION_AREA_TITLE)
@@ -325,11 +325,6 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         } else
         {
             current_thickness = theme.get_border_size();
-            auto view = _view.lock();
-            if (view && view->pending_tiled_edges())
-            {
-                current_thickness = 0;
-            }
             current_titlebar  =
                 theme.get_title_height() + current_thickness;
             this->cached_region = layout.calculate_region();
@@ -380,11 +375,10 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
         return {0, 0, 0, 0};
     }
     int thickness = deco->theme.get_border_size();
-    int titlebar  = deco->theme.get_title_height() + deco->theme.get_border_size();
+    int titlebar  = deco->theme.get_title_height() + thickness;
     if (state.tiled_edges)
     {
         thickness = 0;
-        titlebar -= deco->theme.get_border_size();
     }
 
     return wf::decoration_margins_t{
