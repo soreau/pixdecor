@@ -122,7 +122,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
         /* Draw title & buttons */
         auto renderables = layout.get_renderable_areas();
-        auto offset = wf::point_t{origin.x, origin.y - border / 2 + (maximized ? border : 0)};
+        auto offset = wf::point_t{origin.x, origin.y - (maximized ? 0 : border / 4)};
         for (auto item : renderables)
         {
             if (item->get_type() == wf::decor::DECORATION_AREA_TITLE)

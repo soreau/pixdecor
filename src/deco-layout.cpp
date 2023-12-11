@@ -153,11 +153,11 @@ void decoration_layout_t::resize(int width, int height)
         /* Titlebar dragging area (for move) */
         wf::geometry_t title_geometry = {
             border,
-            maximized ? 0 : border,
+            border / 2,
             /* Up to the button, but subtract the padding to the left of the
              * title and the padding between title and button */
             button_geometry_expanded.x - border,
-            titlebar_size,
+            titlebar_size + (maximized ? 0 : border / 2 + 1),
         };
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_TITLE, title_geometry));
@@ -386,10 +386,14 @@ uint32_t decoration_layout_t::calculate_resize_edges() const
     for (auto& area : layout_areas)
     {
         auto g = area->get_geometry();
+        auto b = theme.get_input_size();
         if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
         {
-            auto b = theme.get_input_size();
             g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        }
+        if (b > MIN_RESIZE_HANDLE_SIZE && (area->get_type() & DECORATION_AREA_RESIZE_TOP))
+        {
+            g.height /= 2;
         }
 
         if (g & this->current_input)
