@@ -405,9 +405,15 @@ uint32_t decoration_layout_t::calculate_resize_edges() const
 }
 
 /** Update the cursor based on @current_input */
-void decoration_layout_t::update_cursor() const
+void decoration_layout_t::update_cursor()
 {
     uint32_t edges   = calculate_resize_edges();
+    auto area = find_area_at(this->current_input);
+    if (area && (area->get_type() == DECORATION_AREA_BUTTON))
+    {
+        wf::get_core().set_cursor("default");
+        return;
+    }
     auto cursor_name = edges > 0 ?
         wlr_xcursor_get_resize_name((wlr_edges)edges) : "default";
     wf::get_core().set_cursor(cursor_name);

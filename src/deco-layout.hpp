@@ -173,7 +173,7 @@ class decoration_layout_t
     /** Calculate resize edges based on @current_input */
     uint32_t calculate_resize_edges() const;
     /** Update the cursor based on @current_input */
-    void update_cursor() const;
+    void update_cursor();
 
     /**
      * Find the layout area at the given coordinates, if any
