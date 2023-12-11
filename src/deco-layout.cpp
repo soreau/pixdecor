@@ -3,6 +3,7 @@
 #include <wayfire/core.hpp>
 #include <wayfire/nonstd/reverse.hpp>
 #include <wayfire/nonstd/wlroots-full.hpp>
+#include "wayfire/toplevel.hpp"
 #include <wayfire/util.hpp>
 
 namespace wf
@@ -55,7 +56,7 @@ decoration_layout_t::decoration_layout_t(const decoration_theme_t& th,
     std::function<void(wlr_box)> callback) :
 
     titlebar_size(th.get_title_height()),
-    border_size(th.get_border_size()),
+    border_size(th.get_input_size()),
     button_width(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
     button_height(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
     button_padding((titlebar_size - button_height) / 2),
@@ -110,7 +111,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
     }
 
     int per_button = 2 * BUTTON_W_PAD + button_width;
-    int border     = border_size;
+    int border     = theme.get_input_size();
     wf::geometry_t button_geometry = {
         width - border,
         button_padding + border,
@@ -137,7 +138,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
 /** Regenerate layout using the new size */
 void decoration_layout_t::resize(int width, int height)
 {
-    int border = border_size;
+    int border = theme.get_input_size();
 
     this->layout_areas.clear();
     if (this->titlebar_size > 0)
@@ -164,6 +165,11 @@ void decoration_layout_t::resize(int width, int height)
             border, border,
             width - 2 * border, height - 2 * border
         };
+    }
+
+    if (!border)
+    {
+        return;
     }
 
     /* Resizing edges - left */
@@ -211,6 +217,8 @@ wf::region_t decoration_layout_t::calculate_region() const
     for (auto& area : layout_areas)
     {
         auto g = area->get_geometry();
+        auto b = theme.get_input_size();
+        g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
         if ((g.width > 0) && (g.height > 0))
         {
             r |= g;
@@ -348,7 +356,10 @@ nonstd::observer_ptr<decoration_area_t> decoration_layout_t::find_area_at(
 {
     for (auto& area : this->layout_areas)
     {
-        if (area->get_geometry() & point)
+        auto g = area->get_geometry();
+        auto b = theme.get_input_size();
+        g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        if (g & point)
         {
             return {area};
         }
@@ -363,7 +374,10 @@ uint32_t decoration_layout_t::calculate_resize_edges() const
     uint32_t edges = 0;
     for (auto& area : layout_areas)
     {
-        if (area->get_geometry() & this->current_input)
+        auto g = area->get_geometry();
+        auto b = theme.get_input_size();
+        g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        if (g & this->current_input)
         {
             if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
             {

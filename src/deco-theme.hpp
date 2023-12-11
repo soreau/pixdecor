@@ -26,8 +26,10 @@ class decoration_theme_t
     int get_font_height_px() const;
     /** @return The available height for displaying the title */
     int get_title_height() const;
-    /** @return The available border for resizing */
+    /** @return The available border for rendering */
     int get_border_size() const;
+    /** @return The available border for resizing */
+    int get_input_size() const;
 
     gboolean read_colour(const char *name, wf::color_t & col);
     void update_colors(void);

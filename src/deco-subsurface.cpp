@@ -105,7 +105,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     void render_scissor_box(const wf::render_target_t& fb, wf::point_t origin,
         const wlr_box& scissor)
     {
-        int border = theme.get_border_size();
+        int border = theme.get_input_size();
         /* Clear background */
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
@@ -126,7 +126,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             {
                 OpenGL::render_begin(fb);
                 fb.logic_scissor(scissor);
-                render_title(fb, item->get_geometry() + offset, size.width);
+                render_title(fb, item->get_geometry() + offset, size.width - border * 2);
                 OpenGL::render_end();
             } else // button
             {
