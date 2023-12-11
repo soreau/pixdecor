@@ -138,8 +138,8 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
 /** Regenerate layout using the new size */
 void decoration_layout_t::resize(int width, int height)
 {
-    int border = 5 - theme.get_input_size();
-    auto inverse_border = 5 - theme.get_border_size();
+    int border = MIN_RESIZE_HANDLE_SIZE - theme.get_input_size();
+    auto inverse_border = MIN_RESIZE_HANDLE_SIZE - theme.get_border_size();
 
     this->layout_areas.clear();
 
@@ -221,6 +221,7 @@ wf::region_t decoration_layout_t::calculate_region() const
             auto b = theme.get_input_size();
             g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
         }
+
         if ((g.width > 0) && (g.height > 0))
         {
             r |= g;
@@ -364,6 +365,7 @@ nonstd::observer_ptr<decoration_area_t> decoration_layout_t::find_area_at(
             auto b = theme.get_input_size();
             g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
         }
+
         if (g & point)
         {
             return {area};
@@ -385,6 +387,7 @@ uint32_t decoration_layout_t::calculate_resize_edges() const
             auto b = theme.get_input_size();
             g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
         }
+
         if (g & this->current_input)
         {
             if (area->get_type() & DECORATION_AREA_RESIZE_BIT)

@@ -131,7 +131,7 @@ int decoration_theme_t::get_border_size() const
 /** @return The input area for resizing */
 int decoration_theme_t::get_input_size() const
 {
-    return std::max(int(border_size), 5);
+    return std::max(int(border_size), MIN_RESIZE_HANDLE_SIZE);
 }
 
 void decoration_theme_t::set_maximize(bool state)
