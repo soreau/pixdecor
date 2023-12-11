@@ -151,14 +151,6 @@ void decoration_theme_t::render_background(const wf::render_target_t& fb,
     wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active) const
 {
     wf::color_t color = active ? fg : bg;
-    int border = get_border_size();
-
-    if (!maximized && (border <= 5))
-    {
-        border = 5 - border;
-        rectangle.y += border;
-    }
-
     OpenGL::render_begin(fb);
     fb.logic_scissor(scissor);
     OpenGL::render_rectangle(rectangle, color, fb.get_orthographic_projection());

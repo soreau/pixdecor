@@ -22,6 +22,7 @@
 #include "deco-layout.hpp"
 #include "deco-theme.hpp"
 #include <wayfire/window-manager.hpp>
+#include <wayfire/view-transform.hpp>
 
 #include <wayfire/plugins/common/cairo-util.hpp>
 
@@ -105,7 +106,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     void render_scissor_box(const wf::render_target_t& fb, wf::point_t origin,
         const wlr_box& scissor)
     {
-        int border = theme.get_input_size();
+        int border = theme.get_border_size();
         /* Clear background */
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
@@ -317,18 +318,21 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     void update_decoration_size()
     {
-        bool fullscreen = _view.lock()->toplevel()->current().fullscreen;
-        if (fullscreen)
+        if (auto view = _view.lock())
         {
-            current_thickness = 0;
-            current_titlebar  = 0;
-            this->cached_region.clear();
-        } else
-        {
-            current_thickness = theme.get_border_size();
-            current_titlebar  =
-                theme.get_title_height() + current_thickness;
-            this->cached_region = layout.calculate_region();
+            bool fullscreen = view->toplevel()->current().fullscreen;
+            if (fullscreen)
+            {
+                current_thickness = 0;
+                current_titlebar  = 0;
+                this->cached_region.clear();
+            } else
+            {
+                current_thickness = theme.get_border_size();
+                current_titlebar  =
+                    theme.get_title_height() + current_thickness;
+                this->cached_region = layout.calculate_region();
+            }
         }
     }
 };
@@ -338,7 +342,7 @@ wf::simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
     this->view = view;
     deco = std::make_shared<simple_decoration_node_t>(view);
     deco->resize(wf::dimensions(view->get_pending_geometry()));
-    wf::scene::add_back(view->get_surface_root_node(), deco);
+    wf::scene::add_front(view->get_surface_root_node(), deco);
 
     view->connect(&on_view_activated);
     view->connect(&on_view_geometry_changed);

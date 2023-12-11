@@ -111,7 +111,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
     }
 
     int per_button = 2 * BUTTON_W_PAD + button_width;
-    int border     = theme.get_input_size();
+    int border     = theme.get_border_size();
     wf::geometry_t button_geometry = {
         width - border,
         button_padding + border,
@@ -138,9 +138,33 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
 /** Regenerate layout using the new size */
 void decoration_layout_t::resize(int width, int height)
 {
-    int border = theme.get_input_size();
+    int border = 5 - theme.get_input_size();
+    auto inverse_border = 5 - theme.get_border_size();
 
     this->layout_areas.clear();
+
+    /* Resizing edges - left */
+    wf::geometry_t border_geometry = {-inverse_border, 0, border, height};
+    this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+        DECORATION_AREA_RESIZE_LEFT, border_geometry));
+
+    /* Resizing edges - right */
+    border_geometry = {width - border + inverse_border, 0, border, height};
+    this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+        DECORATION_AREA_RESIZE_RIGHT, border_geometry));
+
+    /* Resizing edges - top */
+    border_geometry = {0, -inverse_border, width, border};
+    this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+        DECORATION_AREA_RESIZE_TOP, border_geometry));
+
+    /* Resizing edges - bottom */
+    border_geometry = {0, height - border + inverse_border, width, border};
+    this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+        DECORATION_AREA_RESIZE_BOTTOM, border_geometry));
+
+    border = theme.get_border_size();
+
     if (this->titlebar_size > 0)
     {
         auto button_geometry_expanded = create_buttons(width, height);
@@ -166,31 +190,6 @@ void decoration_layout_t::resize(int width, int height)
             width - 2 * border, height - 2 * border
         };
     }
-
-    if (!border)
-    {
-        return;
-    }
-
-    /* Resizing edges - left */
-    wf::geometry_t border_geometry = {0, 0, border, height};
-    this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-        DECORATION_AREA_RESIZE_LEFT, border_geometry));
-
-    /* Resizing edges - right */
-    border_geometry = {width - border, 0, border, height};
-    this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-        DECORATION_AREA_RESIZE_RIGHT, border_geometry));
-
-    /* Resizing edges - top */
-    border_geometry = {0, 0, width, border};
-    this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-        DECORATION_AREA_RESIZE_TOP, border_geometry));
-
-    /* Resizing edges - bottom */
-    border_geometry = {0, height - border, width, border};
-    this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-        DECORATION_AREA_RESIZE_BOTTOM, border_geometry));
 }
 
 /**
@@ -217,8 +216,11 @@ wf::region_t decoration_layout_t::calculate_region() const
     for (auto& area : layout_areas)
     {
         auto g = area->get_geometry();
-        auto b = theme.get_input_size();
-        g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
+        {
+            auto b = theme.get_input_size();
+            g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        }
         if ((g.width > 0) && (g.height > 0))
         {
             r |= g;
@@ -357,8 +359,11 @@ nonstd::observer_ptr<decoration_area_t> decoration_layout_t::find_area_at(
     for (auto& area : this->layout_areas)
     {
         auto g = area->get_geometry();
-        auto b = theme.get_input_size();
-        g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
+        {
+            auto b = theme.get_input_size();
+            g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        }
         if (g & point)
         {
             return {area};
@@ -375,8 +380,11 @@ uint32_t decoration_layout_t::calculate_resize_edges() const
     for (auto& area : layout_areas)
     {
         auto g = area->get_geometry();
-        auto b = theme.get_input_size();
-        g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
+        {
+            auto b = theme.get_input_size();
+            g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        }
         if (g & this->current_input)
         {
             if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
