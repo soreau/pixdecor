@@ -4,9 +4,9 @@
 #include <wayfire/plugins/common/cairo-util.hpp>
 #include <stdlib.h>
 
-#define HOVERED  1.0
-#define NORMAL   0.0
-#define PRESSED -0.7
+#define NORMAL   1.0
+#define PRESSED  0.5
+#define HOVERED  0.25
 
 namespace wf
 {
@@ -19,7 +19,7 @@ button_t::button_t(const decoration_theme_t& t, std::function<void()> damage) :
 void button_t::set_button_type(button_type_t type)
 {
     this->type = type;
-    this->hover.animate(0, 0);
+    this->hover.animate(NORMAL, NORMAL);
     update_texture();
     add_idle_damage();
 }
@@ -69,7 +69,7 @@ void button_t::render(const wf::render_target_t& fb, wf::geometry_t geometry,
 {
     OpenGL::render_begin(fb);
     fb.logic_scissor(scissor);
-    OpenGL::render_texture(button_texture.tex, fb, geometry, {1, 1, 1, is_hovered ? 0.5 : 1.0},
+    OpenGL::render_texture(button_texture.tex, fb, geometry, {1, 1, 1, this->hover},
         OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
     OpenGL::render_end();
 

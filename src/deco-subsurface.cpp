@@ -111,16 +111,18 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
         bool activated = false;
+        bool maximized = false;
         if (auto view = _view.lock())
         {
             activated = view->activated;
+            maximized = view->pending_tiled_edges() == 0 ? false : true;
         }
 
         theme.render_background(fb, geometry, scissor, activated);
 
         /* Draw title & buttons */
         auto renderables = layout.get_renderable_areas();
-        auto offset = wf::point_t{origin.x, origin.y - border / 2};
+        auto offset = wf::point_t{origin.x, origin.y - border / 2 + (maximized ? border : 0)};
         for (auto item : renderables)
         {
             if (item->get_type() == wf::decor::DECORATION_AREA_TITLE)
@@ -132,7 +134,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             } else // button
             {
                 item->as_button().render(fb,
-                    item->get_geometry() + offset, scissor);
+                    item->get_geometry() + origin, scissor);
             }
         }
     }
