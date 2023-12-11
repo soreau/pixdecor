@@ -81,7 +81,7 @@ class button_t
     /* Whether the button is currently being held */
     bool is_pressed = false;
     /* The shade of button background to use. */
-    wf::animation::simple_animation_t hover{wf::create_option(100)};
+    wf::animation::simple_animation_t hover{wf::create_option(500)};
 
     std::function<void()> damage_callback;
     wf::wl_idle_call idle_damage;
