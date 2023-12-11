@@ -342,7 +342,7 @@ wf::simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
     this->view = view;
     deco = std::make_shared<simple_decoration_node_t>(view);
     deco->resize(wf::dimensions(view->get_pending_geometry()));
-    wf::scene::add_front(view->get_surface_root_node(), deco);
+    wf::scene::add_back(view->get_surface_root_node(), deco);
 
     view->connect(&on_view_activated);
     view->connect(&on_view_geometry_changed);
