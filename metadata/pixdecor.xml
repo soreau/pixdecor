@@ -23,12 +23,12 @@
 		<option name="fg_color" type="color">
 			<_short>Color when focused</_short>
 			<_long>Color of the window border when it has focus.</_long>
-			<default>0.13 0.13 0.13 0.67</default>
+			<default>0.9 0.65 0.04 1.0</default>
 		</option>
 		<option name="bg_color" type="color">
 			<_short>Color when not focused</_short>
 			<_long>Color of the window border when it does not have focus.</_long>
-			<default>0.2 0.2 0.2 0.87</default>
+			<default>0.07 0.27 0.5 0.85</default>
 		</option>
 		<option name="fg_text_color" type="color">
 			<_short>Text color when focused</_short>
