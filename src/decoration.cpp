@@ -39,8 +39,16 @@ int handle_theme_updated(int fd, uint32_t mask, void *data)
 
 class wayfire_pixdecor : public wf::plugin_interface_t
 {
+    wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+    wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
+    wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
+    wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
+    wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
+    wf::option_wrapper_t<std::string> ignore_views_string{"pixdecor/ignore_views"};
+    wf::option_wrapper_t<std::string> always_decorate_string{"pixdecor/always_decorate"};
     wf::view_matcher_t ignore_views{"pixdecor/ignore_views"};
     wf::view_matcher_t always_decorate{"pixdecor/always_decorate"};
+    wf::wl_idle_call idle_update_views;
     int inotify_fd;
     int wd_cfg_file;
     int wd_cfg_dir;
@@ -88,11 +96,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     };
 
   public:
-    wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
-    wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
-    wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
-    wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
-    wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
 
     void init() override
     {
@@ -124,6 +127,38 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         bg_color.set_callback([=] { update_colors(); });
         fg_text_color.set_callback([=] { update_colors(); });
         bg_text_color.set_callback([=] { update_colors(); });
+        ignore_views_string.set_callback([=]
+        {
+            idle_update_views.run_once([=] ()
+            {
+                for (auto& view : wf::get_core().get_all_views())
+                {
+                    auto toplevel = wf::toplevel_cast(view);
+                    if (!toplevel)
+                    {
+                        continue;
+                    }
+
+                    update_view_decoration(view);
+                }
+            });
+        });
+        always_decorate_string.set_callback([=]
+        {
+            idle_update_views.run_once([=] ()
+            {
+                for (auto& view : wf::get_core().get_all_views())
+                {
+                    auto toplevel = wf::toplevel_cast(view);
+                    if (!toplevel)
+                    {
+                        continue;
+                    }
+
+                    update_view_decoration(view);
+                }
+            });
+        });
 
         // set up the watch on the xsettings file
         inotify_fd = inotify_init1(IN_CLOEXEC);
@@ -191,7 +226,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
     bool should_decorate_view(wayfire_toplevel_view view)
     {
-        return (view->should_be_decorated() && !ignore_decoration_of_view(view)) || always_decorate.matches(view);
+        return (view->should_be_decorated() && !ignore_decoration_of_view(view)) || always_decorate.matches(
+            view);
     }
 
     void adjust_new_decorations(wayfire_toplevel_view view)
@@ -230,11 +266,18 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     {
         if (auto toplevel = wf::toplevel_cast(view))
         {
-            if (always_decorate.matches(view) ||
-                (should_decorate_view(toplevel) && !ignore_views.matches(view)))
+            if (!toplevel)
+            {
+                return;
+            }
+
+            if (!toplevel->toplevel()->get_data<wf::simple_decorator_t>() && (always_decorate.matches(view) ||
+                                                                              (should_decorate_view(toplevel)
+                                                                               && !ignore_views.matches(view))))
             {
                 adjust_new_decorations(toplevel);
-            } else
+            } else if ((!always_decorate.matches(view) &&
+                        (!should_decorate_view(toplevel) || ignore_views.matches(view))))
             {
                 remove_decoration(toplevel);
             }
