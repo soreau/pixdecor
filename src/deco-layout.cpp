@@ -397,7 +397,7 @@ uint32_t decoration_layout_t::calculate_resize_edges() const
             g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
         }
 
-        if ((b > MIN_RESIZE_HANDLE_SIZE) && (area->get_type() & DECORATION_AREA_RESIZE_TOP))
+        if ((b > MIN_RESIZE_HANDLE_SIZE) && (area->get_type() == DECORATION_AREA_RESIZE_TOP))
         {
             g.height /= 2;
         }
