@@ -219,11 +219,23 @@ wf::region_t decoration_layout_t::calculate_region() const
     for (auto& area : layout_areas)
     {
         auto g = area->get_geometry();
-        if ((maximized && (area->get_type() & DECORATION_AREA_MOVE_BIT)) ||
-            (area->get_type() & DECORATION_AREA_RESIZE_BIT))
+        auto b = theme.get_input_size();
+        if (maximized && (area->get_type() & DECORATION_AREA_MOVE_BIT))
         {
-            auto b = theme.get_input_size();
             g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+        }
+
+        if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
+        {
+            if ((area->get_type() == DECORATION_AREA_RESIZE_TOP) ||
+                (area->get_type() == DECORATION_AREA_RESIZE_BOTTOM))
+            {
+                g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{0, 0, b, b});
+            } else if ((area->get_type() == DECORATION_AREA_RESIZE_LEFT) ||
+                       (area->get_type() == DECORATION_AREA_RESIZE_RIGHT))
+            {
+                g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, 0, 0});
+            }
         }
 
         if ((g.width > 0) && (g.height > 0))
@@ -367,7 +379,15 @@ nonstd::observer_ptr<decoration_area_t> decoration_layout_t::find_area_at(
         auto b = theme.get_input_size();
         if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
         {
-            g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+            if ((area->get_type() == DECORATION_AREA_RESIZE_TOP) ||
+                (area->get_type() == DECORATION_AREA_RESIZE_BOTTOM))
+            {
+                g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{0, 0, b, b});
+            } else if ((area->get_type() == DECORATION_AREA_RESIZE_LEFT) ||
+                       (area->get_type() == DECORATION_AREA_RESIZE_RIGHT))
+            {
+                g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, 0, 0});
+            }
         }
 
         if (maximized && (area->get_type() & DECORATION_AREA_MOVE_BIT))
@@ -394,7 +414,15 @@ uint32_t decoration_layout_t::calculate_resize_edges() const
         auto b = theme.get_input_size();
         if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
         {
-            g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+            if ((area->get_type() == DECORATION_AREA_RESIZE_TOP) ||
+                (area->get_type() == DECORATION_AREA_RESIZE_BOTTOM))
+            {
+                g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{0, 0, b, b});
+            } else if ((area->get_type() == DECORATION_AREA_RESIZE_LEFT) ||
+                       (area->get_type() == DECORATION_AREA_RESIZE_RIGHT))
+            {
+                g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, 0, 0});
+            }
         }
 
         if ((b > MIN_RESIZE_HANDLE_SIZE) && (area->get_type() == DECORATION_AREA_RESIZE_TOP))
