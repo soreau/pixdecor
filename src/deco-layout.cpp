@@ -227,8 +227,11 @@ wf::region_t decoration_layout_t::calculate_region() const
 
         if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
         {
-            if ((area->get_type() == DECORATION_AREA_RESIZE_TOP) ||
-                (area->get_type() == DECORATION_AREA_RESIZE_BOTTOM))
+            if (b <= MIN_RESIZE_HANDLE_SIZE)
+            {
+                g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+            } else if ((area->get_type() == DECORATION_AREA_RESIZE_TOP) ||
+                       (area->get_type() == DECORATION_AREA_RESIZE_BOTTOM))
             {
                 g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{0, 0, b, b});
             } else if ((area->get_type() == DECORATION_AREA_RESIZE_LEFT) ||
@@ -379,8 +382,11 @@ nonstd::observer_ptr<decoration_area_t> decoration_layout_t::find_area_at(
         auto b = theme.get_input_size();
         if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
         {
-            if ((area->get_type() == DECORATION_AREA_RESIZE_TOP) ||
-                (area->get_type() == DECORATION_AREA_RESIZE_BOTTOM))
+            if (b <= MIN_RESIZE_HANDLE_SIZE)
+            {
+                g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+            } else if ((area->get_type() == DECORATION_AREA_RESIZE_TOP) ||
+                       (area->get_type() == DECORATION_AREA_RESIZE_BOTTOM))
             {
                 g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{0, 0, b, b});
             } else if ((area->get_type() == DECORATION_AREA_RESIZE_LEFT) ||
@@ -412,10 +418,15 @@ uint32_t decoration_layout_t::calculate_resize_edges() const
     {
         auto g = area->get_geometry();
         auto b = theme.get_input_size();
+        g.width  = g.width ?: 1;
+        g.height = g.height ?: 1;
         if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
         {
-            if ((area->get_type() == DECORATION_AREA_RESIZE_TOP) ||
-                (area->get_type() == DECORATION_AREA_RESIZE_BOTTOM))
+            if (b <= MIN_RESIZE_HANDLE_SIZE)
+            {
+                g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
+            } else if ((area->get_type() == DECORATION_AREA_RESIZE_TOP) ||
+                       (area->get_type() == DECORATION_AREA_RESIZE_BOTTOM))
             {
                 g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{0, 0, b, b});
             } else if ((area->get_type() == DECORATION_AREA_RESIZE_LEFT) ||
