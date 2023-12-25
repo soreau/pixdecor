@@ -28,6 +28,8 @@
 
 #include <cairo.h>
 
+wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
     public wf::touch_interaction_t
 {
@@ -71,6 +73,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     int current_thickness;
     int current_titlebar;
+    wf::effect_hook_t post_hook;
+    wf::output_t *output;
+    bool hook_set = false;
 
     simple_decoration_node_t(wayfire_toplevel_view view) :
         node_t(false),
@@ -82,6 +87,51 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
         // make sure to hide frame if the view is fullscreen
         update_decoration_size();
+        post_hook = [=] ()
+        {
+            if (auto view = _view.lock())
+            {
+                view->damage();
+            }
+        };
+        if (auto view = _view.lock())
+        {
+            if (view->get_output())
+            {
+                output = view->get_output();
+                output->render->add_effect(&post_hook, wf::OUTPUT_EFFECT_PRE);
+                hook_set = true;
+            }
+        }
+
+        effect_type.set_callback([=]
+        {
+            if (std::string(effect_type) == "none")
+            {
+                if (hook_set)
+                {
+                    output->render->rem_effect(&post_hook);
+                    hook_set = false;
+                }
+            } else
+            {
+                if (!hook_set)
+                {
+                    output->render->add_effect(&post_hook, wf::OUTPUT_EFFECT_PRE);
+                    hook_set = true;
+                }
+            }
+
+            if (auto view = _view.lock())
+            {
+                view->damage();
+            }
+        });
+    }
+
+    ~simple_decoration_node_t()
+    {
+        output->render->rem_effect(&post_hook);
     }
 
     wf::point_t get_offset()
@@ -110,15 +160,20 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         /* Clear background */
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
+        wf::pointf_t p;
         bool activated = false;
         bool maximized = false;
         if (auto view = _view.lock())
         {
             activated = view->activated;
             maximized = view->pending_tiled_edges() == 0 ? false : true;
+            auto vg = view->get_geometry();
+            p    = view->get_output()->get_cursor_position();
+            p.x -= vg.x;
+            p.y -= vg.y;
         }
 
-        theme.render_background(fb, geometry, scissor, activated);
+        theme.render_background(fb, geometry, scissor, activated, p);
 
         /* Draw title & buttons */
         auto renderables = layout.get_renderable_areas();

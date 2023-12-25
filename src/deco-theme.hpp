@@ -2,6 +2,7 @@
 #include <gio/gio.h>
 #include <wayfire/render-manager.hpp>
 #include "deco-button.hpp"
+#include "deco-effects.hpp"
 
 #define MIN_RESIZE_HANDLE_SIZE 5
 #define LARGE_ICON_THRESHOLD 20
@@ -44,7 +45,7 @@ class decoration_theme_t
      * @param active Whether to use active or inactive colors
      */
     void render_background(const wf::render_target_t& fb,
-        wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active) const;
+        wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active, wf::pointf_t p);
 
     /**
      * Render the given text on a cairo_surface_t with the given size.
@@ -63,6 +64,9 @@ class decoration_theme_t
         /* Hovering... */
         bool hover;
     };
+
+    /** background effects */
+    smoke_t smoke;
 
     /**
      * Get the icon for the given button.

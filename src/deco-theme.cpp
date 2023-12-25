@@ -13,6 +13,8 @@ wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
 wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
 wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
 wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
+wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
 /** Create a new theme with the default parameters */
 decoration_theme_t::decoration_theme_t()
 {
@@ -148,13 +150,21 @@ void decoration_theme_t::set_maximize(bool state)
  * @param active Whether to use active or inactive colors
  */
 void decoration_theme_t::render_background(const wf::render_target_t& fb,
-    wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active) const
+    wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active, wf::pointf_t p)
 {
-    wf::color_t color = active ? fg : bg;
-    OpenGL::render_begin(fb);
-    fb.logic_scissor(scissor);
-    OpenGL::render_rectangle(rectangle, color, fb.get_orthographic_projection());
-    OpenGL::render_end();
+    wf::color_t decor_color = active ? fg : bg;
+    if (std::string(effect_type) == "none")
+    {
+        OpenGL::render_begin(fb);
+        fb.logic_scissor(scissor);
+        OpenGL::render_rectangle(rectangle, decor_color, fb.get_orthographic_projection());
+        OpenGL::render_end();
+    } else
+    {
+        smoke.render_effect(fb, rectangle, scissor, std::string(
+            effect_type) == "ink" ? true : false, p, decor_color, effect_color,
+            get_title_height(), get_border_size());
+    }
 }
 
 /**
