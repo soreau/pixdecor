@@ -1019,7 +1019,7 @@ void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectan
     GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
     wf::point_t point{int(p.x), int(p.y)};
     // upload stuff
-    GL_CALL(glUniform1i(1, title_height));
+    GL_CALL(glUniform1i(1, title_height + border_size));
     GL_CALL(glUniform1i(2, border_size));
     GL_CALL(glUniform1i(3, point.x));
     GL_CALL(glUniform1i(4, point.y));
