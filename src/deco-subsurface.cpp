@@ -76,6 +76,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     wf::effect_hook_t post_hook;
     wf::output_t *output;
     bool hook_set = false;
+    wf::pointf_t current_cursor_position;
 
     simple_decoration_node_t(wayfire_toplevel_view view) :
         node_t(false),
@@ -127,6 +128,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 view->damage();
             }
         });
+        current_cursor_position.x = current_cursor_position.y = FLT_MIN;
     }
 
     ~simple_decoration_node_t()
@@ -160,20 +162,15 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         /* Clear background */
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
-        wf::pointf_t p;
         bool activated = false;
         bool maximized = false;
         if (auto view = _view.lock())
         {
             activated = view->activated;
             maximized = view->pending_tiled_edges() == 0 ? false : true;
-            auto vg = view->get_geometry();
-            p    = view->get_output()->get_cursor_position();
-            p.x -= vg.x;
-            p.y -= vg.y;
         }
 
-        theme.render_background(fb, geometry, scissor, activated, p);
+        theme.render_background(fb, geometry, scissor, activated, current_cursor_position);
 
         /* Draw title & buttons */
         auto renderables = layout.get_renderable_areas();
@@ -283,12 +280,14 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     void handle_pointer_leave() override
     {
         layout.handle_focus_lost();
+        current_cursor_position.x = current_cursor_position.y = FLT_MIN;
     }
 
     void handle_pointer_motion(wf::pointf_t to, uint32_t) override
     {
         to -= wf::pointf_t{get_offset()};
         handle_action(layout.handle_motion(to.x, to.y));
+        current_cursor_position = to;
     }
 
     void handle_pointer_button(const wlr_pointer_button_event& ev) override
@@ -353,6 +352,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         position -= wf::pointf_t{get_offset()};
         layout.handle_motion(position.x, position.y);
+        current_cursor_position = position;
     }
 
     void resize(wf::dimensions_t dims)
