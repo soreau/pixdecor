@@ -62,5 +62,12 @@
 			<_long>Color of the titlebar background effect.</_long>
 			<default>0.0 0.1 0.8 0.8</default>
 		</option>
+		<option name="effect_diffuse_iterations" type="int">
+			<_short>Effect Diffuse</_short>
+			<_long>How many iterations to use for diffusing the effect. Less iterations mean less shader dispatch invocations.</_long>
+			<default>5</default>
+			<min>1</min>
+			<max>5</max>
+		</option>
 	</plugin>
 </wayfire>

@@ -30,6 +30,7 @@
 
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
+wf::option_wrapper_t<int> effect_diffuse_iterations{"pixdecor/effect_diffuse_iterations"};
 
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
     public wf::touch_interaction_t
@@ -263,7 +264,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
             self->theme.smoke.step_effect(target, rectangle, std::string(effect_type) == "ink",
                 self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
-                self->theme.get_title_height(), self->theme.get_border_size());
+                self->theme.get_title_height(), self->theme.get_border_size(), effect_diffuse_iterations);
 
             for (const auto& box : region)
             {

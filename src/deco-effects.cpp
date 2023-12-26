@@ -892,6 +892,7 @@ void smoke_t::destroy_textures()
     {
         return;
     }
+
     GL_CALL(glDeleteTextures(1, &texture));
     GL_CALL(glDeleteTextures(1, &b0u));
     GL_CALL(glDeleteTextures(1, &b0v));
@@ -932,7 +933,7 @@ void smoke_t::run_shader(GLuint program, int width, int height, int title_height
 
 void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
     bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
-    int title_height, int border_size)
+    int title_height, int border_size, int diffuse_iterations)
 {
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
     {
@@ -1024,13 +1025,13 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     GL_CALL(glUniform1i(7, wf::get_current_time()));
     GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-    for (int k = 0; k < 2; k++)
+    for (int k = 0; k < diffuse_iterations; k++)
     {
         run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size);
     }
 
     run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < 2; k++)
+    for (int k = 0; k < diffuse_iterations; k++)
     {
         run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size);
     }
@@ -1038,13 +1039,13 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size);
     run_shader(advect1_program, rectangle.width, rectangle.height, title_height, border_size);
     run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < 2; k++)
+    for (int k = 0; k < diffuse_iterations; k++)
     {
         run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size);
     }
 
     run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < 2; k++)
+    for (int k = 0; k < diffuse_iterations; k++)
     {
         run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size);
     }
