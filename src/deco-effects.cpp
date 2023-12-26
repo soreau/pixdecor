@@ -50,8 +50,6 @@ void motion(int x, int y)
 		i1 = width - 1;
 	else
 		i1 = i0 + 2 * d;
-	if (i1 > border_size && i1 < width - border_size && y > title_height && y < height - border_size)
-		i1 = border_size - 1;
 
 	if (y - d < 1)
 		j0 = 1;
@@ -61,12 +59,14 @@ void motion(int x, int y)
 		j1 = height - 1;
 	else
 		j1 = j0 + 2 * d;
-	if (x > border_size && x < width - border_size && j1 > title_height && j1 < height - border_size)
-		j1 = title_height - 1;
 
 	for (i = i0; i < i1; i++)
 	{
 		for (j = j0; j < j1; j++) {
+			if (i > border_size && i < width - border_size && j > title_height && j < height - border_size)
+			{
+				continue;
+			}
 			vec4 b0u = imageLoad(in_b0u, ivec2(i, j));
 			vec4 b0v = imageLoad(in_b0v, ivec2(i, j));
 			vec4 b0d = imageLoad(in_b0d, ivec2(i, j));
@@ -917,7 +917,7 @@ void smoke_t::run_shader(GLuint program, int width, int height, int title_height
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
     GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glUniform1i(1, title_height + border_size));
+    GL_CALL(glUniform1i(1, title_height + border_size * 2));
     GL_CALL(glUniform1i(2, border_size * 2));
     GL_CALL(glUniform1i(5, width));
     GL_CALL(glUniform1i(6, height));
@@ -1057,7 +1057,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GLfloat(effect_color.a)};
     GLfloat decor_color_f[4] =
     {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
-    GL_CALL(glUniform1i(1, title_height + border_size));
+    GL_CALL(glUniform1i(1, title_height + border_size * 2));
     GL_CALL(glUniform1i(2, border_size * 2));
     GL_CALL(glUniform1i(4, ink));
     GL_CALL(glUniform1i(5, rectangle.width));
