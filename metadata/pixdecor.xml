@@ -60,7 +60,7 @@
 		<option name="effect_color" type="color">
 			<_short>Effect Color</_short>
 			<_long>Color of the titlebar background effect.</_long>
-			<default>0.0 0.1 0.8 0.8</default>
+			<default>0.88 0.11 0.14 1.0</default>
 		</option>
 		<option name="effect_diffuse_iterations" type="int">
 			<_short>Effect Diffuse</_short>
