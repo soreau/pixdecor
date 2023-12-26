@@ -29,6 +29,7 @@
 #include <cairo.h>
 
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
 
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
     public wf::touch_interaction_t
@@ -252,9 +253,21 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         void render(const wf::render_target_t& target,
             const wf::region_t& region) override
         {
+            auto offset = self->get_offset();
+            wlr_box rectangle{offset.x, offset.y, self->size.width, self->size.height};
+            bool activated = false;
+            if (auto view = self->_view.lock())
+            {
+                activated = view->activated;
+            }
+
+            self->theme.smoke.step_effect(target, rectangle, std::string(effect_type) == "ink",
+                self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
+                self->theme.get_title_height(), self->theme.get_border_size());
+
             for (const auto& box : region)
             {
-                self->render_scissor_box(target, self->get_offset(), wlr_box_from_pixman_box(box));
+                self->render_scissor_box(target, offset, wlr_box_from_pixman_box(box));
             }
         }
     };

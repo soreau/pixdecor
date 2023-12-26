@@ -925,17 +925,8 @@ void smoke_t::run_shader(GLuint program, int width, int height, int title_height
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
 
-/**
- * Fill the given rectangle with the background color(s).
- *
- * @param fb The target framebuffer, must have been bound already
- * @param rectangle The rectangle to redraw.
- * @param scissor The GL scissor rectangle to use.
- * @param active Whether to use active or inactive colors
- */
-void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
-    const wf::geometry_t& scissor, bool ink, wf::pointf_t p,
-    wf::color_t decor_color, wf::color_t effect_color,
+void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
+    bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
     int title_height, int border_size)
 {
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
@@ -1075,9 +1066,6 @@ void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectan
     GL_CALL(glUniform4fv(8, 1, decor_color_f));
     GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-    fb.logic_scissor(scissor);
-    OpenGL::render_transformed_texture(wf::texture_t{texture}, rectangle,
-        fb.get_orthographic_projection(), glm::vec4{1}, OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
@@ -1093,6 +1081,16 @@ void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectan
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
     GL_CALL(glUseProgram(0));
+    OpenGL::render_end();
+}
+
+void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
+    const wf::geometry_t& scissor)
+{
+    OpenGL::render_begin(fb);
+    fb.logic_scissor(scissor);
+    OpenGL::render_transformed_texture(wf::texture_t{texture}, rectangle,
+        fb.get_orthographic_projection(), glm::vec4{1}, OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
     OpenGL::render_end();
 }
 }

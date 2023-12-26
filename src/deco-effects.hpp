@@ -25,10 +25,11 @@ class smoke_t
     ~smoke_t();
 
     void run_shader(GLuint program, int width, int height, int title_height, int border_size);
-    void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
-        const wf::geometry_t& scissor, bool ink, wf::pointf_t p,
-        wf::color_t decor_color, wf::color_t effect_color,
+    void step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
+        bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
         int title_height, int border_size);
+    void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
+        const wf::geometry_t& scissor);
     void create_textures();
     void destroy_textures();
 };

@@ -136,6 +136,11 @@ int decoration_theme_t::get_input_size() const
     return std::max(int(border_size), MIN_RESIZE_HANDLE_SIZE);
 }
 
+wf::color_t decoration_theme_t::get_decor_color(bool active) const
+{
+    return active ? fg : bg;
+}
+
 void decoration_theme_t::set_maximize(bool state)
 {
     maximized = state;
@@ -152,18 +157,15 @@ void decoration_theme_t::set_maximize(bool state)
 void decoration_theme_t::render_background(const wf::render_target_t& fb,
     wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active, wf::pointf_t p)
 {
-    wf::color_t decor_color = active ? fg : bg;
     if (std::string(effect_type) == "none")
     {
         OpenGL::render_begin(fb);
         fb.logic_scissor(scissor);
-        OpenGL::render_rectangle(rectangle, decor_color, fb.get_orthographic_projection());
+        OpenGL::render_rectangle(rectangle, get_decor_color(active), fb.get_orthographic_projection());
         OpenGL::render_end();
     } else
     {
-        smoke.render_effect(fb, rectangle, scissor, std::string(
-            effect_type) == "ink" ? true : false, p, decor_color, effect_color,
-            get_title_height(), get_border_size());
+        smoke.render_effect(fb, rectangle, scissor);
     }
 }
 

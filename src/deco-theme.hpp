@@ -32,6 +32,8 @@ class decoration_theme_t
     int get_border_size() const;
     /** @return The available border for resizing */
     int get_input_size() const;
+    /** @return The decoration color */
+    wf::color_t get_decor_color(bool active) const;
 
     gboolean read_colour(const char *name, wf::color_t & col);
     void update_colors(void);
