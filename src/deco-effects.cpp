@@ -854,6 +854,7 @@ smoke_t::smoke_t()
     setup_shader(&advect1_program, advect1_source);
     setup_shader(&advect2_program, advect2_source);
     setup_shader(&render_program, render_source);
+    texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
     OpenGL::render_end();
 }
 
@@ -887,6 +888,10 @@ void smoke_t::create_textures()
 
 void smoke_t::destroy_textures()
 {
+    if (texture == GLuint(-1))
+    {
+        return;
+    }
     GL_CALL(glDeleteTextures(1, &texture));
     GL_CALL(glDeleteTextures(1, &b0u));
     GL_CALL(glDeleteTextures(1, &b0v));
