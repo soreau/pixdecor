@@ -784,9 +784,9 @@ void render(int x, int y)
 	}
 
 	vec4 s = imageLoad(in_b0d, ivec2(x, y));
-	c = s.x * (800.0 / 256.0);
-	if (c > 1.0)
-		c = 1.0;
+	c = s.x * 800.0;
+	if (c > 255.0)
+		c = 255.0;
 	a = c * smoke_color.a;
 	if (ink)
 	{
