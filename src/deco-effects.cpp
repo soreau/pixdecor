@@ -26,7 +26,8 @@ layout(location = 3) uniform int px;
 layout(location = 4) uniform int py;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-layout(location = 7) uniform int time;
+layout(location = 7) uniform int rand1;
+layout(location = 8) uniform int rand2;
 
 float rand(vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
@@ -73,8 +74,8 @@ void motion(int x, int y)
 			float u = b0u.x;
 			float v = b0v.x;
 			float d = b0d.x;
-			imageStore(out_b0u, ivec2(i, j), vec4(u + float(256 - int(float(time) * rand(vec2(i, j))) % 512), 0.0, 0.0, 0.0));
-			imageStore(out_b0v, ivec2(i, j), vec4(v + float(256 - int(float(time) * rand(vec2(i - 1, j + 1))) % 512), 0.0, 0.0, 0.0));
+			imageStore(out_b0u, ivec2(i, j), vec4(u + float(256 - (rand1 & 512)), 0.0, 0.0, 0.0));
+			imageStore(out_b0v, ivec2(i, j), vec4(v + float(256 - (rand2 & 512)), 0.0, 0.0, 0.0));
 			imageStore(out_b0d, ivec2(i, j), vec4(d + 1.0, 0.0, 0.0, 0.0));
 		}
 	}
@@ -788,25 +789,23 @@ void render(int x, int y)
 	if (c > 255.0)
 		c = 255.0;
 	a = c * smoke_color.a;
+	vec3 color;
 	if (ink)
 	{
-		r = exp(pow(c * smoke_color.r - 0.85, 2.) * -33.0);
-		g = exp(pow(c * smoke_color.g - 0.85, 2.) * -33.0);
-		b = exp(pow(c * smoke_color.b - 0.85, 2.) * -33.0);
+		if (c > 2.0)
+			color = mix(decor_color.rgb, smoke_color.rgb, clamp(a, 0.0, 1.0));
+		else
+			color = mix(decor_color.rgb, vec3(0.0, 0.0, 0.0), clamp(a, 0.0, 1.0));
+		if (c > 1.5)
+			imageStore(out_tex, ivec2(x, y), vec4(color, 1.0));
+		else
+			imageStore(out_tex, ivec2(x, y), decor_color);
+		return;
 	} else
 	{
-		r = c * smoke_color.r;
-		g = c * smoke_color.g;
-		b = c * smoke_color.b;
+		color = mix(decor_color.rgb, smoke_color.rgb, clamp(a, 0.0, 1.0));
 	}
-	if (c < 0.5)
-	{
-		r = decor_color.r;
-		g = decor_color.g;
-		b = decor_color.b;
-		a = decor_color.a;
-	}
-	imageStore(out_tex, ivec2(x, y), vec4(r, g, b, a));
+	imageStore(out_tex, ivec2(x, y), vec4(color, 1.0));
 }
 
 void main()
@@ -839,6 +838,13 @@ void setup_shader(GLuint *program, std::string source)
     *program = compute_program;
 }
 
+static void seed_random()
+{
+    timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    srandom(ts.tv_nsec);
+}
+
 smoke_t::smoke_t()
 {
     OpenGL::render_begin();
@@ -856,6 +862,7 @@ smoke_t::smoke_t()
     setup_shader(&render_program, render_source);
     texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
     OpenGL::render_end();
+    seed_random();
 }
 
 smoke_t::~smoke_t()
@@ -1022,7 +1029,8 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     GL_CALL(glUniform1i(4, point.y));
     GL_CALL(glUniform1i(5, rectangle.width));
     GL_CALL(glUniform1i(6, rectangle.height));
-    GL_CALL(glUniform1i(7, wf::get_current_time()));
+    GL_CALL(glUniform1i(7, random()));
+    GL_CALL(glUniform1i(8, random()));
     GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
     for (int k = 0; k < diffuse_iterations; k++)
