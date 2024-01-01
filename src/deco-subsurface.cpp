@@ -75,9 +75,6 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     int current_thickness;
     int current_titlebar;
-    wf::effect_hook_t post_hook;
-    wf::output_t *output;
-    bool hook_set = false;
     wf::pointf_t current_cursor_position;
 
     simple_decoration_node_t(wayfire_toplevel_view view) :
@@ -90,52 +87,11 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
         // make sure to hide frame if the view is fullscreen
         update_decoration_size();
-        post_hook = [=] ()
-        {
-            if (auto view = _view.lock())
-            {
-                view->damage();
-            }
-        };
-        if (auto view = _view.lock())
-        {
-            if (view->get_output())
-            {
-                output = view->get_output();
-                output->render->add_effect(&post_hook, wf::OUTPUT_EFFECT_PRE);
-                hook_set = true;
-            }
-        }
-
-        effect_type.set_callback([=]
-        {
-            if (std::string(effect_type) == "none")
-            {
-                if (hook_set)
-                {
-                    output->render->rem_effect(&post_hook);
-                    hook_set = false;
-                }
-            } else
-            {
-                if (!hook_set)
-                {
-                    output->render->add_effect(&post_hook, wf::OUTPUT_EFFECT_PRE);
-                    hook_set = true;
-                }
-            }
-
-            if (auto view = _view.lock())
-            {
-                view->damage();
-            }
-        });
         current_cursor_position.x = current_cursor_position.y = FLT_MIN;
     }
 
     ~simple_decoration_node_t()
     {
-        output->render->rem_effect(&post_hook);
     }
 
     wf::point_t get_offset()
@@ -262,9 +218,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 activated = view->activated;
             }
 
-            self->theme.smoke.step_effect(target, rectangle, std::string(effect_type) == "ink",
-                self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
-                self->theme.get_title_height(), self->theme.get_border_size(), effect_diffuse_iterations);
+            if (std::string(effect_type) != "none")
+            {
+                self->theme.smoke.step_effect(target, rectangle, std::string(effect_type) == "ink",
+                    self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
+                    self->theme.get_title_height(), self->theme.get_border_size(), effect_diffuse_iterations);
+            }
 
             for (const auto& box : region)
             {

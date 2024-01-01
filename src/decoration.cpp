@@ -6,6 +6,7 @@
 #include <wayfire/output.hpp>
 #include <wayfire/signal-definitions.hpp>
 #include <wayfire/txn/transaction-manager.hpp>
+#include <wayfire/render-manager.hpp>
 
 #include "deco-subsurface.hpp"
 #include "wayfire/core.hpp"
@@ -46,6 +47,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
     wf::option_wrapper_t<std::string> ignore_views_string{"pixdecor/ignore_views"};
     wf::option_wrapper_t<std::string> always_decorate_string{"pixdecor/always_decorate"};
+    wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
     wf::view_matcher_t ignore_views{"pixdecor/ignore_views"};
     wf::view_matcher_t always_decorate{"pixdecor/always_decorate"};
     wf::wl_idle_call idle_update_views;
@@ -54,6 +56,9 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     int wd_cfg_dir;
     wl_event_source *evsrc;
     std::function<void(void)> update_event;
+    wf::effect_hook_t post_hook;
+    wf::output_t *output;
+    bool hook_set = false;
 
     wf::signal::connection_t<wf::txn::new_transaction_signal> on_new_tx =
         [=] (wf::txn::new_transaction_signal *ev)
@@ -158,6 +163,61 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                     update_view_decoration(view);
                 }
             });
+        });
+
+        post_hook = [=] ()
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                auto toplevel = wf::toplevel_cast(view);
+                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                {
+                    continue;
+                }
+                view->damage();
+            }
+        };
+
+        if (std::string(effect_type) != "none")
+        {
+            for (auto& o : wf::get_core().output_layout->get_outputs())
+            {
+                o->render->add_effect(&post_hook, wf::OUTPUT_EFFECT_PRE);
+            }
+        }
+
+        effect_type.set_callback([=] ()
+        {
+            if (std::string(effect_type) == "none")
+            {
+                if (hook_set)
+                {
+                    for (auto& o : wf::get_core().output_layout->get_outputs())
+                    {
+                        o->render->rem_effect(&post_hook);
+                    }
+                    hook_set = false;
+                }
+            } else
+            {
+                if (!hook_set)
+                {
+                    for (auto& o : wf::get_core().output_layout->get_outputs())
+                    {
+                        o->render->add_effect(&post_hook, wf::OUTPUT_EFFECT_PRE);
+                    }
+                    hook_set = true;
+                }
+            }
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                auto toplevel = wf::toplevel_cast(view);
+                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                {
+                    continue;
+                }
+                view->damage();
+            }
         });
 
         // set up the watch on the xsettings file
