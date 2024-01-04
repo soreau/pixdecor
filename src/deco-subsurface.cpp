@@ -87,6 +87,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
         // make sure to hide frame if the view is fullscreen
         update_decoration_size();
+
         current_cursor_position.x = current_cursor_position.y = FLT_MIN;
     }
 
