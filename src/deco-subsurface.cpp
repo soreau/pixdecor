@@ -130,6 +130,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 view->damage();
             }
         });
+
+
         current_cursor_position.x = current_cursor_position.y = FLT_MIN;
     }
 
