@@ -56,6 +56,50 @@
 				<value>ink</value>
 				<_name>Ink</_name>
 			</desc>
+			<desc>
+				<value>clouds</value>
+				<_name>Clouds</_name>
+			</desc>
+			<desc>
+				<value>halftone</value>
+				<_name>Halftone</_name>
+			</desc>
+			<desc>
+				<value>pattern</value>
+				<_name>Pattern</_name>
+			</desc>
+			<desc>
+				<value>lava</value>
+				<_name>Lava</_name>
+			</desc>
+			<desc>
+				<value>hex</value>
+				<_name>Hex</_name>
+			</desc>
+			<desc>
+				<value>zebra</value>
+				<_name>Zebra</_name>
+			</desc>
+			<desc>
+				<value>neural_network</value>
+				<_name>Neural network</_name>
+			</desc>
+			<desc>
+				<value>hexagon_maze</value>
+				<_name>Hexagon maze</_name>
+			</desc>
+			<desc>
+				<value>raymarched_truchet</value>
+				<_name>Raymarched truchet</_name>
+			</desc>
+			<desc>
+				<value>neon_pattern</value>
+				<_name>Neon pattern</_name>
+			</desc>
+			<desc>
+				<value>neon_rings</value>
+				<_name>Neon rings</_name>
+			</desc>
 		</option>
 		<option name="effect_color" type="color">
 			<_short>Effect Color</_short>
