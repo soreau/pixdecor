@@ -56,7 +56,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     int wd_cfg_dir;
     wl_event_source *evsrc;
     std::function<void(void)> update_event;
-    wf::effect_hook_t post_hook;
+    wf::effect_hook_t pre_hook;
     wf::output_t *output;
     bool hook_set = false;
 
@@ -165,7 +165,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             });
         });
 
-        post_hook = [=] ()
+        pre_hook = [=] ()
         {
             for (auto& view : wf::get_core().get_all_views())
             {
@@ -174,7 +174,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     continue;
                 }
-                view->damage();
+                toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
             }
         };
 
@@ -182,7 +182,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         {
             for (auto& o : wf::get_core().output_layout->get_outputs())
             {
-                o->render->add_effect(&post_hook, wf::OUTPUT_EFFECT_PRE);
+                o->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
             }
         }
 
@@ -194,7 +194,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     for (auto& o : wf::get_core().output_layout->get_outputs())
                     {
-                        o->render->rem_effect(&post_hook);
+                        o->render->rem_effect(&pre_hook);
                     }
                     hook_set = false;
                 }
@@ -204,7 +204,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     for (auto& o : wf::get_core().output_layout->get_outputs())
                     {
-                        o->render->add_effect(&post_hook, wf::OUTPUT_EFFECT_PRE);
+                        o->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
                     }
                     hook_set = true;
                 }
@@ -216,7 +216,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     continue;
                 }
-                view->damage();
+                toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
             }
         });
 
