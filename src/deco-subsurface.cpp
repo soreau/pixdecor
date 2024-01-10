@@ -410,20 +410,7 @@ void wf::simple_decorator_t::update_colors()
 
 void wf::simple_decorator_t::damage(wayfire_view view)
 {
-    auto toplevel = toplevel_cast(view);
-    if (!toplevel)
-    {
-        return;
-    }
-    auto vg = toplevel->get_geometry();
-    auto middle = vg;
-    middle.x = 0;
-    middle.y = 0;
-    middle.width -= deco->theme.get_border_size() * 2;
-    middle.height -= deco->theme.get_title_height() + deco->theme.get_border_size() * 2;
-    vg.x = -deco->theme.get_border_size();
-    vg.y = -(deco->theme.get_title_height() + deco->theme.get_border_size());
-    wf::scene::damage_node(deco, wf::region_t{vg} ^ middle);
+    wf::scene::damage_node(deco, deco->get_bounding_box());
 }
 
 wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_state_t& state)
