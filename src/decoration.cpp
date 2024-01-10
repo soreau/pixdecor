@@ -249,6 +249,13 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
             }
         }
+        if (hook_set)
+        {
+            for (auto& o : wf::get_core().output_layout->get_outputs())
+            {
+                o->render->rem_effect(&pre_hook);
+            }
+        }
 
         wl_event_source_remove(evsrc);
         inotify_rm_watch(inotify_fd, wd_cfg_file);
