@@ -9,8 +9,6 @@ namespace wf
 {
 namespace decor
 {
-
-
 static const char *motion_source =
     R"(
 #version 320 es
@@ -1893,7 +1891,7 @@ void main() {
 )";
 
 
-static const char *render_source_raymarched_truchet  =
+static const char *render_source_raymarched_truchet =
     R"(
 #version 310 es
 
@@ -2278,7 +2276,7 @@ col *= 1.3;
 
 
 
-static const char *render_source_neon_pattern  =
+static const char *render_source_neon_pattern =
     R"(
 
  #version 310 es
@@ -2346,7 +2344,7 @@ void main() {
 
 
 
-static const char *render_source_neon_rings  =
+static const char *render_source_neon_rings =
     R"(
 #version 310 es
 precision highp float;
@@ -2436,7 +2434,7 @@ void main() {
 )";
 
 
-static const char *render_source_deco  =
+static const char *render_source_deco =
     R"(
 #version 320 es
 precision highp float;
@@ -2507,106 +2505,108 @@ vec2 uv = vec2(pos) / vec2(1000, 2000);
 )";
 
 /*
-static const char *render_source_overlay  =
-    R"(
-#version 320 es
-
-
-
-uniform vec2 iResolution;
-uniform float iTime;
-uniform vec2 iMouse;
-
-layout(binding = 0, rgba32f) readonly uniform highp image2D neural_network_tex;  // Use binding point 0
-layout(binding = 0, rgba32f) writeonly uniform highp image2D image;  // Use binding point 0
-
-layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-#define MARKER_RADIUS 12.5
-#define THICCNESS 2.0
-
-
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-float sin01(float x) {
-    return (sin(x) + 1.0) / 2.0;
-}
-
-void main() {
-    ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-    vec2 fragCoord = vec2(storePos);
-
-    vec4 col = vec4(0.0);
-
-    vec2 p1 = vec2(0.0+THICCNESS , float(height)-THICCNESS );
-    vec2 p2 = vec2(0.0+THICCNESS , 0.0+THICCNESS );
-    
-    vec2 x1 = vec2(float(width)-THICCNESS , float(height)-THICCNESS );
-    vec2 x2 = vec2(float(width)-THICCNESS , 0.0+THICCNESS );
-    
-    vec2 y1 = vec2(0.0+THICCNESS , float(height)-THICCNESS );
-    vec2 y2 = vec2(float(width)-THICCNESS , float(height)-THICCNESS );
-
-    vec2 z1 = vec2(0.0+THICCNESS , 0.0+THICCNESS );
-    vec2 z2 = vec2(float(width)-THICCNESS , 0.0+THICCNESS );
-
-    vec2 p3 = fragCoord;
-    vec2 p12 = p2 - p1;
-    vec2 p13 = p3 - p1;
-    
-    vec2 x3 = fragCoord;
-    vec2 x12 = x2 - x1;
-    vec2 x13 = x3 - x1;
-    
-    vec2 y3 = fragCoord;
-    vec2 y12 = y2 - y1;
-    vec2 y13 = y3 - y1;
-    
-    vec2 z3 = fragCoord;
-    vec2 z12 = z2 - z1;
-    vec2 z13 = z3 - z1;
-    
-    
-    float d = dot(p12, p13) / length(p12); // = length(p13) * cos(angle)
-    float dx = dot(x12, x13) / length(x12);
-    float dy = dot(y12, y13) / length(y12);
-    float dz = dot(z12, z13) / length(z12);
-    
-    vec2 p4 = p1 + normalize(p12) * d;
-    vec2 x4 = x1 + normalize(x12) * dx;
-    vec2 y4 = y1 + normalize(y12) * dy;
-    vec2 z4 = z1 + normalize(z12) * dz;
-    
-   if (((length(p4 - p3) < THICCNESS && length(p4 - p1) <= length(p12) && length(p4 - p2) <= length(p12)) ||
-         (length(x4 - x3) < THICCNESS && length(x4 - x1) <= length(x12) && length(x4 - x2) <= length(x12))) ||
-         (length(y4 - y3) < THICCNESS && length(y4 - y1) <= length(y12) && length(y4 - y2) <= length(y12)) ||
-         (length(z4 - z3) < THICCNESS && length(z4 - z1) <= length(z12) && length(z4 - z2) <= length(z12))) {
-        col += vec4(0.1, 0.1, 0.1, 1.0);
-    }
-
-    // Draw the lines connecting the points
-    if (length(fragCoord - p1) < THICCNESS || length(fragCoord - p2) < THICCNESS ||
-        length(fragCoord - x1) < THICCNESS || length(fragCoord - x2) < THICCNESS ||
-        length(fragCoord - y1) < THICCNESS || length(fragCoord - y2) < THICCNESS ||
-        length(fragCoord - z1) < THICCNESS || length(fragCoord - z2) < THICCNESS) {
-        col += vec4(0.1, 0.1, 0.1, 1.0);
-    }
-
-   
-   //     vec4 neuralColor = imageLoad(neural_network_tex, ivec2(fragCoord));
-      
-     //   col = mix(col, neuralColor, 0.5);  // Example: simple linear interpolation (blend) with equal weight
-    vec4 neuralColor = imageLoad(neural_network_tex, ivec2(fragCoord));
-    col += neuralColor;
-
-    imageStore(image, storePos, col);
-}
-
-
-)";
-*/
-static const char *render_source_overlay  =
+ *  static const char *render_source_overlay  =
+ *   R"(
+ #version 320 es
+ *
+ *
+ *
+ *  uniform vec2 iResolution;
+ *  uniform float iTime;
+ *  uniform vec2 iMouse;
+ *
+ *  layout(binding = 0, rgba32f) readonly uniform highp image2D neural_network_tex;  // Use binding point 0
+ *  layout(binding = 0, rgba32f) writeonly uniform highp image2D image;  // Use binding point 0
+ *
+ *  layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+ *
+ #define MARKER_RADIUS 12.5
+ #define THICCNESS 2.0
+ *
+ *
+ *  layout(location = 5) uniform int width;
+ *  layout(location = 6) uniform int height;
+ *
+ *  float sin01(float x) {
+ *   return (sin(x) + 1.0) / 2.0;
+ *  }
+ *
+ *  void main() {
+ *   ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+ *   vec2 fragCoord = vec2(storePos);
+ *
+ *   vec4 col = vec4(0.0);
+ *
+ *   vec2 p1 = vec2(0.0+THICCNESS , float(height)-THICCNESS );
+ *   vec2 p2 = vec2(0.0+THICCNESS , 0.0+THICCNESS );
+ *
+ *   vec2 x1 = vec2(float(width)-THICCNESS , float(height)-THICCNESS );
+ *   vec2 x2 = vec2(float(width)-THICCNESS , 0.0+THICCNESS );
+ *
+ *   vec2 y1 = vec2(0.0+THICCNESS , float(height)-THICCNESS );
+ *   vec2 y2 = vec2(float(width)-THICCNESS , float(height)-THICCNESS );
+ *
+ *   vec2 z1 = vec2(0.0+THICCNESS , 0.0+THICCNESS );
+ *   vec2 z2 = vec2(float(width)-THICCNESS , 0.0+THICCNESS );
+ *
+ *   vec2 p3 = fragCoord;
+ *   vec2 p12 = p2 - p1;
+ *   vec2 p13 = p3 - p1;
+ *
+ *   vec2 x3 = fragCoord;
+ *   vec2 x12 = x2 - x1;
+ *   vec2 x13 = x3 - x1;
+ *
+ *   vec2 y3 = fragCoord;
+ *   vec2 y12 = y2 - y1;
+ *   vec2 y13 = y3 - y1;
+ *
+ *   vec2 z3 = fragCoord;
+ *   vec2 z12 = z2 - z1;
+ *   vec2 z13 = z3 - z1;
+ *
+ *
+ *   float d = dot(p12, p13) / length(p12); // = length(p13) * cos(angle)
+ *   float dx = dot(x12, x13) / length(x12);
+ *   float dy = dot(y12, y13) / length(y12);
+ *   float dz = dot(z12, z13) / length(z12);
+ *
+ *   vec2 p4 = p1 + normalize(p12) * d;
+ *   vec2 x4 = x1 + normalize(x12) * dx;
+ *   vec2 y4 = y1 + normalize(y12) * dy;
+ *   vec2 z4 = z1 + normalize(z12) * dz;
+ *
+ *  if (((length(p4 - p3) < THICCNESS && length(p4 - p1) <= length(p12) && length(p4 - p2) <= length(p12)) ||
+ *        (length(x4 - x3) < THICCNESS && length(x4 - x1) <= length(x12) && length(x4 - x2) <= length(x12)))
+ * ||
+ *        (length(y4 - y3) < THICCNESS && length(y4 - y1) <= length(y12) && length(y4 - y2) <= length(y12)) ||
+ *        (length(z4 - z3) < THICCNESS && length(z4 - z1) <= length(z12) && length(z4 - z2) <= length(z12))) {
+ *       col += vec4(0.1, 0.1, 0.1, 1.0);
+ *   }
+ *
+ *   // Draw the lines connecting the points
+ *   if (length(fragCoord - p1) < THICCNESS || length(fragCoord - p2) < THICCNESS ||
+ *       length(fragCoord - x1) < THICCNESS || length(fragCoord - x2) < THICCNESS ||
+ *       length(fragCoord - y1) < THICCNESS || length(fragCoord - y2) < THICCNESS ||
+ *       length(fragCoord - z1) < THICCNESS || length(fragCoord - z2) < THICCNESS) {
+ *       col += vec4(0.1, 0.1, 0.1, 1.0);
+ *   }
+ *
+ *
+ *  //     vec4 neuralColor = imageLoad(neural_network_tex, ivec2(fragCoord));
+ *
+ *    //   col = mix(col, neuralColor, 0.5);  // Example: simple linear interpolation (blend) with equal
+ * weight
+ *   vec4 neuralColor = imageLoad(neural_network_tex, ivec2(fragCoord));
+ *   col += neuralColor;
+ *
+ *   imageStore(image, storePos, col);
+ *  }
+ *
+ *
+ *  )";
+ */
+static const char *render_source_overlay =
     R"(
 #version 320 es
 
@@ -2744,7 +2744,7 @@ int setheight = int(height);
 
 
 if (setwidth<=400 && setheight<=300 ){
- 	col += drawCurveBenzier(p1, p2, setheight);
+    col += drawCurveBenzier(p1, p2, setheight);
     col += drawCurveBenzier(x1, x2, setheight);
     col += drawCurveBenzier(y1, y2, setwidth);
     col += drawCurveBenzier(z1, z2, setwidth);
@@ -2776,7 +2776,7 @@ float INNERspace = 0.0;
 
 
 if (setwidth<=400 && setheight<=300 ){
- 	col += drawCurveBenzier(INNERp1, INNERp2, setheight);
+    col += drawCurveBenzier(INNERp1, INNERp2, setheight);
     col += drawCurveBenzier(INNERx1, INNERx2, setheight);
     col += drawCurveBenzier(INNERy1, INNERy2, setwidth);
     col += drawCurveBenzier(INNERz1, INNERz2, setwidth);
@@ -2966,82 +2966,71 @@ static void seed_random()
     clock_gettime(CLOCK_MONOTONIC, &ts);
     srandom(ts.tv_nsec);
 }
+
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 
 smoke_t::smoke_t()
 {
     OpenGL::render_begin();
-  
-
-if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
-{
-    setup_shader(&motion_program, motion_source);
-    setup_shader(&diffuse1_program, diffuse1_source);
-    setup_shader(&diffuse2_program, diffuse2_source);
-    setup_shader(&project1_program, project1_source);
-    setup_shader(&project2_program, project2_source);
-    setup_shader(&project3_program, project3_source);
-    setup_shader(&project4_program, project4_source);
-    setup_shader(&project5_program, project5_source);
-    setup_shader(&project6_program, project6_source);
-    setup_shader(&advect1_program, advect1_source);
-    setup_shader(&advect2_program, advect2_source);
-
-    setup_shader(&render_program, render_source);
-}   
 
 
- 	if (std::string(effect_type) == "clouds")
- 	{
-   	setup_shader(&render_program, render_source_clouds);
-	}
-	else if (std::string(effect_type) == "halftone")
- 	{
-   	setup_shader(&render_program, render_source_halftone);
-	}
-	else if (std::string(effect_type) == "pattern")
- 	{
-   	setup_shader(&render_program, render_source_pattern);
-	}
-	else if (std::string(effect_type) == "lava")
- 	{
-   	setup_shader(&render_program, render_source_lava);
-	}
-	else if (std::string(effect_type) == "hex")
- 	{
-   	setup_shader(&render_program, render_source_hex);
-	}
-	else if (std::string(effect_type) == "zebra")
- 	{
-   	setup_shader(&render_program, render_source_zebra);
-	}
-	else if (std::string(effect_type) == "neural_network")
- 	{
-   	setup_shader(&render_program, render_source_neural_network);
-	}
-	else if (std::string(effect_type) == "hexagon_maze")
- 	{
-   	setup_shader(&render_program, render_source_hexagon_maze);
-	}
-	else if (std::string(effect_type) == "raymarched_truchet")
- 	{
-   	setup_shader(&render_program, render_source_raymarched_truchet);
-	}
-	else if (std::string(effect_type) == "neon_pattern")
- 	{
-   	setup_shader(&render_program, render_source_neon_pattern );
-	}
-	else if (std::string(effect_type) == "neon_rings")
- 	{
-   	setup_shader(&render_program, render_source_neon_rings );
-	}
-	else if (std::string(effect_type) == "deco")
- 	{
-   	setup_shader(&render_program, render_source_deco);
-   	}
+    if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+    {
+        setup_shader(&motion_program, motion_source);
+        setup_shader(&diffuse1_program, diffuse1_source);
+        setup_shader(&diffuse2_program, diffuse2_source);
+        setup_shader(&project1_program, project1_source);
+        setup_shader(&project2_program, project2_source);
+        setup_shader(&project3_program, project3_source);
+        setup_shader(&project4_program, project4_source);
+        setup_shader(&project5_program, project5_source);
+        setup_shader(&project6_program, project6_source);
+        setup_shader(&advect1_program, advect1_source);
+        setup_shader(&advect2_program, advect2_source);
 
-   		setup_shader(&render_overlay_program, render_source_overlay);
- 
+        setup_shader(&render_program, render_source);
+    }
+
+    if (std::string(effect_type) == "clouds")
+    {
+        setup_shader(&render_program, render_source_clouds);
+    } else if (std::string(effect_type) == "halftone")
+    {
+        setup_shader(&render_program, render_source_halftone);
+    } else if (std::string(effect_type) == "pattern")
+    {
+        setup_shader(&render_program, render_source_pattern);
+    } else if (std::string(effect_type) == "lava")
+    {
+        setup_shader(&render_program, render_source_lava);
+    } else if (std::string(effect_type) == "hex")
+    {
+        setup_shader(&render_program, render_source_hex);
+    } else if (std::string(effect_type) == "zebra")
+    {
+        setup_shader(&render_program, render_source_zebra);
+    } else if (std::string(effect_type) == "neural_network")
+    {
+        setup_shader(&render_program, render_source_neural_network);
+    } else if (std::string(effect_type) == "hexagon_maze")
+    {
+        setup_shader(&render_program, render_source_hexagon_maze);
+    } else if (std::string(effect_type) == "raymarched_truchet")
+    {
+        setup_shader(&render_program, render_source_raymarched_truchet);
+    } else if (std::string(effect_type) == "neon_pattern")
+    {
+        setup_shader(&render_program, render_source_neon_pattern);
+    } else if (std::string(effect_type) == "neon_rings")
+    {
+        setup_shader(&render_program, render_source_neon_rings);
+    } else if (std::string(effect_type) == "deco")
+    {
+        setup_shader(&render_program, render_source_deco);
+    }
+
+    setup_shader(&render_overlay_program, render_source_overlay);
+
     texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
     OpenGL::render_end();
     seed_random();
@@ -3049,21 +3038,21 @@ if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
 
 smoke_t::~smoke_t()
 {
- 
-if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
-{
-    GL_CALL(glDeleteProgram(motion_program));
-    GL_CALL(glDeleteProgram(diffuse1_program));
-    GL_CALL(glDeleteProgram(diffuse2_program));
-    GL_CALL(glDeleteProgram(project1_program));
-    GL_CALL(glDeleteProgram(project2_program));
-    GL_CALL(glDeleteProgram(project3_program));
-    GL_CALL(glDeleteProgram(project4_program));
-    GL_CALL(glDeleteProgram(project5_program));
-    GL_CALL(glDeleteProgram(project6_program));
-    GL_CALL(glDeleteProgram(advect1_program));
-    GL_CALL(glDeleteProgram(advect2_program));
-}
+    if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+    {
+        GL_CALL(glDeleteProgram(motion_program));
+        GL_CALL(glDeleteProgram(diffuse1_program));
+        GL_CALL(glDeleteProgram(diffuse2_program));
+        GL_CALL(glDeleteProgram(project1_program));
+        GL_CALL(glDeleteProgram(project2_program));
+        GL_CALL(glDeleteProgram(project3_program));
+        GL_CALL(glDeleteProgram(project4_program));
+        GL_CALL(glDeleteProgram(project5_program));
+        GL_CALL(glDeleteProgram(project6_program));
+        GL_CALL(glDeleteProgram(advect1_program));
+        GL_CALL(glDeleteProgram(advect2_program));
+    }
+
     GL_CALL(glDeleteProgram(render_program));
     GL_CALL(glDeleteProgram(render_overlay_program));
     destroy_textures();
@@ -3096,22 +3085,18 @@ void smoke_t::destroy_textures()
     GL_CALL(glDeleteTextures(1, &b1d));
 }
 
-
-
-
 void smoke_t::run_shader(GLuint program, int width, int height, int title_height, int border_size)
 {
     GL_CALL(glUseProgram(program));
-  
 
- GL_CALL(glUniform1i(glGetUniformLocation(program, "neural_network_tex"), 0));
+    GL_CALL(glUniform1i(glGetUniformLocation(program, "neural_network_tex"), 0));
 
-GL_CALL(glDispatchCompute(width / 15, height / 15, 1));
-GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+    GL_CALL(glDispatchCompute(width / 15, height / 15, 1));
+    GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
     GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
- 
+
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
     GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
@@ -3136,7 +3121,7 @@ GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
 
 void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
-    bool ink,  wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
+    bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
     int title_height, int border_size, int diffuse_iterations)
 {
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
@@ -3230,37 +3215,37 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     GL_CALL(glUniform1i(8, random()));
     GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
- 
-if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
-{
 
-    for (int k = 0; k < diffuse_iterations; k++)
+    if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
     {
-        run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size);
+        for (int k = 0; k < diffuse_iterations; k++)
+        {
+            run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size);
+        }
+
+        run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size);
+        for (int k = 0; k < diffuse_iterations; k++)
+        {
+            run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size);
+        }
+
+        run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size);
+        run_shader(advect1_program, rectangle.width, rectangle.height, title_height, border_size);
+        run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size);
+        for (int k = 0; k < diffuse_iterations; k++)
+        {
+            run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size);
+        }
+
+        run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size);
+        for (int k = 0; k < diffuse_iterations; k++)
+        {
+            run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size);
+        }
+
+        run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size);
     }
 
-    run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size);
-    run_shader(advect1_program, rectangle.width, rectangle.height, title_height, border_size);
-    run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size);
- }  
     GL_CALL(glUseProgram(render_program));
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
@@ -3268,7 +3253,6 @@ if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
     GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-
 
     GLfloat effect_color_f[4] =
     {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
@@ -3303,8 +3287,7 @@ if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
     GL_CALL(glUseProgram(0));
     OpenGL::render_end();
 
-
- OpenGL::render_begin(fb);
+    OpenGL::render_begin(fb);
     if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
     {
         LOGI("recreating smoke textures: ", rectangle.width, " != ", saved_width, " || ", rectangle.height,
@@ -3368,18 +3351,18 @@ if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
             &clear_data[0]);
     }
 
-  /*  GL_CALL(glUseProgram(motion_program));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-    GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-    GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-    GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    */
-    //wf::point_t point{int(p.x), int(p.y)};
+    /*  GL_CALL(glUseProgram(motion_program));
+     *  GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
+     *  GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
+     *  GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+     *  GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
+     *  GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
+     *  GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+     *  GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
+     *  GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
+     *  GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+     */
+    // wf::point_t point{int(p.x), int(p.y)};
     // upload stuff
     GL_CALL(glUniform1i(1, title_height + border_size));
     GL_CALL(glUniform1i(2, border_size));
@@ -3392,32 +3375,32 @@ if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
     GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 /*    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size);
-    run_shader(advect1_program, rectangle.width, rectangle.height, title_height, border_size);
-    run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size);
-  */ 
+ *   {
+ *       run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size);
+ *   }
+ *
+ *   run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size);
+ *   for (int k = 0; k < diffuse_iterations; k++)
+ *   {
+ *       run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size);
+ *   }
+ *
+ *   run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size);
+ *   run_shader(advect1_program, rectangle.width, rectangle.height, title_height, border_size);
+ *   run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size);
+ *   for (int k = 0; k < diffuse_iterations; k++)
+ *   {
+ *       run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size);
+ *   }
+ *
+ *   run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size);
+ *   for (int k = 0; k < diffuse_iterations; k++)
+ *   {
+ *       run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size);
+ *   }
+ *
+ *   run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size);
+ */
     GL_CALL(glUseProgram(render_overlay_program));
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
@@ -3426,12 +3409,11 @@ if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
     GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
 
-
-   // GLfloat effect_color_f[4] =
-   // {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
-     //   GLfloat(effect_color.a)};
- //   GLfloat decor_color_f[4] =
-   // {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
+    // GLfloat effect_color_f[4] =
+    // {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
+    // GLfloat(effect_color.a)};
+    // GLfloat decor_color_f[4] =
+    // {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
     GL_CALL(glUniform1i(1, title_height + border_size * 2));
     GL_CALL(glUniform1i(2, border_size * 2));
     GL_CALL(glUniform1i(4, ink));
@@ -3459,8 +3441,6 @@ if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
     GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
     GL_CALL(glUseProgram(0));
     OpenGL::render_end();
-
-
 }
 
 void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,

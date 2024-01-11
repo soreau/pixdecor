@@ -11,7 +11,7 @@ namespace decor
 class smoke_t
 {
     /** background effects */
-      GLuint motion_program,
+    GLuint motion_program,
         diffuse1_program, diffuse2_program,
         project1_program, project2_program, project3_program,
         project4_program, project5_program, project6_program,

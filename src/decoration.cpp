@@ -174,6 +174,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     continue;
                 }
+
                 toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
             }
         };
@@ -196,6 +197,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                     {
                         o->render->rem_effect(&pre_hook);
                     }
+
                     hook_set = false;
                 }
             } else
@@ -206,9 +208,11 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                     {
                         o->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
                     }
+
                     hook_set = true;
                 }
             }
+
             for (auto& view : wf::get_core().get_all_views())
             {
                 auto toplevel = wf::toplevel_cast(view);
@@ -216,6 +220,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     continue;
                 }
+
                 toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
             }
         });
@@ -249,6 +254,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
             }
         }
+
         if (hook_set)
         {
             for (auto& o : wf::get_core().output_layout->get_outputs())

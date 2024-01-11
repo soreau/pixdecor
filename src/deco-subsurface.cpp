@@ -92,8 +92,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     }
 
     ~simple_decoration_node_t()
-    {
-    }
+    {}
 
     wf::point_t get_offset()
     {
