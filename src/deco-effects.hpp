@@ -11,12 +11,12 @@ namespace decor
 class smoke_t
 {
     /** background effects */
-    GLuint motion_program,
+      GLuint motion_program,
         diffuse1_program, diffuse2_program,
         project1_program, project2_program, project3_program,
         project4_program, project5_program, project6_program,
-        advect1_program, advect2_program, render_program,
-        texture, b0u, b0v, b0d, b1u, b1v, b1d;
+        advect1_program, advect2_program, render_program, render_overlay_program,
+        texture, b0u, b0v, b0d, b1u, b1v, b1d, neural_network_tex;
 
     int saved_width = -1, saved_height = -1;
 

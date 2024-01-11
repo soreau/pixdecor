@@ -1,1 +1,0 @@
-rm -rf build; PKG_CONFIG_PATH=/opt/wayfire/lib/x86_64-linux-gnu/pkgconfig:/opt/wayfire/share/pkgconfig meson setup build --prefix=/opt/wayfire && ninja -C build && sudo ninja -C build install`

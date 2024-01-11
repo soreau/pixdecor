@@ -100,6 +100,10 @@
 				<value>neon_rings</value>
 				<_name>Neon rings</_name>
 			</desc>
+			<desc>
+				<value>deco</value>
+				<_name>Deco</_name>
+			</desc>
 		</option>
 		<option name="effect_color" type="color">
 			<_short>Effect Color</_short>
