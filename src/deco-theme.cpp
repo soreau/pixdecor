@@ -157,7 +157,7 @@ void decoration_theme_t::set_maximize(bool state)
 void decoration_theme_t::render_background(const wf::render_target_t& fb,
     wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active, wf::pointf_t p)
 {
- /*   if (std::string(effect_type) == "none")
+/*    if (std::string(effect_type) == "none")
     {
         OpenGL::render_begin(fb);
         fb.logic_scissor(scissor);
