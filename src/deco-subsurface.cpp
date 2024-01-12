@@ -413,6 +413,11 @@ void wf::simple_decorator_t::damage(wayfire_view view)
     wf::scene::damage_node(deco, deco->get_bounding_box());
 }
 
+void wf::simple_decorator_t::effect_updated()
+{
+    deco->theme.smoke.effect_updated();
+}
+
 wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_state_t& state)
 {
     if (state.fullscreen)

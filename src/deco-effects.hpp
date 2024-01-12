@@ -30,8 +30,11 @@ class smoke_t
         int title_height, int border_size, int diffuse_iterations);
     void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
         const wf::geometry_t& scissor);
+    void create_programs();
+    void destroy_programs();
     void create_textures();
     void destroy_textures();
+    void effect_updated();
 };
 }
 }

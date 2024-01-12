@@ -222,6 +222,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 }
 
                 toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
+                toplevel->toplevel()->get_data<wf::simple_decorator_t>()->effect_updated();
             }
         });
 
