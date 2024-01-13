@@ -2,8 +2,6 @@
 
 #include "deco-effects.hpp"
 
-#include <wayfire/option-wrapper.hpp>
-
 
 namespace wf
 {
@@ -2504,108 +2502,6 @@ vec2 uv = vec2(pos) / vec2(1000, 2000);
 }
 )";
 
-/*
- *  static const char *render_source_overlay  =
- *   R"(
- #version 320 es
- *
- *
- *
- *  uniform vec2 iResolution;
- *  uniform float iTime;
- *  uniform vec2 iMouse;
- *
- *  layout(binding = 0, rgba32f) readonly uniform highp image2D neural_network_tex;  // Use binding point 0
- *  layout(binding = 0, rgba32f) writeonly uniform highp image2D image;  // Use binding point 0
- *
- *  layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
- *
- #define MARKER_RADIUS 12.5
- #define THICCNESS 2.0
- *
- *
- *  layout(location = 5) uniform int width;
- *  layout(location = 6) uniform int height;
- *
- *  float sin01(float x) {
- *   return (sin(x) + 1.0) / 2.0;
- *  }
- *
- *  void main() {
- *   ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
- *   vec2 fragCoord = vec2(storePos);
- *
- *   vec4 col = vec4(0.0);
- *
- *   vec2 p1 = vec2(0.0+THICCNESS , float(height)-THICCNESS );
- *   vec2 p2 = vec2(0.0+THICCNESS , 0.0+THICCNESS );
- *
- *   vec2 x1 = vec2(float(width)-THICCNESS , float(height)-THICCNESS );
- *   vec2 x2 = vec2(float(width)-THICCNESS , 0.0+THICCNESS );
- *
- *   vec2 y1 = vec2(0.0+THICCNESS , float(height)-THICCNESS );
- *   vec2 y2 = vec2(float(width)-THICCNESS , float(height)-THICCNESS );
- *
- *   vec2 z1 = vec2(0.0+THICCNESS , 0.0+THICCNESS );
- *   vec2 z2 = vec2(float(width)-THICCNESS , 0.0+THICCNESS );
- *
- *   vec2 p3 = fragCoord;
- *   vec2 p12 = p2 - p1;
- *   vec2 p13 = p3 - p1;
- *
- *   vec2 x3 = fragCoord;
- *   vec2 x12 = x2 - x1;
- *   vec2 x13 = x3 - x1;
- *
- *   vec2 y3 = fragCoord;
- *   vec2 y12 = y2 - y1;
- *   vec2 y13 = y3 - y1;
- *
- *   vec2 z3 = fragCoord;
- *   vec2 z12 = z2 - z1;
- *   vec2 z13 = z3 - z1;
- *
- *
- *   float d = dot(p12, p13) / length(p12); // = length(p13) * cos(angle)
- *   float dx = dot(x12, x13) / length(x12);
- *   float dy = dot(y12, y13) / length(y12);
- *   float dz = dot(z12, z13) / length(z12);
- *
- *   vec2 p4 = p1 + normalize(p12) * d;
- *   vec2 x4 = x1 + normalize(x12) * dx;
- *   vec2 y4 = y1 + normalize(y12) * dy;
- *   vec2 z4 = z1 + normalize(z12) * dz;
- *
- *  if (((length(p4 - p3) < THICCNESS && length(p4 - p1) <= length(p12) && length(p4 - p2) <= length(p12)) ||
- *        (length(x4 - x3) < THICCNESS && length(x4 - x1) <= length(x12) && length(x4 - x2) <= length(x12)))
- * ||
- *        (length(y4 - y3) < THICCNESS && length(y4 - y1) <= length(y12) && length(y4 - y2) <= length(y12)) ||
- *        (length(z4 - z3) < THICCNESS && length(z4 - z1) <= length(z12) && length(z4 - z2) <= length(z12))) {
- *       col += vec4(0.1, 0.1, 0.1, 1.0);
- *   }
- *
- *   // Draw the lines connecting the points
- *   if (length(fragCoord - p1) < THICCNESS || length(fragCoord - p2) < THICCNESS ||
- *       length(fragCoord - x1) < THICCNESS || length(fragCoord - x2) < THICCNESS ||
- *       length(fragCoord - y1) < THICCNESS || length(fragCoord - y2) < THICCNESS ||
- *       length(fragCoord - z1) < THICCNESS || length(fragCoord - z2) < THICCNESS) {
- *       col += vec4(0.1, 0.1, 0.1, 1.0);
- *   }
- *
- *
- *  //     vec4 neuralColor = imageLoad(neural_network_tex, ivec2(fragCoord));
- *
- *    //   col = mix(col, neuralColor, 0.5);  // Example: simple linear interpolation (blend) with equal
- * weight
- *   vec4 neuralColor = imageLoad(neural_network_tex, ivec2(fragCoord));
- *   col += neuralColor;
- *
- *   imageStore(image, storePos, col);
- *  }
- *
- *
- *  )";
- */
 static const char *render_source_overlay =
     R"(
 #version 320 es
@@ -2933,10 +2829,6 @@ else{
 
 )";
 
-
-
-
-
 void setup_shader(GLuint *program, std::string source)
 {
     auto compute_shader  = OpenGL::compile_shader(source.c_str(), GL_COMPUTE_SHADER);
@@ -2966,8 +2858,6 @@ static void seed_random()
     clock_gettime(CLOCK_MONOTONIC, &ts);
     srandom(ts.tv_nsec);
 }
-
-wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 
 void smoke_t::destroy_programs()
 {
@@ -3063,10 +2953,15 @@ void smoke_t::create_programs()
 
 smoke_t::smoke_t()
 {
-    create_programs();
-    seed_random();
+    motion_program = diffuse1_program = diffuse2_program = project1_program =
+        project2_program = project3_program = project4_program = project5_program =
+        project6_program = advect1_program = advect2_program = render_program =
+        render_overlay_program = GLuint(-1);
 
     texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
+
+    create_programs();
+    seed_random();
 }
 
 smoke_t::~smoke_t()
@@ -3100,6 +2995,8 @@ void smoke_t::destroy_textures()
     GL_CALL(glDeleteTextures(1, &b1u));
     GL_CALL(glDeleteTextures(1, &b1v));
     GL_CALL(glDeleteTextures(1, &b1d));
+
+    texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
 }
 
 void smoke_t::run_shader(GLuint program, int width, int height, int title_height, int border_size)
@@ -3283,6 +3180,16 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     {
         GL_CALL(glUniform1f(9, wf::get_current_time() / 30.0));
     }
+    GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
+    GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+    GL_CALL(glUseProgram(render_overlay_program));
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+    GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+    GL_CALL(glUniform1i(1, title_height + border_size * 2));
+    GL_CALL(glUniform1i(2, border_size * 2));
+    GL_CALL(glUniform1i(5, rectangle.width));
+    GL_CALL(glUniform1i(6, rectangle.height));
     GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));

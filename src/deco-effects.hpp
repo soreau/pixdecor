@@ -1,4 +1,5 @@
 #pragma once
+#include <wayfire/option-wrapper.hpp>
 #include <wayfire/core.hpp>
 #include <wayfire/opengl.hpp>
 #include <map>
@@ -19,6 +20,8 @@ class smoke_t
         texture, b0u, b0v, b0d, b1u, b1v, b1d, neural_network_tex;
 
     int saved_width = -1, saved_height = -1;
+
+    wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 
   public:
     smoke_t();
