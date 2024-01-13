@@ -2322,7 +2322,7 @@ void main() {
 
     for (int i = 0; i < numCircles; ++i) {
         // Calculate UV coordinates for each circle
-        vec2 uv = vec2(pos) / vec2(300, 300);
+        vec2 uv = vec2(pos) / vec2(width / 3, height / 3);
 
         // Calculate polar coordinates
         float a = atan(uv.y, uv.x);
