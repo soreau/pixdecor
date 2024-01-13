@@ -816,7 +816,7 @@ void main()
 }
 )";
 
-
+//ported from https://www.shadertoy.com/view/WdXBW4
 static const char *render_source_clouds =
     R"(
 #version 320 es
@@ -964,13 +964,7 @@ void main() {
 
 )";
 
-
-
-
-
-
-
-
+//ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Dots3.glsl
 static const char *render_source_halftone =
     R"(
 #version 310 es
@@ -984,13 +978,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-
-
-
-
-
-
-layout(location = 9) uniform float  time;
+layout(location = 9) uniform float time;
 
 const vec2 resolution = vec2(1280.0, 720.0);
 const float timeFactor = 0.025;
@@ -1045,16 +1033,9 @@ void main() {
     // Output the final color
     imageStore(out_tex, pos, vec4(c1 * c2 * c3 * c4, 1.0));
 }
-
-
-
-
-
-
-
 )";
 
-
+//ported from https://www.shadertoy.com/view/WdjGRc
 static const char *render_source_lava =
     R"(
 #version 320 es
@@ -1122,11 +1103,9 @@ vec2 uv = vec2(pos) / vec2(1000, 2000);
     // Output the final color to the output texture
     imageStore(out_tex, pos, vec4(col, 1.0));
 }
-
-
 )";
 
-
+//ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Eyes2.glsl
 static const char *render_source_pattern =
     R"(
 #version 310 es
@@ -1205,7 +1184,7 @@ void main() {
 
 )";
 
-
+//original (by phodius)
 static const char *render_source_hex =
     R"(
 #version 310 es
@@ -1288,7 +1267,7 @@ void main() {
 
 )";
 
-
+//ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Zebra.glsl
 static const char *render_source_zebra =
     R"(
 #version 310 es
@@ -1357,8 +1336,7 @@ void main() {
 
 )";
 
-
-
+//ported from https://www.shadertoy.com/view/dlGfWV
 static const char *render_source_neural_network =
     R"(
 
@@ -1377,10 +1355,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-
-
-
-layout(location = 9) uniform float time; // Animated time
+layout(location = 9) uniform float time;
 
 uniform vec2 iResolution;
 uniform float iTime;
@@ -1434,8 +1409,7 @@ void main() {
 }
 )";
 
-
-
+//Ported from https://www.shadertoy.com/view/llSyDh
 static const char *render_source_hexagon_maze =
     R"(
 #version 320 es
@@ -1861,7 +1835,7 @@ void main() {
 
 )";
 
-
+//ported from https://www.shadertoy.com/view/4td3zj
 static const char *render_source_raymarched_truchet =
     R"(
 #version 310 es
@@ -2243,8 +2217,7 @@ col *= 1.3;
 }
 )";
 
-
-
+//ported from https://www.shadertoy.com/view/mtyGWy
 static const char *render_source_neon_pattern =
     R"(
 
@@ -2309,8 +2282,7 @@ void main() {
 }
 )";
 
-
-
+//original (by phodius)
 static const char *render_source_neon_rings =
     R"(
 #version 310 es
@@ -2397,7 +2369,7 @@ void main() {
 
 )";
 
-
+//ported from https://www.shadertoy.com/view/WdjGRc
 static const char *render_source_deco =
     R"(
 #version 320 es
