@@ -864,16 +864,9 @@ float fbm(vec2 n) {
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    
-    
 
-
-//    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
     
     
       // Check if the pixel should be drawn
@@ -1030,14 +1023,11 @@ float halftone(vec2 coord, float angle, float t, float amp) {
 }
 
 void main() {
-
-
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
     
        // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
     
     
       // Check if the pixel should be drawn
@@ -1106,15 +1096,14 @@ vec3 effect(float speed, vec2 uv, float time, float scale) {
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
     
 vec2 uv = vec2(pos) / vec2(1000, 2000);
     uv = 2.0 * uv - 1.0;
     uv *= (10.3 + 0.1 * sin(current_time * 0.01));
 
        // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
@@ -1197,15 +1186,8 @@ vec3 eyes(vec2 coord)
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
- 
- 
- 
-  //  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
@@ -1265,11 +1247,10 @@ vec4 hexagon(vec2 p)
     return vec4(pi + ca - cb * ma, e, f);
 }
 void main() {
-    ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-    // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
@@ -1278,15 +1259,15 @@ void main() {
         return;
     }
 
-    vec2 uv = (vec2(globalID) + 0.5) / 1920.0; // Assuming iResolution is 1920x1080
+    vec2 uv = (vec2(pos) + 0.5) / float(width);
 
     // Generate a random value
     float randVal = rand(uv);
 
     // Apply hexagon logic
-    vec2 pos = (-1920.0 + 2.0 * vec2(globalID)) / 1080.0;
-    vec4 h = hexagon(60.0 * pos + vec2(0.5 * iTime * 0.125));
-    
+    vec2 p = (-float(width) + 2.0 * vec2(pos)) / float(height);
+    vec4 h = hexagon(60.0 * p + vec2(0.5 * iTime * 0.125));
+
     float col = 0.01 + 0.15 * rand(vec2(h.xy)) * 1.0;
     col *= 4.3 + 0.15 * sin(10.0 * h.z);
 
@@ -1299,7 +1280,7 @@ void main() {
     vec3 finalColor = mix(shadeColor1, mix(shadeColor2, shadeColor3, randVal), col);
 
     // Use imageStore instead of writing to buffer
-    imageStore(OutputImage, globalID, vec4(finalColor, 1.0));
+    imageStore(OutputImage, pos, vec4(finalColor, 1.0));
 }
 
 
@@ -1332,13 +1313,10 @@ float rand(vec2 uv)
 }
 
 void main() {
-    //ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-        ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
@@ -1414,12 +1392,10 @@ mat2 rotate2D(float r) {
 }
 
 void main() {
-     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
@@ -1616,14 +1592,11 @@ float getPolarCoord(vec2 q, float dir){
 
 
 void main() {
-    vec2 iResolution = vec2(1280.0, 720.0);
+    vec2 iResolution = vec2(width, height);
     ivec2 id = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
@@ -2136,7 +2109,7 @@ float Voronoi(in vec2 p){
 
 void main() {
 
-    vec2 iResolution = vec2(1920.0, 1080.0);
+    vec2 iResolution = vec2(width, height);
     ivec2 id = ivec2(gl_GlobalInvocationID.xy);
  float tm = (iTime / 2.) * 0.0125;
  
@@ -2146,12 +2119,10 @@ void main() {
     vec3 rd = normalize(vec3(2. * vec2(id) - iResolution.xy, iResolution.y));
 
 
-      ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
@@ -2303,12 +2274,10 @@ vec3 palette(float t) {
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
     
        // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
@@ -2316,7 +2285,7 @@ void main() {
     {
         return;
     }
-    vec2 uv = vec2(pos) / vec2(800, 600);
+    vec2 uv = vec2(pos) / vec2(width, height);
     vec2 uv0 = uv;
     vec3 finalColor = vec3(0.0);
 
@@ -2363,12 +2332,9 @@ layout(location = 9) uniform float current_time; // Animated time
 
 void main() {
    
-  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
@@ -2473,15 +2439,13 @@ vec3 effect(float speed, vec2 uv, float time, float scale) {
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
     
-vec2 uv = vec2(pos) / vec2(1000, 2000);
+    vec2 uv = vec2(pos) / vec2(width, height);
     uv = 2.0 * uv - 1.0;
     uv *= (10.3 + 0.1 * sin(current_time * 0.01));
 
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
     if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
