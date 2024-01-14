@@ -48,6 +48,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<std::string> ignore_views_string{"pixdecor/ignore_views"};
     wf::option_wrapper_t<std::string> always_decorate_string{"pixdecor/always_decorate"};
     wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
     wf::view_matcher_t ignore_views{"pixdecor/ignore_views"};
     wf::view_matcher_t always_decorate{"pixdecor/always_decorate"};
     wf::wl_idle_call idle_update_views;
@@ -187,44 +188,9 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             }
         }
 
-        effect_type.set_callback([=] ()
-        {
-            if (std::string(effect_type) == "none")
-            {
-                if (hook_set)
-                {
-                    for (auto& o : wf::get_core().output_layout->get_outputs())
-                    {
-                        o->render->rem_effect(&pre_hook);
-                    }
-
-                    hook_set = false;
-                }
-            } else
-            {
-                if (!hook_set)
-                {
-                    for (auto& o : wf::get_core().output_layout->get_outputs())
-                    {
-                        o->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
-                    }
-
-                    hook_set = true;
-                }
-            }
-
-            for (auto& view : wf::get_core().get_all_views())
-            {
-                auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
-                {
-                    continue;
-                }
-
-                toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
-                toplevel->toplevel()->get_data<wf::simple_decorator_t>()->effect_updated();
-            }
-        });
+        effect_type.set_callback([=] {option_changed_cb();});
+        overlay_engine.set_callback([=] {option_changed_cb();});
+        option_changed_cb();
 
         // set up the watch on the xsettings file
         inotify_fd = inotify_init1(IN_CLOEXEC);
@@ -268,6 +234,45 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         inotify_rm_watch(inotify_fd, wd_cfg_file);
         inotify_rm_watch(inotify_fd, wd_cfg_dir);
         close(inotify_fd);
+    }
+
+    void option_changed_cb()
+    {
+        if (std::string(effect_type) == "none")
+        {
+            if (hook_set)
+            {
+                for (auto& o : wf::get_core().output_layout->get_outputs())
+                {
+                    o->render->rem_effect(&pre_hook);
+                }
+
+                hook_set = false;
+            }
+        } else
+        {
+            if (!hook_set)
+            {
+                for (auto& o : wf::get_core().output_layout->get_outputs())
+                {
+                    o->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
+                }
+
+                hook_set = true;
+            }
+        }
+
+        for (auto& view : wf::get_core().get_all_views())
+        {
+            auto toplevel = wf::toplevel_cast(view);
+            if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+            {
+                continue;
+            }
+
+            toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
+            toplevel->toplevel()->get_data<wf::simple_decorator_t>()->effect_updated();
+        }
     }
 
     void update_colors()

@@ -22,6 +22,7 @@ class smoke_t
     int saved_width = -1, saved_height = -1;
 
     wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
 
   public:
     smoke_t();

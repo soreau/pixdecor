@@ -40,6 +40,19 @@
 			<_long>Color of the window titlebar text when it does not have focus.</_long>
 			<default>0.7 0.7 0.7 1.0</default>
 		</option>
+		<option name="overlay_engine" type="string">
+			<_short>Overlay Engine</_short>
+			<_long>Sets the overlay engine.</_long>
+			<default>none</default>
+			<desc>
+				<value>none</value>
+				<_name>None</_name>
+			</desc>
+			<desc>
+				<value>beveled_glass</value>
+				<_name>Beveled Glass</_name>
+			</desc>
+		</option>
 		<option name="effect_type" type="string">
 			<_short>Effect Type</_short>
 			<_long>Sets the effect type.</_long>

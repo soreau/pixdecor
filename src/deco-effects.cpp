@@ -816,7 +816,7 @@ void main()
 }
 )";
 
-//ported from https://www.shadertoy.com/view/WdXBW4
+// ported from https://www.shadertoy.com/view/WdXBW4
 static const char *render_source_clouds =
     R"(
 #version 320 es
@@ -870,8 +870,7 @@ void main() {
     
     
       // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -964,7 +963,7 @@ void main() {
 
 )";
 
-//ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Dots3.glsl
+// ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Dots3.glsl
 static const char *render_source_halftone =
     R"(
 #version 310 es
@@ -1019,8 +1018,7 @@ void main() {
     
     
       // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -1035,7 +1033,7 @@ void main() {
 }
 )";
 
-//ported from https://www.shadertoy.com/view/WdjGRc
+// ported from https://www.shadertoy.com/view/WdjGRc
 static const char *render_source_lava =
     R"(
 #version 320 es
@@ -1087,8 +1085,7 @@ vec2 uv = vec2(pos) / vec2(1000, 2000);
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -1105,7 +1102,7 @@ vec2 uv = vec2(pos) / vec2(1000, 2000);
 }
 )";
 
-//ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Eyes2.glsl
+// ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Eyes2.glsl
 static const char *render_source_pattern =
     R"(
 #version 310 es
@@ -1169,8 +1166,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -1184,7 +1180,7 @@ void main() {
 
 )";
 
-//original (by phodius)
+// original (by phodius)
 static const char *render_source_hex =
     R"(
 #version 310 es
@@ -1200,7 +1196,7 @@ layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
 layout(location = 9) uniform float iTime;
-uniform vec2 iResolution;
+vec2 iResolution;
 
 float rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
@@ -1232,8 +1228,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -1267,7 +1262,7 @@ void main() {
 
 )";
 
-//ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Zebra.glsl
+// ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Zebra.glsl
 static const char *render_source_zebra =
     R"(
 #version 310 es
@@ -1298,8 +1293,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -1336,7 +1330,7 @@ void main() {
 
 )";
 
-//ported from https://www.shadertoy.com/view/dlGfWV
+// ported from https://www.shadertoy.com/view/dlGfWV
 static const char *render_source_neural_network =
     R"(
 
@@ -1373,8 +1367,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -1409,7 +1402,7 @@ void main() {
 }
 )";
 
-//Ported from https://www.shadertoy.com/view/llSyDh
+// Ported from https://www.shadertoy.com/view/llSyDh
 static const char *render_source_hexagon_maze =
     R"(
 #version 320 es
@@ -1573,8 +1566,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -1835,7 +1827,7 @@ void main() {
 
 )";
 
-//ported from https://www.shadertoy.com/view/4td3zj
+// ported from https://www.shadertoy.com/view/4td3zj
 static const char *render_source_raymarched_truchet =
     R"(
 #version 310 es
@@ -2099,8 +2091,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -2217,7 +2208,7 @@ col *= 1.3;
 }
 )";
 
-//ported from https://www.shadertoy.com/view/mtyGWy
+// ported from https://www.shadertoy.com/view/mtyGWy
 static const char *render_source_neon_pattern =
     R"(
 
@@ -2253,8 +2244,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -2282,7 +2272,7 @@ void main() {
 }
 )";
 
-//original (by phodius)
+// original (by phodius)
 static const char *render_source_neon_rings =
     R"(
 #version 310 es
@@ -2309,8 +2299,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -2369,7 +2358,7 @@ void main() {
 
 )";
 
-//ported from https://www.shadertoy.com/view/WdjGRc
+// ported from https://www.shadertoy.com/view/WdjGRc
 static const char *render_source_deco =
     R"(
 #version 320 es
@@ -2420,8 +2409,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
     {
         return;
     }
@@ -2816,15 +2804,10 @@ void smoke_t::destroy_programs()
     {
         GL_CALL(glDeleteProgram(render_program));
     }
-    if (render_overlay_program != GLuint(-1))
-    {
-        GL_CALL(glDeleteProgram(render_overlay_program));
-    }
 
     motion_program = diffuse1_program = diffuse2_program = project1_program =
-        project2_program = project3_program = project4_program = project5_program =
-        project6_program = advect1_program = advect2_program = render_program =
-        render_overlay_program = GLuint(-1);
+        project2_program     = project3_program = project4_program = project5_program =
+            project6_program = advect1_program = advect2_program = render_program = GLuint(-1);
 }
 
 void smoke_t::create_programs()
@@ -2883,19 +2866,21 @@ void smoke_t::create_programs()
         setup_shader(&render_program, render_source_deco);
     }
 
-    setup_shader(&render_overlay_program, render_source_overlay);
     OpenGL::render_end();
 }
 
 smoke_t::smoke_t()
 {
     motion_program = diffuse1_program = diffuse2_program = project1_program =
-        project2_program = project3_program = project4_program = project5_program =
-        project6_program = advect1_program = advect2_program = render_program =
-        render_overlay_program = GLuint(-1);
+        project2_program     = project3_program = project4_program = project5_program =
+            project6_program = advect1_program = advect2_program = render_program =
+                render_overlay_program = GLuint(-1);
 
     texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
 
+    OpenGL::render_begin();
+    setup_shader(&render_overlay_program, render_source_overlay);
+    OpenGL::render_end();
     create_programs();
     seed_random();
 }
@@ -3090,44 +3075,73 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size);
     }
 
-    GL_CALL(glUseProgram(render_program));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-    GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-    GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+    if (std::string(effect_type) != "none")
+    {
+        GL_CALL(glUseProgram(render_program));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+        GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
+        GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
 
-    GLfloat effect_color_f[4] =
-    {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
-        GLfloat(effect_color.a)};
-    GLfloat decor_color_f[4] =
-    {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
-    GL_CALL(glUniform1i(1, title_height + border_size * 2));
-    GL_CALL(glUniform1i(2, border_size * 2));
-    GL_CALL(glUniform1i(5, rectangle.width));
-    GL_CALL(glUniform1i(6, rectangle.height));
-    if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+        GLfloat effect_color_f[4] =
+        {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
+            GLfloat(effect_color.a)};
+        GLfloat decor_color_f[4] =
+        {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
+        GL_CALL(glUniform1i(1, title_height + border_size * 2));
+        GL_CALL(glUniform1i(2, border_size * 2));
+        GL_CALL(glUniform1i(5, rectangle.width));
+        GL_CALL(glUniform1i(6, rectangle.height));
+        if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+        {
+            GL_CALL(glUniform1i(4, ink));
+            GL_CALL(glUniform4fv(7, 1, effect_color_f));
+            GL_CALL(glUniform4fv(8, 1, decor_color_f));
+        } else
+        {
+            GL_CALL(glUniform1f(9, wf::get_current_time() / 30.0));
+        }
+
+        GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
+        GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+    } else if (std::string(overlay_engine) != "none")
     {
-        GL_CALL(glUniform1i(4, ink));
-        GL_CALL(glUniform4fv(7, 1, effect_color_f));
-        GL_CALL(glUniform4fv(8, 1, decor_color_f));
-    } else
-    {
-        GL_CALL(glUniform1f(9, wf::get_current_time() / 30.0));
+        GL_CALL(glDeleteTextures(1, &texture));
+        GL_CALL(glGenTextures(1, &texture));
+        std::vector<GLfloat> color_data(rectangle.width * rectangle.height * 4, 0);
+        for (int i = 0; i < rectangle.width * rectangle.height * 4; i += 4)
+        {
+            color_data[i + 0] = GLfloat(decor_color.r);
+            color_data[i + 1] = GLfloat(decor_color.g);
+            color_data[i + 2] = GLfloat(decor_color.b);
+            color_data[i + 3] = GLfloat(decor_color.a);
+        }
+
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, rectangle.width, rectangle.height));
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
+            &color_data[0]);
     }
-    GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
-    GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-    GL_CALL(glUseProgram(render_overlay_program));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-    GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-    GL_CALL(glUniform1i(1, title_height + border_size * 2));
-    GL_CALL(glUniform1i(2, border_size * 2));
-    GL_CALL(glUniform1i(5, rectangle.width));
-    GL_CALL(glUniform1i(6, rectangle.height));
-    GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
-    GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+
+    if ((std::string(overlay_engine) == "beveled_glass"))
+    {
+        GL_CALL(glUseProgram(render_overlay_program));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+        GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+        GL_CALL(glUniform1i(1, title_height + border_size * 2));
+        GL_CALL(glUniform1i(2, border_size * 2));
+        GL_CALL(glUniform1i(5, rectangle.width));
+        GL_CALL(glUniform1i(6, rectangle.height));
+        GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
+        GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+    }
+
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
@@ -3158,9 +3172,7 @@ void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectan
 
 void smoke_t::effect_updated()
 {
-    destroy_programs();
     create_programs();
 }
-
 }
 }

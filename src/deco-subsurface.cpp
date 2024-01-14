@@ -28,6 +28,7 @@
 
 #include <cairo.h>
 
+wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
 wf::option_wrapper_t<int> effect_diffuse_iterations{"pixdecor/effect_diffuse_iterations"};
@@ -218,7 +219,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 activated = view->activated;
             }
 
-            if (std::string(effect_type) != "none")
+            if ((std::string(effect_type) != "none") || (std::string(overlay_engine) != "none"))
             {
                 self->theme.smoke.step_effect(target, rectangle, std::string(effect_type) == "ink",
                     self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
