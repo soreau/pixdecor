@@ -1110,7 +1110,7 @@ precision highp float;
 precision highp image2D;
 
 layout(binding = 0, rgba32f) writeonly uniform highp image2D out_tex;
-layout(local_size_x = 30, local_size_y = 30, local_size_z = 1) in;
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 
 layout(location = 1) uniform int title_height;
@@ -1118,7 +1118,7 @@ layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
 layout(location = 9) uniform float time;
-const vec2 resolution = vec2(1280.0, 720.0);  // Adjusted to 720p
+const vec2 resolution = vec2(float(width), float(height));
 
 float rand(vec2 uv)
 {
@@ -1199,7 +1199,7 @@ layout(location = 9) uniform float iTime;
 vec2 iResolution;
 
 float rand(vec2 co) {
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+    return fract(sin(dot(co.xy, vec2(12.9898, 4.1414))) * 43758.5453);
 }
 
 // Hexagon function
@@ -1240,7 +1240,7 @@ void main() {
 
     // Apply hexagon logic
     vec2 p = (-float(width) + 2.0 * vec2(pos)) / float(height);
-    vec4 h = hexagon(60.0 * p + vec2(0.5 * iTime * 0.125));
+    vec4 h = hexagon(40.0 * p + vec2(0.5 * iTime * 0.125));
 
     float col = 0.01 + 0.15 * rand(vec2(h.xy)) * 1.0;
     col *= 4.3 + 0.15 * sin(10.0 * h.z);
@@ -1256,10 +1256,6 @@ void main() {
     // Use imageStore instead of writing to buffer
     imageStore(OutputImage, pos, vec4(finalColor, 1.0));
 }
-
-
-
-
 )";
 
 // ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Zebra.glsl
