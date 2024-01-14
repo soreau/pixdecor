@@ -1118,7 +1118,6 @@ layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
 layout(location = 9) uniform float time;
-const vec2 resolution = vec2(float(width), float(height));
 
 float rand(vec2 uv)
 {
@@ -1131,7 +1130,7 @@ vec3 hue2rgb(float h)
     return clamp(vec3(abs(h - 1.0) - 1.0, 2.0 - abs(h), 2.0 - abs(h - 2.0)), 0.0, 1.0);
 }
 
-vec3 eyes(vec2 coord)
+vec3 eyes(vec2 coord, vec2 resolution)
 {
     const float pi = 3.141592;
     float t = 0.4 * time * 0.05; 
@@ -1161,6 +1160,7 @@ vec3 eyes(vec2 coord)
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    vec2 resolution = vec2(float(width), float(height));
 
     int x = pos.x;
     int y = pos.y;
@@ -1171,7 +1171,7 @@ void main() {
         return;
     }
 
-    vec3 color = eyes(vec2(pos));
+    vec3 color = eyes(vec2(pos), resolution);
 
     // Output the final color
     imageStore(out_tex, pos, vec4(color, 1.0));
