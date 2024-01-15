@@ -2874,6 +2874,7 @@ smoke_t::smoke_t()
 
     texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
 
+    effect_type.set_callback([=] {});
     OpenGL::render_begin();
     setup_shader(&render_overlay_program, render_source_overlay);
     OpenGL::render_end();
@@ -2900,12 +2901,17 @@ void smoke_t::create_textures()
 
 void smoke_t::destroy_textures()
 {
-    if (texture == GLuint(-1))
+    if (texture != GLuint(-1))
+    {
+        GL_CALL(glDeleteTextures(1, &texture));
+        texture = GLuint(-1);
+    }
+
+    if (b0u == GLuint(-1))
     {
         return;
     }
 
-    GL_CALL(glDeleteTextures(1, &texture));
     GL_CALL(glDeleteTextures(1, &b0u));
     GL_CALL(glDeleteTextures(1, &b0v));
     GL_CALL(glDeleteTextures(1, &b0d));
@@ -2913,7 +2919,7 @@ void smoke_t::destroy_textures()
     GL_CALL(glDeleteTextures(1, &b1v));
     GL_CALL(glDeleteTextures(1, &b1d));
 
-    texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
+    b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
 }
 
 void smoke_t::run_shader(GLuint program, int width, int height, int title_height, int border_size)
@@ -2945,6 +2951,74 @@ void smoke_t::run_shader(GLuint program, int width, int height, int title_height
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
 
+void smoke_t::recreate_textures(wf::geometry_t rectangle)
+{
+    if ((rectangle.width <= 0) || (rectangle.height <= 0))
+    {
+        return;
+    }
+
+    destroy_textures();
+    create_textures();
+
+    std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
+
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, rectangle.width, rectangle.height));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
+        &clear_data[0]);
+    if ((std::string(effect_type) != "smoke") && (std::string(effect_type) != "ink"))
+    {
+        return;
+    }
+
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
+        &clear_data[0]);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
+        &clear_data[0]);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
+        &clear_data[0]);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
+        &clear_data[0]);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
+        &clear_data[0]);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
+        &clear_data[0]);
+}
+
 void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
     bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
     int title_height, int border_size, int diffuse_iterations)
@@ -2962,60 +3036,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         saved_width  = rectangle.width;
         saved_height = rectangle.height;
 
-        destroy_textures();
-        create_textures();
-
-        std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
-
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
+        recreate_textures(rectangle);
     }
 
     if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
@@ -3169,6 +3190,9 @@ void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectan
 void smoke_t::effect_updated()
 {
     create_programs();
+    OpenGL::render_begin();
+    recreate_textures(wf::geometry_t{0, 0, saved_width, saved_height});
+    OpenGL::render_end();
 }
 }
 }

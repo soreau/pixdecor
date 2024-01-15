@@ -176,7 +176,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                     continue;
                 }
 
-                toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
+                view->damage();
             }
         };
 
@@ -190,7 +190,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
         effect_type.set_callback([=] {option_changed_cb();});
         overlay_engine.set_callback([=] {option_changed_cb();});
-        option_changed_cb();
 
         // set up the watch on the xsettings file
         inotify_fd = inotify_init1(IN_CLOEXEC);
@@ -270,7 +269,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 continue;
             }
 
-            toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
+            view->damage();
             toplevel->toplevel()->get_data<wf::simple_decorator_t>()->effect_updated();
         }
     }

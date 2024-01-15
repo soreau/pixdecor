@@ -409,11 +409,6 @@ void wf::simple_decorator_t::update_colors()
     deco->theme.update_colors();
 }
 
-void wf::simple_decorator_t::damage(wayfire_view view)
-{
-    wf::scene::damage_node(deco, deco->get_bounding_box());
-}
-
 void wf::simple_decorator_t::effect_updated()
 {
     deco->theme.smoke.effect_updated();
