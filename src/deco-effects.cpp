@@ -2961,19 +2961,19 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     destroy_textures();
     create_textures();
 
-    std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
+    static std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
 
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, rectangle.width, rectangle.height));
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
-        &clear_data[0]);
     if ((std::string(effect_type) != "smoke") && (std::string(effect_type) != "ink"))
     {
         return;
     }
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
+        &clear_data[0]);
 
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
@@ -3032,7 +3032,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     OpenGL::render_begin(fb);
     if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
     {
-        LOGI("recreating smoke textures: ", rectangle.width, " != ", saved_width, " || ", rectangle.height,
+        LOGI("recreating effect textures: ", rectangle.width, " != ", saved_width, " || ", rectangle.height,
             " != ", saved_height);
         saved_width  = rectangle.width;
         saved_height = rectangle.height;
