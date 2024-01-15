@@ -3098,9 +3098,12 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
         GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-        GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+        {
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
+            GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        }
 
         GLfloat effect_color_f[4] =
         {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
