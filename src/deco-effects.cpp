@@ -1136,7 +1136,7 @@ vec3 eyes(vec2 coord, vec2 resolution)
     float t = 0.4 * time * 0.05; 
     float aspectRatio = resolution.x / resolution.y;
     float div = 20.0;
-    float sc = resolution.y / div ;
+    float sc = 30.0;
 
     vec2 p = (coord - resolution / 2.0) / sc - 0.5;
 
@@ -3023,6 +3023,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
     int title_height, int border_size, int diffuse_iterations)
 {
+    bool smoke = (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink");
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
     {
         return;
@@ -3039,7 +3040,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         recreate_textures(rectangle);
     }
 
-    if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+    if (smoke)
     {
         GL_CALL(glUseProgram(motion_program));
         GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
@@ -3098,7 +3099,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
         GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-        if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+        if (smoke)
         {
             GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
             GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
@@ -3114,7 +3115,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glUniform1i(2, border_size * 2));
         GL_CALL(glUniform1i(5, rectangle.width));
         GL_CALL(glUniform1i(6, rectangle.height));
-        if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+        if (smoke)
         {
             GL_CALL(glUniform1i(4, ink));
             GL_CALL(glUniform4fv(7, 1, effect_color_f));
