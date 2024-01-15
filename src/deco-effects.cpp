@@ -2961,7 +2961,7 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     destroy_textures();
     create_textures();
 
-    static std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
+    std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
 
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
