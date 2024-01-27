@@ -49,6 +49,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<std::string> always_decorate_string{"pixdecor/always_decorate"};
     wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
     wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
+    wf::option_wrapper_t<bool> effect_animate{"pixdecor/animate"};
+    wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
     wf::view_matcher_t ignore_views{"pixdecor/ignore_views"};
     wf::view_matcher_t always_decorate{"pixdecor/always_decorate"};
     wf::wl_idle_call idle_update_views;
@@ -188,8 +190,10 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             }
         }
 
-        effect_type.set_callback([=] {option_changed_cb();});
-        overlay_engine.set_callback([=] {option_changed_cb();});
+        effect_type.set_callback([=] {option_changed_cb(false, false);});
+        overlay_engine.set_callback([=] {option_changed_cb(true, false);});
+        effect_animate.set_callback([=] {option_changed_cb(false, false);});
+        rounded_corner_radius.set_callback([=] {option_changed_cb(false, true);});
 
         // set up the watch on the xsettings file
         inotify_fd = inotify_init1(IN_CLOEXEC);
@@ -235,20 +239,9 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         close(inotify_fd);
     }
 
-    void option_changed_cb()
+    void option_changed_cb(bool resize_decorations, bool recreate_decorations)
     {
-        if (std::string(effect_type) == "none")
-        {
-            if (hook_set)
-            {
-                for (auto& o : wf::get_core().output_layout->get_outputs())
-                {
-                    o->render->rem_effect(&pre_hook);
-                }
-
-                hook_set = false;
-            }
-        } else
+        if (effect_animate)
         {
             if (!hook_set)
             {
@@ -258,6 +251,17 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 }
 
                 hook_set = true;
+            }
+        } else
+        {
+            if (hook_set)
+            {
+                for (auto& o : wf::get_core().output_layout->get_outputs())
+                {
+                    o->render->rem_effect(&pre_hook);
+                }
+
+                hook_set = false;
             }
         }
 
@@ -271,6 +275,46 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
             view->damage();
             toplevel->toplevel()->get_data<wf::simple_decorator_t>()->effect_updated();
+            auto& pending = toplevel->toplevel()->pending();
+            if (!resize_decorations)
+            {
+                continue;
+            }
+
+            if (std::string(overlay_engine) == "rounded_corners")
+            {
+                pending.margins =
+                {int(rounded_corner_radius) * 2, int(rounded_corner_radius) * 2,
+                    int(rounded_corner_radius) * 2, int(rounded_corner_radius) * 2};
+                pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
+            } else
+            {
+                pending.margins =
+                {int(rounded_corner_radius) * 2, int(rounded_corner_radius) * 2,
+                    int(rounded_corner_radius) * 2, int(rounded_corner_radius) * 2};
+                pending.geometry = wf::shrink_geometry_by_margins(pending.geometry, pending.margins);
+                pending.margins  = {0, 0, 0, 0};
+            }
+
+            wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+        }
+
+        if (!recreate_decorations)
+        {
+            return;
+        }
+
+        for (auto& view : wf::get_core().get_all_views())
+        {
+            auto toplevel = wf::toplevel_cast(view);
+            if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+            {
+                continue;
+            }
+
+            remove_decoration(toplevel);
+            adjust_new_decorations(toplevel);
+            wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
         }
     }
 

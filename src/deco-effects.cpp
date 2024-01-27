@@ -29,17 +29,14 @@ layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
 layout(location = 7) uniform int rand1;
 layout(location = 8) uniform int rand2;
-
-float rand(vec2 st) {
-    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
-}
+layout(location = 9) uniform int radius;
 
 void motion(int x, int y)
 {
 	int i, i0, i1, j, j0, j1, d = 5;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -65,7 +62,7 @@ void motion(int x, int y)
 	for (i = i0; i < i1; i++)
 	{
 		for (j = j0; j < j1; j++) {
-			if (i > border_size && i < width - border_size && j > title_height && j < height - border_size)
+			if (i < radius || j < radius || i > width - radius || j > height - radius || (i > border_size && i < width - border_size && j > title_height && j < height - border_size))
 			{
 				continue;
 			}
@@ -118,6 +115,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void diffuse1(int x, int y)
 {
@@ -126,8 +124,8 @@ void diffuse1(int x, int y)
 
 	stride = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -191,6 +189,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void project1(int x, int y)
 {
@@ -200,8 +199,8 @@ void project1(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -251,6 +250,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void project2(int x, int y)
 {
@@ -260,8 +260,8 @@ void project2(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -311,6 +311,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void project3(int x, int y)
 {
@@ -320,8 +321,8 @@ void project3(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -375,6 +376,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void advect1(int x, int y) /* b1.u, b1.v, b1.u, b0.u */
 {
@@ -384,8 +386,8 @@ void advect1(int x, int y) /* b1.u, b1.v, b1.u, b0.u */
 
 	stride = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -467,6 +469,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void project4(int x, int y)
 {
@@ -476,8 +479,8 @@ void project4(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -527,6 +530,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void project5(int x, int y)
 {
@@ -536,8 +540,8 @@ void project5(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -587,6 +591,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void project6(int x, int y)
 {
@@ -596,8 +601,8 @@ void project6(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -651,6 +656,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void diffuse2(int x, int y)
 {
@@ -659,8 +665,8 @@ void diffuse2(int x, int y)
 
 	stride = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -712,6 +718,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform int radius;
 
 void advect2(int x, int y) /*b0u, b0v, b1d, b0d*/
 {
@@ -721,8 +728,8 @@ void advect2(int x, int y) /*b0u, b0v, b1d, b0d*/
 
 	stride = width;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -773,14 +780,16 @@ layout(location = 2) uniform int border_size;
 layout(location = 4) uniform bool ink;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-layout(location = 7) uniform vec4 smoke_color;
-layout(location = 8) uniform vec4 decor_color;
+layout(location = 7) uniform int radius;
+layout(location = 8) uniform vec4 smoke_color;
+layout(location = 9) uniform vec4 decor_color;
 
 void render(int x, int y)
 {
 	float c, r, g, b, a;
 
-	if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
 	}
@@ -829,6 +838,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time;
 float cloudscale=2.1;  // Added cloudscale parameter
 
@@ -870,7 +880,7 @@ void main() {
     
     
       // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -977,6 +987,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float time;
 
 const vec2 resolution = vec2(1280.0, 720.0);
@@ -1018,7 +1029,7 @@ void main() {
     
     
       // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1049,6 +1060,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time;
 
 vec3 effect(float speed, vec2 uv, float time, float scale) {
@@ -1085,7 +1097,7 @@ vec2 uv = vec2(pos) / vec2(1000, 2000);
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1117,6 +1129,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float time;
 
 float rand(vec2 uv)
@@ -1166,7 +1179,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1195,6 +1208,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float iTime;
 vec2 iResolution;
 
@@ -1228,7 +1242,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1272,6 +1286,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float time;
 const float resolutionY = 720.0; // Set to constant resolution of 720p
 const float pi = 3.14159265359;
@@ -1289,7 +1304,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1345,6 +1360,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float time;
 
 uniform vec2 iResolution;
@@ -1363,7 +1379,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1414,6 +1430,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float iTime;
 uniform vec2 iResolution;
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
@@ -1562,7 +1579,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1839,6 +1856,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float  iTime;
 uniform vec2 iResolution;
 
@@ -2087,7 +2105,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -2221,7 +2239,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time; 
 
 vec3 palette(float t) {
@@ -2240,7 +2258,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -2283,6 +2301,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time; // Animated time
 
 #define PI 3.14159265358979323846
@@ -2295,7 +2314,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -2370,6 +2389,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time;
 
 vec3 effect(float speed, vec2 uv, float time, float scale) {
@@ -2405,7 +2425,7 @@ void main() {
     int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -2420,6 +2440,97 @@ void main() {
     // Output the final color to the output texture
     imageStore(out_tex, pos, vec4(col, 1.0));
 }
+)";
+
+static const char *rounded_corner_overlay =
+    R"(
+#version 320 es
+
+layout(binding = 0, rgba32f) readonly uniform highp image2D in_tex;  // Use binding point 0
+layout(binding = 0, rgba32f) writeonly uniform highp image2D out_tex;  // Use binding point 0
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+
+layout(location = 1) uniform int title_height;
+layout(location = 2) uniform int border_size;
+layout(location = 5) uniform int width;
+layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
+
+void main() {
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+    // Check if the pixel should be drawn
+    if (pos.x >= border_size && pos.x <= (width - 1) - border_size && pos.y >= title_height && pos.y <= (height - 1) - border_size)
+    {
+        return;
+    }
+    float d;
+    vec4 c = vec4(vec3(0.3), 0.1);
+    vec4 m = vec4(0.0);
+    vec4 s;
+    // left
+    if (pos.x < radius * 2 && pos.y >= radius * 2 && pos.y <= height - radius * 2)
+    {
+        d = distance(vec2(float(radius * 2), float(pos.y)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, clamp(d * 0.1, 0.0, 1.0)));
+    }
+    // top left corner
+    if (pos.x < radius * 3 && pos.y < radius * 3)
+    {
+        d = distance(vec2(float(radius * 3)), vec2(pos)) - float(radius);
+        s = mix(c, m, clamp(d * 0.1, 0.0, 1.0));
+        c = imageLoad(in_tex, pos);
+        d = distance(vec2(float(radius * 3)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(radius), 0.0, 1.0)));
+    }
+    // bottom left corner
+    if (pos.x < radius * 3 && pos.y > height - radius * 3)
+    {
+        d = distance(vec2(float(radius * 3), float(height - radius * 3)), vec2(pos)) - float(radius);
+        s = mix(c, m, clamp(d * 0.1, 0.0, 1.0));
+        c = imageLoad(in_tex, pos);
+        d = distance(vec2(float(radius * 3), float(height - radius * 3)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(radius), 0.0, 1.0)));
+    }
+    // top
+    if (pos.x >= radius * 3 && pos.x <= width - radius * 3 && pos.y < radius * 2)
+    {
+        d = distance(vec2(float(pos.x), float(radius * 2)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, clamp(d * 0.1, 0.0, 1.0)));
+    }
+    // right
+    if (pos.x > width - radius * 2 && pos.y >= radius * 2 && pos.y <= height - radius * 2)
+    {
+        d = distance(vec2(float(width - radius * 2), float(pos.y)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, clamp(d * 0.1, 0.0, 1.0)));
+    }
+    // top right corner
+    if (pos.x > width - radius * 3 && pos.y < radius * 3)
+    {
+        d = distance(vec2(float(width - radius * 3), float(radius * 3)), vec2(pos)) - float(radius);
+        s = mix(c, m, clamp(d * 0.1, 0.0, 1.0));
+        c = imageLoad(in_tex, pos);
+        d = distance(vec2(float(width - radius * 3), float(radius * 3)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(radius), 0.0, 1.0)));
+    }
+    // bottom right corner
+    if (pos.x > width - radius * 3 && pos.y > height - radius * 3)
+    {
+        d = distance(vec2(float(width - radius * 3), float(height - radius * 3)), vec2(pos)) - float(radius);
+        s = mix(c, m, clamp(d * 0.1, 0.0, 1.0));
+        c = imageLoad(in_tex, pos);
+        d = distance(vec2(float(width - radius * 3), float(height - radius * 3)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(radius), 0.0, 1.0)));
+    }
+    // bottom
+    if (pos.x >= radius * 3 && pos.x <= width - radius * 3 && pos.y > height - radius * 2)
+    {
+        d = distance(vec2(float(pos.x), float(height - radius * 2)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, clamp(d * 0.1, 0.0, 1.0)));
+    }
+}
+
 )";
 
 static const char *render_source_overlay =
@@ -2445,6 +2556,7 @@ layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 
 layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
@@ -2801,9 +2913,15 @@ void smoke_t::destroy_programs()
         GL_CALL(glDeleteProgram(render_program));
     }
 
+    if (render_overlay_program != GLuint(-1))
+    {
+        GL_CALL(glDeleteProgram(render_overlay_program));
+    }
+
     motion_program = diffuse1_program = diffuse2_program = project1_program =
         project2_program     = project3_program = project4_program = project5_program =
-            project6_program = advect1_program = advect2_program = render_program = GLuint(-1);
+            project6_program = advect1_program = advect2_program = render_program =
+                render_overlay_program = GLuint(-1);
 }
 
 void smoke_t::create_programs()
@@ -2862,6 +2980,14 @@ void smoke_t::create_programs()
         setup_shader(&render_program, render_source_deco);
     }
 
+    if (std::string(overlay_engine) == "rounded_corners")
+    {
+        setup_shader(&render_overlay_program, rounded_corner_overlay);
+    } else if (std::string(overlay_engine) == "beveled_glass")
+    {
+        setup_shader(&render_overlay_program, render_source_overlay);
+    }
+
     OpenGL::render_end();
 }
 
@@ -2875,9 +3001,6 @@ smoke_t::smoke_t()
     texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
 
     effect_type.set_callback([=] {});
-    OpenGL::render_begin();
-    setup_shader(&render_overlay_program, render_source_overlay);
-    OpenGL::render_end();
     create_programs();
     seed_random();
 }
@@ -2943,10 +3066,16 @@ void smoke_t::run_shader(GLuint program, int width, int height, int title_height
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
     GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glUniform1i(1, title_height + border_size * 2));
-    GL_CALL(glUniform1i(2, border_size * 2));
+    GL_CALL(glUniform1i(1,
+        title_height + border_size +
+        (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
+    GL_CALL(glUniform1i(2,
+        border_size +
+        (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
     GL_CALL(glUniform1i(5, width));
     GL_CALL(glUniform1i(6, height));
+    GL_CALL(glUniform1i(9,
+        (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 1)));
     GL_CALL(glDispatchCompute(width / 15, height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
@@ -2961,8 +3090,6 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     destroy_textures();
     create_textures();
 
-    std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
-
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
@@ -2972,6 +3099,8 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     {
         return;
     }
+
+    std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
         &clear_data[0]);
 
@@ -3054,14 +3183,20 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
         wf::point_t point{int(p.x), int(p.y)};
         // upload stuff
-        GL_CALL(glUniform1i(1, title_height + border_size));
-        GL_CALL(glUniform1i(2, border_size));
+        GL_CALL(glUniform1i(1,
+            title_height + border_size +
+            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
+        GL_CALL(glUniform1i(2,
+            border_size +
+            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
         GL_CALL(glUniform1i(3, point.x));
         GL_CALL(glUniform1i(4, point.y));
         GL_CALL(glUniform1i(5, rectangle.width));
         GL_CALL(glUniform1i(6, rectangle.height));
         GL_CALL(glUniform1i(7, random()));
         GL_CALL(glUniform1i(8, random()));
+        GL_CALL(glUniform1i(9,
+            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 1)));
         GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
         GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 
@@ -3111,54 +3246,61 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
             GLfloat(effect_color.a)};
         GLfloat decor_color_f[4] =
         {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
-        GL_CALL(glUniform1i(1, title_height + border_size * 2));
-        GL_CALL(glUniform1i(2, border_size * 2));
+        GL_CALL(glUniform1i(1,
+            title_height + border_size +
+            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
+        GL_CALL(glUniform1i(2,
+            border_size +
+            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
         GL_CALL(glUniform1i(5, rectangle.width));
         GL_CALL(glUniform1i(6, rectangle.height));
+        GL_CALL(glUniform1i(7,
+            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 1)));
         if (smoke)
         {
             GL_CALL(glUniform1i(4, ink));
-            GL_CALL(glUniform4fv(7, 1, effect_color_f));
-            GL_CALL(glUniform4fv(8, 1, decor_color_f));
+            GL_CALL(glUniform4fv(8, 1, effect_color_f));
+            GL_CALL(glUniform4fv(9, 1, decor_color_f));
         } else
         {
-            GL_CALL(glUniform1f(9, wf::get_current_time() / 30.0));
+            GL_CALL(glUniform1f(9, effect_animate ? (wf::get_current_time() / 30.0) : 0.0));
         }
 
         GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
         GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
     } else if (std::string(overlay_engine) != "none")
     {
-        GL_CALL(glDeleteTextures(1, &texture));
-        GL_CALL(glGenTextures(1, &texture));
-        std::vector<GLfloat> color_data(rectangle.width * rectangle.height * 4, 0);
-        for (int i = 0; i < rectangle.width * rectangle.height * 4; i += 4)
-        {
-            color_data[i + 0] = GLfloat(decor_color.r);
-            color_data[i + 1] = GLfloat(decor_color.g);
-            color_data[i + 2] = GLfloat(decor_color.b);
-            color_data[i + 3] = GLfloat(decor_color.a);
-        }
-
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+        wf::framebuffer_t fb;
+        GL_CALL(glGenFramebuffers(1, &fb.fb));
+        fb.tex = texture;
+        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb.fb));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
-            &color_data[0]);
+        GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+            GL_TEXTURE_2D, texture, 0));
+        OpenGL::clear(decor_color, GL_COLOR_BUFFER_BIT);
+        GL_CALL(glDeleteFramebuffers(1, &fb.fb));
     }
 
-    if ((std::string(overlay_engine) == "beveled_glass"))
+    if ((std::string(overlay_engine) == "rounded_corners") ||
+        (std::string(overlay_engine) == "beveled_glass"))
     {
         GL_CALL(glUseProgram(render_overlay_program));
         GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
         GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-        GL_CALL(glUniform1i(1, title_height + border_size * 2));
-        GL_CALL(glUniform1i(2, border_size * 2));
+        GL_CALL(glUniform1i(1,
+            title_height + border_size +
+            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
+        GL_CALL(glUniform1i(2,
+            border_size +
+            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
         GL_CALL(glUniform1i(5, rectangle.width));
         GL_CALL(glUniform1i(6, rectangle.height));
+        if (std::string(overlay_engine) == "rounded_corners")
+        {
+            GL_CALL(glUniform1i(7, rounded_corner_radius));
+        }
+
         GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
         GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
     }

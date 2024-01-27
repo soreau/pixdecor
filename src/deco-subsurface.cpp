@@ -32,6 +32,7 @@ wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
 wf::option_wrapper_t<int> effect_diffuse_iterations{"pixdecor/effect_diffuse_iterations"};
+wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
 
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
     public wf::touch_interaction_t
@@ -118,7 +119,6 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         const wlr_box& scissor)
     {
         int border = theme.get_border_size();
-        /* Clear background */
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
         bool activated = false;
@@ -136,7 +136,11 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         auto offset = wf::point_t{origin.x, origin.y - (maximized ? -border / 2 : border / 4)};
         for (auto item : renderables)
         {
-            if (item->get_type() == wf::decor::DECORATION_AREA_TITLE)
+            if (item->get_type() == wf::decor::DECORATION_AREA_SHADOW)
+            {
+                theme.render_background(fb,
+                    item->get_geometry() + offset, scissor, activated, current_cursor_position);
+            } else if (item->get_type() == wf::decor::DECORATION_AREA_TITLE)
             {
                 OpenGL::render_begin(fb);
                 fb.logic_scissor(scissor);
@@ -359,8 +363,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 this->cached_region.clear();
             } else
             {
-                current_thickness = theme.get_border_size();
-                current_titlebar  =
+                current_thickness = theme.get_border_size() +
+                    (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0);
+                current_titlebar =
                     theme.get_title_height() + current_thickness;
                 this->cached_region = layout.calculate_region();
             }
@@ -411,6 +416,7 @@ void wf::simple_decorator_t::update_colors()
 
 void wf::simple_decorator_t::effect_updated()
 {
+    deco->update_decoration_size();
     deco->theme.smoke.effect_updated();
 }
 
@@ -421,8 +427,9 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
         return {0, 0, 0, 0};
     }
 
-    int thickness = deco->theme.get_border_size();
-    int titlebar  = deco->theme.get_title_height() + thickness;
+    int thickness = deco->theme.get_border_size() +
+        (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0);
+    int titlebar = deco->theme.get_title_height() + thickness;
     if (state.tiled_edges)
     {
         thickness = 0;

@@ -64,7 +64,7 @@ decoration_layout_t::decoration_layout_t(const decoration_theme_t& th,
     damage_callback(callback)
 {}
 
-wf::geometry_t decoration_layout_t::create_buttons(int width, int)
+wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
 {
     // read the string from settings; start at the colon and replace commas with spaces
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
@@ -114,7 +114,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
     int border     = theme.get_border_size();
     wf::geometry_t button_geometry = {
         width - (maximized ? 0 : border),
-        button_padding + border / 2,
+        button_padding + border / 2 + (radius * 2),
         button_width,
         button_height,
     };
@@ -130,7 +130,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
     int total_width = buttons.size() * per_button;
 
     return {
-        button_geometry.x, maximized ? 0 : border,
+        button_geometry.x, maximized ? 0 : border + (radius * 2),
         total_width, titlebar_size
     };
 }
@@ -138,13 +138,17 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int)
 /** Regenerate layout using the new size */
 void decoration_layout_t::resize(int width, int height)
 {
+    wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
+    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
     this->layout_areas.clear();
+    bool rounded_corners = std::string(overlay_engine) == "rounded_corners";
 
     int border = theme.get_border_size();
+    int radius = (rounded_corners && !maximized) ? int(rounded_corner_radius) : 0;
 
     if (this->titlebar_size > 0)
     {
-        auto button_geometry_expanded = create_buttons(width, height);
+        auto button_geometry_expanded = create_buttons(width - (radius * 2), radius);
 
         /* Padding around the button, allows move */
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
@@ -153,7 +157,7 @@ void decoration_layout_t::resize(int width, int height)
         /* Titlebar dragging area (for move) */
         wf::geometry_t title_geometry = {
             border,
-            maximized ? 0 : border / 2,
+            maximized ? 0 : border / 2 + (radius * 2),
             /* Up to the button, but subtract the padding to the left of the
              * title and the padding between title and button */
             button_geometry_expanded.x - border,
@@ -168,30 +172,61 @@ void decoration_layout_t::resize(int width, int height)
         };
     }
 
-    border = MIN_RESIZE_HANDLE_SIZE - theme.get_input_size();
+    border = abs(MIN_RESIZE_HANDLE_SIZE - theme.get_input_size());
     auto inverse_border = MIN_RESIZE_HANDLE_SIZE - theme.get_border_size();
 
     if (!maximized)
     {
         /* Resizing edges - top */
-        wf::geometry_t border_geometry = {0, -inverse_border, width, border};
+        wf::geometry_t border_geometry =
+        {0 + (radius * 2), -inverse_border + (radius * 2),
+            width - (radius * 4) + MIN_RESIZE_HANDLE_SIZE, border};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_TOP, border_geometry));
 
         /* Resizing edges - bottom */
-        border_geometry = {0, height - border + inverse_border, width, border};
+        border_geometry =
+        {0 + (radius * 2), (height - border + inverse_border) - (radius * 2),
+            width - (radius * 4) + MIN_RESIZE_HANDLE_SIZE, border};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_BOTTOM, border_geometry));
 
         /* Resizing edges - left */
-        border_geometry = {-inverse_border, 0, border, height};
+        border_geometry =
+        {-inverse_border + (radius * 2), 0 + (radius * 2), border,
+            height - (radius * 4) + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_LEFT, border_geometry));
 
         /* Resizing edges - right */
-        border_geometry = {width - border + inverse_border, 0, border, height};
+        border_geometry =
+        {(width - border + inverse_border) - (radius * 2), 0 + (radius * 2), border,
+            height - (radius * 4) + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_RIGHT, border_geometry));
+
+        if (rounded_corners)
+        {
+            /* Shadow - top */
+            border_geometry = {0, 0, width, radius* 2};
+            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+                DECORATION_AREA_SHADOW, border_geometry));
+
+            /* Shadow - bottom */
+            border_geometry = {0, height - radius * 2, width, radius* 2};
+            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+                DECORATION_AREA_SHADOW, border_geometry));
+
+            /* Shadow - left */
+            border_geometry = {0, radius* 2, radius* 2, height - radius * 4};
+            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+                DECORATION_AREA_SHADOW, border_geometry));
+
+            /* Shadow - right */
+            border_geometry = {width - radius * 2, radius* 2, radius* 2, height - radius * 4};
+            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+                DECORATION_AREA_SHADOW, border_geometry));
+        }
     }
 }
 

@@ -23,6 +23,8 @@ class smoke_t
 
     wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
     wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
+    wf::option_wrapper_t<bool> effect_animate{"pixdecor/animate"};
+    wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
 
   public:
     smoke_t();
