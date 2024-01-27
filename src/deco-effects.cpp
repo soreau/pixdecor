@@ -3217,13 +3217,15 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
 
         for (int k = 0; k < diffuse_iterations; k++)
         {
-            run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size, radius);
+            run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size,
+                radius);
         }
 
         run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         for (int k = 0; k < diffuse_iterations; k++)
         {
-            run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size, radius);
+            run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size,
+                radius);
         }
 
         run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size, radius);
@@ -3231,13 +3233,15 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         for (int k = 0; k < diffuse_iterations; k++)
         {
-            run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size, radius);
+            run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size,
+                radius);
         }
 
         run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         for (int k = 0; k < diffuse_iterations; k++)
         {
-            run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size, radius);
+            run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size,
+                radius);
         }
 
         run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size, radius);
@@ -3304,7 +3308,8 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         if (std::string(overlay_engine) == "rounded_corners")
         {
             GLfloat shadow_color_f[4] =
-            {GLfloat(wf::color_t(shadow_color).r), GLfloat(wf::color_t(shadow_color).g), GLfloat(wf::color_t(shadow_color).b), GLfloat(wf::color_t(shadow_color).a)};
+            {GLfloat(wf::color_t(shadow_color).r), GLfloat(wf::color_t(shadow_color).g),
+                GLfloat(wf::color_t(shadow_color).b), GLfloat(wf::color_t(shadow_color).a)};
             GL_CALL(glUniform1i(7, rounded_corner_radius));
             GL_CALL(glUniform1i(8, radius));
             GL_CALL(glUniform4fv(9, 1, shadow_color_f));

@@ -295,7 +295,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {int(shadow_radius) * 2, int(shadow_radius) * 2,
                     int(shadow_radius) * 2, int(shadow_radius) * 2};
                 pending.geometry = wf::shrink_geometry_by_margins(pending.geometry, pending.margins);
-                pending.margins  = toplevel->toplevel()->get_data<wf::simple_decorator_t>()->get_margins(toplevel->toplevel()->pending());
+                pending.margins  = toplevel->toplevel()->get_data<wf::simple_decorator_t>()->get_margins(
+                    toplevel->toplevel()->pending());
             }
 
             wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
