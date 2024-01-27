@@ -3000,7 +3000,6 @@ smoke_t::smoke_t()
 
     texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
 
-    effect_type.set_callback([=] {});
     create_programs();
     seed_random();
 }
@@ -3090,6 +3089,10 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     destroy_textures();
     create_textures();
 
+    GLuint fb;
+    GL_CALL(glGenFramebuffers(1, &fb));
+    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
+
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
@@ -3100,52 +3103,61 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
         return;
     }
 
-    std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
-        &clear_data[0]);
+    wf::color_t clear_color{0, 0, 0, 0};
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, texture, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
 
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-        &clear_data[0]);
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b0u, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-        &clear_data[0]);
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b0v, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-        &clear_data[0]);
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b0d, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-        &clear_data[0]);
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b1u, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-        &clear_data[0]);
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b1v, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-        &clear_data[0]);
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b1d, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
+
+    GL_CALL(glDeleteFramebuffers(1, &fb));
 }
 
 void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
@@ -3270,15 +3282,14 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
     } else if (std::string(overlay_engine) != "none")
     {
-        wf::framebuffer_t fb;
-        GL_CALL(glGenFramebuffers(1, &fb.fb));
-        fb.tex = texture;
-        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb.fb));
+        GLuint fb;
+        GL_CALL(glGenFramebuffers(1, &fb));
+        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
         GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_2D, texture, 0));
         OpenGL::clear(decor_color, GL_COLOR_BUFFER_BIT);
-        GL_CALL(glDeleteFramebuffers(1, &fb.fb));
+        GL_CALL(glDeleteFramebuffers(1, &fb));
     }
 
     if ((std::string(overlay_engine) == "rounded_corners") ||

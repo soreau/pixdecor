@@ -275,12 +275,12 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
             view->damage();
             toplevel->toplevel()->get_data<wf::simple_decorator_t>()->effect_updated();
-            auto& pending = toplevel->toplevel()->pending();
             if (!resize_decorations)
             {
                 continue;
             }
 
+            auto& pending = toplevel->toplevel()->pending();
             if (std::string(overlay_engine) == "rounded_corners")
             {
                 pending.margins =
