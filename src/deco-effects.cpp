@@ -35,7 +35,7 @@ void motion(int x, int y)
 {
 	int i, i0, i1, j, j0, j1, d = 5;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
+	if (x <= radius || y <= radius || x > width - radius || y > height - radius ||
 	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
 	{
 		return;
@@ -62,7 +62,7 @@ void motion(int x, int y)
 	for (i = i0; i < i1; i++)
 	{
 		for (j = j0; j < j1; j++) {
-			if (i < radius || j < radius || i > width - radius || j > height - radius || (i > border_size && i < width - border_size && j > title_height && j < height - border_size))
+			if (i <= radius || j <= radius || i > width - radius || j > height - radius || (i > border_size && i < width - border_size && j > title_height && j < height - border_size))
 			{
 				continue;
 			}
@@ -2455,7 +2455,9 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-layout(location = 7) uniform int radius;
+layout(location = 7) uniform int corner_radius;
+layout(location = 8) uniform int shadow_radius;
+layout(location = 9) uniform vec4 shadow_color;
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
@@ -2466,68 +2468,69 @@ void main() {
         return;
     }
     float d;
-    vec4 c = vec4(vec3(0.3), 0.1);
+    vec4 c = shadow_color;
     vec4 m = vec4(0.0);
     vec4 s;
+    float diffuse = 1.0 / float(shadow_radius);
     // left
-    if (pos.x < radius * 2 && pos.y >= radius * 2 && pos.y <= height - radius * 2)
+    if (pos.x < shadow_radius * 2 && pos.y >= shadow_radius * 2 && pos.y <= height - shadow_radius * 2)
     {
-        d = distance(vec2(float(radius * 2), float(pos.y)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, m, clamp(d * 0.1, 0.0, 1.0)));
+        d = distance(vec2(float(shadow_radius * 2), float(pos.y)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
     }
     // top left corner
-    if (pos.x < radius * 3 && pos.y < radius * 3)
+    if (pos.x < shadow_radius * 2 + corner_radius && pos.y < shadow_radius * 2 + corner_radius)
     {
-        d = distance(vec2(float(radius * 3)), vec2(pos)) - float(radius);
-        s = mix(c, m, clamp(d * 0.1, 0.0, 1.0));
+        d = distance(vec2(float(shadow_radius * 2 + corner_radius)), vec2(pos)) - float(corner_radius);
+        s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
         c = imageLoad(in_tex, pos);
-        d = distance(vec2(float(radius * 3)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, s, clamp(d - float(radius), 0.0, 1.0)));
+        d = distance(vec2(float(shadow_radius * 2 + corner_radius)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
     }
     // bottom left corner
-    if (pos.x < radius * 3 && pos.y > height - radius * 3)
+    if (pos.x < (shadow_radius * 2 + corner_radius) && pos.y > height - (shadow_radius * 2 + corner_radius))
     {
-        d = distance(vec2(float(radius * 3), float(height - radius * 3)), vec2(pos)) - float(radius);
-        s = mix(c, m, clamp(d * 0.1, 0.0, 1.0));
+        d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float(height - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
+        s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
         c = imageLoad(in_tex, pos);
-        d = distance(vec2(float(radius * 3), float(height - radius * 3)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, s, clamp(d - float(radius), 0.0, 1.0)));
+        d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float(height - (shadow_radius * 2 + corner_radius))), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
     }
     // top
-    if (pos.x >= radius * 3 && pos.x <= width - radius * 3 && pos.y < radius * 2)
+    if (pos.x >= shadow_radius * 2 + corner_radius && pos.x <= width - shadow_radius * 2 + corner_radius && pos.y < shadow_radius * 2)
     {
-        d = distance(vec2(float(pos.x), float(radius * 2)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, m, clamp(d * 0.1, 0.0, 1.0)));
+        d = distance(vec2(float(pos.x), float(shadow_radius * 2)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
     }
     // right
-    if (pos.x > width - radius * 2 && pos.y >= radius * 2 && pos.y <= height - radius * 2)
+    if (pos.x > width - shadow_radius * 2 && pos.y >= shadow_radius * 2 && pos.y <= height - shadow_radius * 2)
     {
-        d = distance(vec2(float(width - radius * 2), float(pos.y)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, m, clamp(d * 0.1, 0.0, 1.0)));
+        d = distance(vec2(float(width - shadow_radius * 2), float(pos.y)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
     }
     // top right corner
-    if (pos.x > width - radius * 3 && pos.y < radius * 3)
+    if (pos.x > width - (shadow_radius * 2 + corner_radius) && pos.y < (shadow_radius * 2 + corner_radius))
     {
-        d = distance(vec2(float(width - radius * 3), float(radius * 3)), vec2(pos)) - float(radius);
-        s = mix(c, m, clamp(d * 0.1, 0.0, 1.0));
+        d = distance(vec2(float(width - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
+        s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
         c = imageLoad(in_tex, pos);
-        d = distance(vec2(float(width - radius * 3), float(radius * 3)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, s, clamp(d - float(radius), 0.0, 1.0)));
+        d = distance(vec2(float(width - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
     }
     // bottom right corner
-    if (pos.x > width - radius * 3 && pos.y > height - radius * 3)
+    if (pos.x > width - (shadow_radius * 2 + corner_radius) && pos.y > height - (shadow_radius * 2 + corner_radius))
     {
-        d = distance(vec2(float(width - radius * 3), float(height - radius * 3)), vec2(pos)) - float(radius);
-        s = mix(c, m, clamp(d * 0.1, 0.0, 1.0));
+        d = distance(vec2(float(width - (shadow_radius * 2 + corner_radius)), float(height - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
+        s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
         c = imageLoad(in_tex, pos);
-        d = distance(vec2(float(width - radius * 3), float(height - radius * 3)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, s, clamp(d - float(radius), 0.0, 1.0)));
+        d = distance(vec2(float(width - (shadow_radius * 2 + corner_radius)), float(height - (shadow_radius * 2 + corner_radius))), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
     }
     // bottom
-    if (pos.x >= radius * 3 && pos.x <= width - radius * 3 && pos.y > height - radius * 2)
+    if (pos.x >= (shadow_radius * 2 + corner_radius) && pos.x <= width - (shadow_radius * 2 + corner_radius) && pos.y > height - shadow_radius * 2)
     {
-        d = distance(vec2(float(pos.x), float(height - radius * 2)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, m, clamp(d * 0.1, 0.0, 1.0)));
+        d = distance(vec2(float(pos.x), float(height - shadow_radius * 2)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
     }
 }
 
@@ -3052,7 +3055,7 @@ void smoke_t::destroy_textures()
     b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
 }
 
-void smoke_t::run_shader(GLuint program, int width, int height, int title_height, int border_size)
+void smoke_t::run_shader(GLuint program, int width, int height, int title_height, int border_size, int radius)
 {
     GL_CALL(glUseProgram(program));
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
@@ -3073,16 +3076,11 @@ void smoke_t::run_shader(GLuint program, int width, int height, int title_height
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
     GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glUniform1i(1,
-        title_height + border_size +
-        (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
-    GL_CALL(glUniform1i(2,
-        border_size +
-        (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
+    GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+    GL_CALL(glUniform1i(2, border_size + radius * 2));
     GL_CALL(glUniform1i(5, width));
     GL_CALL(glUniform1i(6, height));
-    GL_CALL(glUniform1i(9,
-        (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 1)));
+    GL_CALL(glUniform1i(9, radius));
     GL_CALL(glDispatchCompute(width / 15, height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
@@ -3178,6 +3176,8 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         return;
     }
 
+    int radius = std::string(overlay_engine) == "rounded_corners" ? int(shadow_radius) : 0;
+
     OpenGL::render_begin(fb);
     if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
     {
@@ -3203,49 +3203,44 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
         wf::point_t point{int(p.x), int(p.y)};
         // upload stuff
-        GL_CALL(glUniform1i(1,
-            title_height + border_size +
-            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
-        GL_CALL(glUniform1i(2,
-            border_size +
-            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
+        GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+        GL_CALL(glUniform1i(2, border_size + radius * 2));
         GL_CALL(glUniform1i(3, point.x));
         GL_CALL(glUniform1i(4, point.y));
         GL_CALL(glUniform1i(5, rectangle.width));
         GL_CALL(glUniform1i(6, rectangle.height));
         GL_CALL(glUniform1i(7, random()));
         GL_CALL(glUniform1i(8, random()));
-        GL_CALL(glUniform1i(9,
-            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 1)));
+        GL_CALL(glUniform1i(9, radius * 2));
         GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
         GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 
         for (int k = 0; k < diffuse_iterations; k++)
         {
-            run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size);
+            run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         }
 
-        run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size);
+        run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         for (int k = 0; k < diffuse_iterations; k++)
         {
-            run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size);
+            run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         }
 
-        run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size);
-        run_shader(advect1_program, rectangle.width, rectangle.height, title_height, border_size);
-        run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size);
+        run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size, radius);
+        run_shader(advect1_program, rectangle.width, rectangle.height, title_height, border_size, radius);
+        run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         for (int k = 0; k < diffuse_iterations; k++)
         {
-            run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size);
+            run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         }
 
-        run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size);
+        run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         for (int k = 0; k < diffuse_iterations; k++)
         {
-            run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size);
+            run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size, radius);
         }
 
-        run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size);
+        run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size, radius);
     }
 
     if (std::string(effect_type) != "none")
@@ -3266,16 +3261,11 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
             GLfloat(effect_color.a)};
         GLfloat decor_color_f[4] =
         {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
-        GL_CALL(glUniform1i(1,
-            title_height + border_size +
-            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
-        GL_CALL(glUniform1i(2,
-            border_size +
-            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
+        GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+        GL_CALL(glUniform1i(2, border_size + radius * 2));
         GL_CALL(glUniform1i(5, rectangle.width));
         GL_CALL(glUniform1i(6, rectangle.height));
-        GL_CALL(glUniform1i(7,
-            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 1)));
+        GL_CALL(glUniform1i(7, radius * 2));
         if (smoke)
         {
             GL_CALL(glUniform1i(4, ink));
@@ -3307,17 +3297,17 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
         GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-        GL_CALL(glUniform1i(1,
-            title_height + border_size +
-            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
-        GL_CALL(glUniform1i(2,
-            border_size +
-            (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0)));
+        GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+        GL_CALL(glUniform1i(2, border_size + radius * 2));
         GL_CALL(glUniform1i(5, rectangle.width));
         GL_CALL(glUniform1i(6, rectangle.height));
         if (std::string(overlay_engine) == "rounded_corners")
         {
+            GLfloat shadow_color_f[4] =
+            {GLfloat(wf::color_t(shadow_color).r), GLfloat(wf::color_t(shadow_color).g), GLfloat(wf::color_t(shadow_color).b), GLfloat(wf::color_t(shadow_color).a)};
             GL_CALL(glUniform1i(7, rounded_corner_radius));
+            GL_CALL(glUniform1i(8, radius));
+            GL_CALL(glUniform4fv(9, 1, shadow_color_f));
         }
 
         GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));

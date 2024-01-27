@@ -138,13 +138,14 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
 /** Regenerate layout using the new size */
 void decoration_layout_t::resize(int width, int height)
 {
-    wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
+    wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
     wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
-    this->layout_areas.clear();
     bool rounded_corners = std::string(overlay_engine) == "rounded_corners";
 
     int border = theme.get_border_size();
-    int radius = (rounded_corners && !maximized) ? int(rounded_corner_radius) : 0;
+    int radius = (rounded_corners && !maximized) ? int(shadow_radius) : 0;
+
+    this->layout_areas.clear();
 
     if (this->titlebar_size > 0)
     {
@@ -172,7 +173,7 @@ void decoration_layout_t::resize(int width, int height)
         };
     }
 
-    border = abs(MIN_RESIZE_HANDLE_SIZE - theme.get_input_size());
+    border = MIN_RESIZE_HANDLE_SIZE - theme.get_input_size();
     auto inverse_border = MIN_RESIZE_HANDLE_SIZE - theme.get_border_size();
 
     if (!maximized)

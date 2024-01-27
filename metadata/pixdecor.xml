@@ -143,6 +143,18 @@
 			<_short>Rounded Corner Radius</_short>
 			<_long>The radius for corners.</_long>
 			<default>5</default>
+			<min>0</min>
+		</option>
+		<option name="shadow_radius" type="int">
+			<_short>Shadow Radius</_short>
+			<_long>The radius for shadows.</_long>
+			<default>10</default>
+			<min>0</min>
+		</option>
+		<option name="shadow_color" type="color">
+			<_short>Shadow Color</_short>
+			<_long>Color of the drop shadows.</_long>
+			<default>0.3 0.3 0.3 0.1</default>
 		</option>
 	</plugin>
 </wayfire>

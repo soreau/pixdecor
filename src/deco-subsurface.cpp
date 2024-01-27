@@ -32,7 +32,7 @@ wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
 wf::option_wrapper_t<int> effect_diffuse_iterations{"pixdecor/effect_diffuse_iterations"};
-wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
+wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
 
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
     public wf::touch_interaction_t
@@ -364,7 +364,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             } else
             {
                 current_thickness = theme.get_border_size() +
-                    (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0);
+                    (std::string(overlay_engine) == "rounded_corners" ? int(shadow_radius) * 2 : 0);
                 current_titlebar =
                     theme.get_title_height() + current_thickness;
                 this->cached_region = layout.calculate_region();
@@ -428,7 +428,7 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
     }
 
     int thickness = deco->theme.get_border_size() +
-        (std::string(overlay_engine) == "rounded_corners" ? int(rounded_corner_radius) * 2 : 0);
+        (std::string(overlay_engine) == "rounded_corners" ? int(shadow_radius) * 2 : 0);
     int titlebar = deco->theme.get_title_height() + thickness;
     if (state.tiled_edges)
     {
