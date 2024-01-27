@@ -2647,6 +2647,14 @@ vec4 drawCurve(vec2 p1, vec2 p2, int setCount) {
 
 void main() {
     ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = storePos.x;
+    int y = storePos.y;
+    // Check if the pixel should be drawn
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
+    {
+        return;
+    }
     vec2 fragCoord = vec2(storePos);
 
  vec4 col = vec4(0.0);
@@ -2689,17 +2697,17 @@ float INNERspace = 0.0;
 
 
 //left
-    vec2 INNERp1 = vec2(0.0 - THICCNESS+ float(border_size)/2.0, float(height)  - THICCNESS - INNERspace-float(border_size)/2.0 );
-    vec2 INNERp2 = vec2(0.0 - THICCNESS+ float(border_size)/2.0,0.0 - THICCNESS + INNERspace+float(border_size)/2.0 +float(title_height-border_size));
+    vec2 INNERp1 = vec2(0.0 - THICCNESS+ float(border_size), float(height)  - THICCNESS - INNERspace-float(border_size) );
+    vec2 INNERp2 = vec2(0.0 - THICCNESS+ float(border_size),0.0 - THICCNESS + INNERspace+float(border_size) +float(title_height-border_size));
 //right     
-    vec2 INNERx1 = vec2(float(width) + THICCNESS-float(border_size)/2.0, float(height)- THICCNESS - INNERspace-float(border_size)/2.0);
-    vec2 INNERx2 = vec2(float(width) + THICCNESS-float(border_size)/2.0,0.0 - THICCNESS + INNERspace+float(border_size)/2.0 +float(title_height-border_size));
+    vec2 INNERx1 = vec2(float(width) + THICCNESS-float(border_size), float(height)- THICCNESS - INNERspace-float(border_size));
+    vec2 INNERx2 = vec2(float(width) + THICCNESS-float(border_size),0.0 - THICCNESS + INNERspace+float(border_size) +float(title_height-border_size));
 //bottom
-    vec2 INNERy1 = vec2(0.0 + THICCNESS + INNERspace+float(border_size)/2.0, float(height)   + THICCNESS -float(border_size)/2.0);
-    vec2 INNERy2 = vec2(float(width) - THICCNESS - INNERspace-float(border_size)/2.0, float(height) + THICCNESS-float(border_size)/2.0);
+    vec2 INNERy1 = vec2(0.0 + THICCNESS + INNERspace+float(border_size), float(height)   + THICCNESS -float(border_size));
+    vec2 INNERy2 = vec2(float(width) - THICCNESS - INNERspace-float(border_size), float(height) + THICCNESS-float(border_size));
 //top
-   vec2 INNERz1 = vec2(0.0 +INNERspace+float(border_size)/2.0, 0.0 - THICCNESS + INNERspace+float(border_size)/2.0 +float(title_height-border_size));
-    vec2 INNERz2 = vec2(float(width) - THICCNESS - INNERspace-float(border_size)/2.0 ,0.0 - THICCNESS + INNERspace+float(border_size)/2.0 +float(title_height-border_size));
+   vec2 INNERz1 = vec2(0.0 +INNERspace+float(border_size), 0.0 - THICCNESS + INNERspace+float(border_size) +float(title_height-border_size));
+    vec2 INNERz2 = vec2(float(width) - THICCNESS - INNERspace-float(border_size) ,0.0 - THICCNESS + INNERspace+float(border_size) +float(title_height-border_size));
 
 
 
