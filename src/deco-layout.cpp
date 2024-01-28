@@ -3,7 +3,7 @@
 #include <wayfire/core.hpp>
 #include <wayfire/nonstd/reverse.hpp>
 #include <wayfire/nonstd/wlroots-full.hpp>
-#include "wayfire/toplevel.hpp"
+#include <wayfire/toplevel.hpp>
 #include <wayfire/util.hpp>
 
 namespace wf
@@ -206,7 +206,7 @@ void decoration_layout_t::resize(int width, int height)
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_RIGHT, border_geometry));
 
-        if (rounded_corners && radius)
+        if (rounded_corners)
         {
             /* Shadow - top */
             border_geometry = {0, 0, width, radius* 2};

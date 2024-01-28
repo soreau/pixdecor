@@ -3162,7 +3162,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         return;
     }
 
-    int radius = std::string(overlay_engine) == "rounded_corners" ? shadow_radius : 0;
+    int radius = shadow_radius;
     int diffuse_iterations = 5;
 
     OpenGL::render_begin(fb);

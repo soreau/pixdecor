@@ -224,16 +224,19 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             auto offset = self->get_offset();
             wlr_box rectangle{offset.x, offset.y, self->size.width, self->size.height};
             bool activated = false;
+            bool maximized = false;
             if (auto view = self->_view.lock())
             {
                 activated = view->activated;
+                maximized = view->pending_tiled_edges();
             }
 
             if ((std::string(effect_type) != "none") || (std::string(overlay_engine) != "none"))
             {
                 self->theme.smoke.step_effect(target, rectangle, std::string(effect_type) == "ink",
                     self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
-                    self->theme.get_title_height(), self->theme.get_border_size(), shadow_radius);
+                    self->theme.get_title_height(), self->theme.get_border_size(),
+                    (std::string(overlay_engine) == "rounded_corners" && !maximized) ? shadow_radius : 0);
             }
 
             for (const auto& box : region)
@@ -434,12 +437,16 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
     }
 
     int thickness = deco->theme.get_border_size() +
-        (std::string(overlay_engine) == "rounded_corners" ? int(shadow_radius) * 2 : 0);
+        ((std::string(overlay_engine) == "rounded_corners" &&
+            !state.tiled_edges) ? int(shadow_radius) * 2 : 0);
     int titlebar = deco->theme.get_title_height() + thickness;
     if (state.tiled_edges)
     {
         thickness = 0;
     }
+
+    deco->current_thickness = thickness;
+    deco->current_titlebar  = titlebar;
 
     return wf::decoration_margins_t{
         .left   = thickness,
