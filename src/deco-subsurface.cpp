@@ -227,7 +227,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             {
                 self->theme.smoke.step_effect(target, rectangle, std::string(effect_type) == "ink",
                     self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
-                    self->theme.get_title_height(), self->theme.get_border_size(), effect_diffuse_iterations);
+                    self->theme.get_title_height(), self->theme.get_border_size(), effect_diffuse_iterations,
+                    shadow_radius);
             }
 
             for (const auto& box : region)

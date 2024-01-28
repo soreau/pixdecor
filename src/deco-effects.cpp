@@ -2471,7 +2471,7 @@ void main() {
     vec4 c = shadow_color;
     vec4 m = vec4(0.0);
     vec4 s;
-    float diffuse = 1.0 / float(shadow_radius);
+    float diffuse = 1.0 / float(shadow_radius == 0 ? 1 : shadow_radius);
     // left
     if (pos.x < shadow_radius * 2 && pos.y >= shadow_radius * 2 && pos.y <= height - shadow_radius * 2)
     {
@@ -2490,10 +2490,10 @@ void main() {
     // bottom left corner
     if (pos.x < (shadow_radius * 2 + corner_radius) && pos.y > height - (shadow_radius * 2 + corner_radius))
     {
-        d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float(height - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
+        d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
         s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
         c = imageLoad(in_tex, pos);
-        d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float(height - (shadow_radius * 2 + corner_radius))), vec2(pos));
+        d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos));
         imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
     }
     // top
@@ -2503,33 +2503,33 @@ void main() {
         imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
     }
     // right
-    if (pos.x > width - shadow_radius * 2 && pos.y >= shadow_radius * 2 && pos.y <= height - shadow_radius * 2)
+    if (pos.x > (width - 1) - shadow_radius * 2 && pos.y >= shadow_radius * 2 && pos.y <= (height - 1) - shadow_radius * 2)
     {
-        d = distance(vec2(float(width - shadow_radius * 2), float(pos.y)), vec2(pos));
+        d = distance(vec2(float((width - 1) - shadow_radius * 2), float(pos.y)), vec2(pos));
         imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
     }
     // top right corner
     if (pos.x > width - (shadow_radius * 2 + corner_radius) && pos.y < (shadow_radius * 2 + corner_radius))
     {
-        d = distance(vec2(float(width - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
+        d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
         s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
         c = imageLoad(in_tex, pos);
-        d = distance(vec2(float(width - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos));
+        d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos));
         imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
     }
     // bottom right corner
-    if (pos.x > width - (shadow_radius * 2 + corner_radius) && pos.y > height - (shadow_radius * 2 + corner_radius))
+    if (pos.x > (width - 1) - (shadow_radius * 2 + corner_radius) && pos.y > (height - 1) - (shadow_radius * 2 + corner_radius))
     {
-        d = distance(vec2(float(width - (shadow_radius * 2 + corner_radius)), float(height - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
+        d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
         s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
         c = imageLoad(in_tex, pos);
-        d = distance(vec2(float(width - (shadow_radius * 2 + corner_radius)), float(height - (shadow_radius * 2 + corner_radius))), vec2(pos));
+        d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos));
         imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
     }
     // bottom
-    if (pos.x >= (shadow_radius * 2 + corner_radius) && pos.x <= width - (shadow_radius * 2 + corner_radius) && pos.y > height - shadow_radius * 2)
+    if (pos.x >= (shadow_radius * 2 + corner_radius) && pos.x <= (width - 1) - (shadow_radius * 2 + corner_radius) && pos.y > (height - 1) - shadow_radius * 2)
     {
-        d = distance(vec2(float(pos.x), float(height - shadow_radius * 2)), vec2(pos));
+        d = distance(vec2(float(pos.x), float((height - 1) - shadow_radius * 2)), vec2(pos));
         imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
     }
 }
@@ -3168,7 +3168,7 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
 
 void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
     bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
-    int title_height, int border_size, int diffuse_iterations)
+    int title_height, int border_size, int diffuse_iterations, int shadow_radius)
 {
     bool smoke = (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink");
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
@@ -3176,7 +3176,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         return;
     }
 
-    int radius = std::string(overlay_engine) == "rounded_corners" ? int(shadow_radius) : 0;
+    int radius = std::string(overlay_engine) == "rounded_corners" ? shadow_radius : 0;
 
     OpenGL::render_begin(fb);
     if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
