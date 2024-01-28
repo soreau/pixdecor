@@ -33,13 +33,7 @@ layout(location = 9) uniform int radius;
 
 void motion(int x, int y)
 {
-	int i, i0, i1, j, j0, j1, d = 5;
-
-	if (x <= radius || y <= radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
-	{
-		return;
-	}
+	int i, i0, i1, j, j0, j1, d = 2;
 
 	if (x - d < 1)
 		i0 = 1;
@@ -62,7 +56,7 @@ void motion(int x, int y)
 	for (i = i0; i < i1; i++)
 	{
 		for (j = j0; j < j1; j++) {
-			if (i <= radius || j <= radius || i > width - radius || j > height - radius || (i > border_size && i < width - border_size && j > title_height && j < height - border_size))
+			if (i < radius || j < radius || i > (width - 1) - radius || j > (height - 1) - radius || (i > border_size && i < (width - 1) - border_size && j > (title_height - 1) && j < (height - 1) - border_size))
 			{
 				continue;
 			}
@@ -124,8 +118,8 @@ void diffuse1(int x, int y)
 
 	stride = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < (radius == 0 ? 1 : radius) || y < (radius == 0 ? 1 : radius) || x > (width - 1) - (radius == 0 ? 1 : radius) || y > (height - 1) - (radius == 0 ? 1 : radius) ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -199,8 +193,8 @@ void project1(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < radius || y < radius || x > (width - 1) - radius || y > (height - 1) - radius ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -260,8 +254,8 @@ void project2(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < radius || y < radius || x > (width - 1) - radius || y > (height - 1) - radius ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -321,8 +315,8 @@ void project3(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < radius || y < radius || x > (width - 1) - radius || y > (height - 1) - radius ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -386,8 +380,8 @@ void advect1(int x, int y) /* b1.u, b1.v, b1.u, b0.u */
 
 	stride = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < radius || y < radius || x > (width - 1) - radius || y > (height - 1) - radius ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -479,8 +473,8 @@ void project4(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < radius || y < radius || x > (width - 1) - radius || y > (height - 1) - radius ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -540,8 +534,8 @@ void project5(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < radius || y < radius || x > (width - 1) - radius || y > (height - 1) - radius ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -601,8 +595,8 @@ void project6(int x, int y)
 	h = 1.0 / float(width);
 	s = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < radius || y < radius || x > (width - 1) - radius || y > (height - 1) - radius ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -665,8 +659,8 @@ void diffuse2(int x, int y)
 
 	stride = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < (radius == 0 ? 1 : radius) || y < (radius == 0 ? 1 : radius) || x > (width - 1) - (radius == 0 ? 1 : radius) || y > (height - 1) - (radius == 0 ? 1 : radius) ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -728,8 +722,8 @@ void advect2(int x, int y) /*b0u, b0v, b1d, b0d*/
 
 	stride = width;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < radius || y < radius || x > (width - 1) - radius || y > (height - 1) - radius ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -788,8 +782,8 @@ void render(int x, int y)
 {
 	float c, r, g, b, a;
 
-	if (x < radius || y < radius || x > width - radius || y > height - radius ||
-	    (x > border_size && x < width - border_size && y > title_height && y < height - border_size))
+	if (x < radius || y < radius || x > (width - 1) - radius || y > (height - 1) - radius ||
+	    (x > border_size && x < (width - 1) - border_size && y > title_height && y < (height - 1) - border_size))
 	{
 		return;
 	}
@@ -3080,7 +3074,7 @@ void smoke_t::run_shader(GLuint program, int width, int height, int title_height
     GL_CALL(glUniform1i(2, border_size + radius * 2));
     GL_CALL(glUniform1i(5, width));
     GL_CALL(glUniform1i(6, height));
-    GL_CALL(glUniform1i(9, radius));
+    GL_CALL(glUniform1i(9, radius * 2));
     GL_CALL(glDispatchCompute(width / 15, height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
@@ -3168,7 +3162,7 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
 
 void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
     bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
-    int title_height, int border_size, int diffuse_iterations, int shadow_radius)
+    int title_height, int border_size, int shadow_radius)
 {
     bool smoke = (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink");
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
@@ -3177,6 +3171,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     }
 
     int radius = std::string(overlay_engine) == "rounded_corners" ? shadow_radius : 0;
+    int diffuse_iterations = 5;
 
     OpenGL::render_begin(fb);
     if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
@@ -3191,29 +3186,37 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
 
     if (smoke)
     {
-        GL_CALL(glUseProgram(motion_program));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-        GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-        GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-        GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
         wf::point_t point{int(p.x), int(p.y)};
-        // upload stuff
-        GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
-        GL_CALL(glUniform1i(2, border_size + radius * 2));
-        GL_CALL(glUniform1i(3, point.x));
-        GL_CALL(glUniform1i(4, point.y));
-        GL_CALL(glUniform1i(5, rectangle.width));
-        GL_CALL(glUniform1i(6, rectangle.height));
-        GL_CALL(glUniform1i(7, random()));
-        GL_CALL(glUniform1i(8, random()));
-        GL_CALL(glUniform1i(9, radius * 2));
-        GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
-        GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+        if ((p.x == FLT_MIN) || (p.y == FLT_MIN))
+        {
+            point.x = point.y = INT_MIN;
+        }
+
+        if ((point.x >= radius) && (point.y >= radius))
+        {
+            GL_CALL(glUseProgram(motion_program));
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
+            GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
+            GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
+            GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+            // upload stuff
+            GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+            GL_CALL(glUniform1i(2, border_size + radius * 2));
+            GL_CALL(glUniform1i(3, point.x));
+            GL_CALL(glUniform1i(4, point.y));
+            GL_CALL(glUniform1i(5, rectangle.width));
+            GL_CALL(glUniform1i(6, rectangle.height));
+            GL_CALL(glUniform1i(7, random()));
+            GL_CALL(glUniform1i(8, random()));
+            GL_CALL(glUniform1i(9, radius * 2));
+            GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
+            GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+        }
 
         for (int k = 0; k < diffuse_iterations; k++)
         {
@@ -3282,7 +3285,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
 
         GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
         GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-    } else if (std::string(overlay_engine) != "none")
+    } else if (!smoke && (std::string(overlay_engine) != "none"))
     {
         GLuint fb;
         GL_CALL(glGenFramebuffers(1, &fb));

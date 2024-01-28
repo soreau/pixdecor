@@ -243,7 +243,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
     void option_changed_cb(bool resize_decorations, bool recreate_decorations)
     {
-        if (effect_animate)
+        if (effect_animate || (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
         {
             if (!hook_set)
             {

@@ -127,13 +127,6 @@
 			<_long>Color of the titlebar background effect.</_long>
 			<default>0.88 0.11 0.14 1.0</default>
 		</option>
-		<option name="effect_diffuse_iterations" type="int">
-			<_short>Effect Diffuse</_short>
-			<_long>How many iterations to use for diffusing the effect. Less iterations mean less shader dispatch invocations.</_long>
-			<default>5</default>
-			<min>1</min>
-			<max>5</max>
-		</option>
 		<option name="animate" type="bool">
 			<_short>Animate Effects</_short>
 			<_long>WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations.</_long>

@@ -31,7 +31,6 @@
 wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
-wf::option_wrapper_t<int> effect_diffuse_iterations{"pixdecor/effect_diffuse_iterations"};
 wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
 
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
@@ -136,11 +135,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         auto offset = wf::point_t{origin.x, origin.y - (maximized ? -border / 2 : border / 4)};
         for (auto item : renderables)
         {
-            if (item->get_type() == wf::decor::DECORATION_AREA_SHADOW)
-            {
-                theme.render_background(fb,
-                    item->get_geometry() + offset, scissor, activated, current_cursor_position);
-            } else if (item->get_type() == wf::decor::DECORATION_AREA_TITLE)
+            if (item->get_type() == wf::decor::DECORATION_AREA_TITLE)
             {
                 OpenGL::render_begin(fb);
                 fb.logic_scissor(scissor);
@@ -227,8 +222,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             {
                 self->theme.smoke.step_effect(target, rectangle, std::string(effect_type) == "ink",
                     self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
-                    self->theme.get_title_height(), self->theme.get_border_size(), effect_diffuse_iterations,
-                    shadow_radius);
+                    self->theme.get_title_height(), self->theme.get_border_size(), shadow_radius);
             }
 
             for (const auto& box : region)
