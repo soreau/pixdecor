@@ -449,6 +449,9 @@ nonstd::observer_ptr<decoration_area_t> decoration_layout_t::find_area_at(
 /** Calculate resize edges based on @current_input */
 uint32_t decoration_layout_t::calculate_resize_edges() const
 {
+    wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
+    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
+    int radius     = (std::string(overlay_engine) == "rounded_corners") ? int(shadow_radius) : 0;
     uint32_t edges = 0;
     for (auto& area : layout_areas)
     {
@@ -472,7 +475,7 @@ uint32_t decoration_layout_t::calculate_resize_edges() const
             }
         }
 
-        if ((b > MIN_RESIZE_HANDLE_SIZE) && (area->get_type() == DECORATION_AREA_RESIZE_TOP))
+        if (((b - radius * 2) > MIN_RESIZE_HANDLE_SIZE) && (area->get_type() == DECORATION_AREA_RESIZE_TOP))
         {
             g.height /= 2;
         }

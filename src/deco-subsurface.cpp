@@ -151,13 +151,24 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     std::optional<wf::scene::input_node_t> find_node_at(const wf::pointf_t& at) override
     {
+        int border = theme.get_border_size();
+        wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
+        wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
+        int r = (std::string(overlay_engine) == "rounded_corners") ? int(shadow_radius) * 2 : 0;
+        r -= MIN_RESIZE_HANDLE_SIZE - std::min(border, MIN_RESIZE_HANDLE_SIZE);
         wf::pointf_t local = at - wf::pointf_t{get_offset()};
-        if (cached_region.contains_pointf(local))
+        if (auto view = _view.lock())
         {
-            return wf::scene::input_node_t{
-                .node = this,
-                .local_coords = local,
-            };
+            wf::geometry_t g = view->get_geometry();
+            g.x = g.y = 0;
+            g   = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-r, -r, -r, -r});
+            if (wf::region_t{g}.contains_pointf(local))
+            {
+                return wf::scene::input_node_t{
+                    .node = this,
+                    .local_coords = local,
+                };
+            }
         }
 
         return {};
