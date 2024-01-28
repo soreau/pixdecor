@@ -48,6 +48,10 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<std::string> ignore_views_string{"pixdecor/ignore_views"};
     wf::option_wrapper_t<std::string> always_decorate_string{"pixdecor/always_decorate"};
     wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
+    wf::option_wrapper_t<bool> effect_animate{"pixdecor/animate"};
+    wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
+    wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
     wf::view_matcher_t ignore_views{"pixdecor/ignore_views"};
     wf::view_matcher_t always_decorate{"pixdecor/always_decorate"};
     wf::wl_idle_call idle_update_views;
@@ -174,7 +178,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     continue;
                 }
-                toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
+
+                view->damage();
             }
         };
 
@@ -186,39 +191,14 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             }
         }
 
-        effect_type.set_callback([=] ()
+        effect_type.set_callback([=] {option_changed_cb(false, false);});
+        overlay_engine.set_callback([=] {option_changed_cb(true, false);});
+        effect_animate.set_callback([=] {option_changed_cb(false, false);});
+        shadow_radius.set_callback([=]
         {
-            if (std::string(effect_type) == "none")
-            {
-                if (hook_set)
-                {
-                    for (auto& o : wf::get_core().output_layout->get_outputs())
-                    {
-                        o->render->rem_effect(&pre_hook);
-                    }
-                    hook_set = false;
-                }
-            } else
-            {
-                if (!hook_set)
-                {
-                    for (auto& o : wf::get_core().output_layout->get_outputs())
-                    {
-                        o->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
-                    }
-                    hook_set = true;
-                }
-            }
-            for (auto& view : wf::get_core().get_all_views())
-            {
-                auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
-                {
-                    continue;
-                }
-                toplevel->toplevel()->get_data<wf::simple_decorator_t>()->damage(view);
-            }
+            option_changed_cb(false, (std::string(overlay_engine) == "rounded_corners"));
         });
+        rounded_corner_radius.set_callback([=] {option_changed_cb(false, false);});
 
         // set up the watch on the xsettings file
         inotify_fd = inotify_init1(IN_CLOEXEC);
@@ -249,6 +229,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
             }
         }
+
         if (hook_set)
         {
             for (auto& o : wf::get_core().output_layout->get_outputs())
@@ -261,6 +242,86 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         inotify_rm_watch(inotify_fd, wd_cfg_file);
         inotify_rm_watch(inotify_fd, wd_cfg_dir);
         close(inotify_fd);
+    }
+
+    void option_changed_cb(bool resize_decorations, bool recreate_decorations)
+    {
+        if (effect_animate || (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+        {
+            if (!hook_set)
+            {
+                for (auto& o : wf::get_core().output_layout->get_outputs())
+                {
+                    o->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
+                }
+
+                hook_set = true;
+            }
+        } else
+        {
+            if (hook_set)
+            {
+                for (auto& o : wf::get_core().output_layout->get_outputs())
+                {
+                    o->render->rem_effect(&pre_hook);
+                }
+
+                hook_set = false;
+            }
+        }
+
+        if (recreate_decorations)
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                auto toplevel = wf::toplevel_cast(view);
+                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                {
+                    continue;
+                }
+
+                remove_decoration(toplevel);
+                adjust_new_decorations(toplevel);
+                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+            }
+
+            return;
+        }
+
+        for (auto& view : wf::get_core().get_all_views())
+        {
+            auto toplevel = wf::toplevel_cast(view);
+            if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+            {
+                continue;
+            }
+
+            view->damage();
+            toplevel->toplevel()->get_data<wf::simple_decorator_t>()->effect_updated();
+            if (!resize_decorations)
+            {
+                continue;
+            }
+
+            auto& pending = toplevel->toplevel()->pending();
+            if (std::string(overlay_engine) == "rounded_corners")
+            {
+                pending.margins =
+                {int(shadow_radius) * 2, int(shadow_radius) * 2,
+                    int(shadow_radius) * 2, int(shadow_radius) * 2};
+                pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
+            } else
+            {
+                pending.margins =
+                {int(shadow_radius) * 2, int(shadow_radius) * 2,
+                    int(shadow_radius) * 2, int(shadow_radius) * 2};
+                pending.geometry = wf::shrink_geometry_by_margins(pending.geometry, pending.margins);
+                pending.margins  = toplevel->toplevel()->get_data<wf::simple_decorator_t>()->get_margins(
+                    toplevel->toplevel()->pending());
+            }
+
+            wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+        }
     }
 
     void update_colors()

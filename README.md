@@ -1,2 +1,2 @@
 # pixdecor
-![xeyes](https://github.com/soreau/pixdecor/assets/1450125/12dbf7f0-18c2-48c2-8052-943f2905b268)
+![pixdecor](https://github.com/soreau/pixdecor/assets/1450125/af891554-8eeb-4769-b571-fa587afd8350)

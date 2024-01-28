@@ -40,6 +40,23 @@
 			<_long>Color of the window titlebar text when it does not have focus.</_long>
 			<default>0.7 0.7 0.7 1.0</default>
 		</option>
+		<option name="overlay_engine" type="string">
+			<_short>Overlay Engine</_short>
+			<_long>Sets the overlay engine.</_long>
+			<default>none</default>
+			<desc>
+				<value>none</value>
+				<_name>None</_name>
+			</desc>
+			<desc>
+				<value>rounded_corners</value>
+				<_name>Rounded Corners</_name>
+			</desc>
+			<desc>
+				<value>beveled_glass</value>
+				<_name>Beveled Glass</_name>
+			</desc>
+		</option>
 		<option name="effect_type" type="string">
 			<_short>Effect Type</_short>
 			<_long>Sets the effect type.</_long>
@@ -56,18 +73,81 @@
 				<value>ink</value>
 				<_name>Ink</_name>
 			</desc>
+			<desc>
+				<value>clouds</value>
+				<_name>Clouds</_name>
+			</desc>
+			<desc>
+				<value>halftone</value>
+				<_name>Halftone</_name>
+			</desc>
+			<desc>
+				<value>pattern</value>
+				<_name>Pattern</_name>
+			</desc>
+			<desc>
+				<value>lava</value>
+				<_name>Lava</_name>
+			</desc>
+			<desc>
+				<value>hex</value>
+				<_name>Hex</_name>
+			</desc>
+			<desc>
+				<value>zebra</value>
+				<_name>Zebra</_name>
+			</desc>
+			<desc>
+				<value>neural_network</value>
+				<_name>Neural network</_name>
+			</desc>
+			<desc>
+				<value>hexagon_maze</value>
+				<_name>Hexagon maze</_name>
+			</desc>
+			<desc>
+				<value>raymarched_truchet</value>
+				<_name>Raymarched truchet</_name>
+			</desc>
+			<desc>
+				<value>neon_pattern</value>
+				<_name>Neon pattern</_name>
+			</desc>
+			<desc>
+				<value>neon_rings</value>
+				<_name>Neon rings</_name>
+			</desc>
+			<desc>
+				<value>deco</value>
+				<_name>Deco</_name>
+			</desc>
 		</option>
 		<option name="effect_color" type="color">
 			<_short>Effect Color</_short>
 			<_long>Color of the titlebar background effect.</_long>
 			<default>0.88 0.11 0.14 1.0</default>
 		</option>
-		<option name="effect_diffuse_iterations" type="int">
-			<_short>Effect Diffuse</_short>
-			<_long>How many iterations to use for diffusing the effect. Less iterations mean less shader dispatch invocations.</_long>
+		<option name="animate" type="bool">
+			<_short>Animate Effects</_short>
+			<_long>WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations.</_long>
+			<default>false</default>
+		</option>
+		<option name="rounded_corner_radius" type="int">
+			<_short>Rounded Corner Radius</_short>
+			<_long>The radius for corners.</_long>
 			<default>5</default>
-			<min>1</min>
-			<max>5</max>
+			<min>0</min>
+		</option>
+		<option name="shadow_radius" type="int">
+			<_short>Shadow Radius</_short>
+			<_long>The radius for shadows.</_long>
+			<default>10</default>
+			<min>0</min>
+		</option>
+		<option name="shadow_color" type="color">
+			<_short>Shadow Color</_short>
+			<_long>Color of the drop shadows.</_long>
+			<default>0.3 0.3 0.3 0.1</default>
 		</option>
 	</plugin>
 </wayfire>
