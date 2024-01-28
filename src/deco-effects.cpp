@@ -2530,17 +2530,9 @@ void main() {
 
 )";
 
-static const char *render_source_overlay =
+static const char *beveled_glass_overlay =
     R"(
 #version 320 es
-
-
-
-uniform vec2 iResolution;
-uniform float iTime;
-uniform vec2 iMouse;
-
-
 
 layout(binding = 0, rgba32f) readonly uniform highp image2D neural_network_tex;  // Use binding point 0
 layout(binding = 0, rgba32f) writeonly uniform highp image2D image;  // Use binding point 0
@@ -2595,7 +2587,7 @@ float sin01(float x) {
 vec4 drawCurveBenzier(vec2 p1, vec2 p2, int setCount) {
     vec4 col = vec4(0.0);
  ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-  float curveRadius = 5.0;
+  float curveRadius = float(radius);
 // Draw the lines connecting the points
 
     vec2 fragCoord = vec2(storePos);
@@ -2617,7 +2609,7 @@ vec4 drawCurveBenzier(vec2 p1, vec2 p2, int setCount) {
 vec4 drawCurve(vec2 p1, vec2 p2, int setCount) {
     vec4 col = vec4(0.0);
     ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-    float curveRadius = 6.0;
+    float curveRadius = float(radius + 1);
     vec2 fragCoord = vec2(storePos);
 
     float t = clamp(dot(fragCoord - p1, p2 - p1) / dot(p2 - p1, p2 - p1), 0.0, 1.0);
@@ -2669,7 +2661,7 @@ void main() {
     vec2 z1 = vec2(0.0 + THICCNESS + space, 0.0 + THICCNESS);
     vec2 z2 = vec2(float(width) - THICCNESS - space, 0.0 + THICCNESS);
 
- float curveRadius = 5.0;
+ float curveRadius = float(radius);
 // Draw the lines connecting the points
 
 int setwidth = int(width);
@@ -2990,7 +2982,7 @@ void smoke_t::create_programs()
         setup_shader(&render_overlay_program, rounded_corner_overlay);
     } else if (std::string(overlay_engine) == "beveled_glass")
     {
-        setup_shader(&render_overlay_program, render_source_overlay);
+        setup_shader(&render_overlay_program, beveled_glass_overlay);
     }
 
     OpenGL::render_end();
@@ -3308,12 +3300,12 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glUniform1i(2, border_size + radius * 2));
         GL_CALL(glUniform1i(5, rectangle.width));
         GL_CALL(glUniform1i(6, rectangle.height));
+        GL_CALL(glUniform1i(7, rounded_corner_radius));
         if (std::string(overlay_engine) == "rounded_corners")
         {
             GLfloat shadow_color_f[4] =
             {GLfloat(wf::color_t(shadow_color).r), GLfloat(wf::color_t(shadow_color).g),
                 GLfloat(wf::color_t(shadow_color).b), GLfloat(wf::color_t(shadow_color).a)};
-            GL_CALL(glUniform1i(7, rounded_corner_radius));
             GL_CALL(glUniform1i(8, radius));
             GL_CALL(glUniform4fv(9, 1, shadow_color_f));
         }

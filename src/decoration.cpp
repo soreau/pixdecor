@@ -194,7 +194,10 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         effect_type.set_callback([=] {option_changed_cb(false, false);});
         overlay_engine.set_callback([=] {option_changed_cb(true, false);});
         effect_animate.set_callback([=] {option_changed_cb(false, false);});
-        shadow_radius.set_callback([=] {option_changed_cb(false, true);});
+        shadow_radius.set_callback([=]
+        {
+            option_changed_cb(false, (std::string(overlay_engine) == "rounded_corners"));
+        });
         rounded_corner_radius.set_callback([=] {option_changed_cb(false, false);});
 
         // set up the watch on the xsettings file
@@ -267,6 +270,24 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             }
         }
 
+        if (recreate_decorations)
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                auto toplevel = wf::toplevel_cast(view);
+                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                {
+                    continue;
+                }
+
+                remove_decoration(toplevel);
+                adjust_new_decorations(toplevel);
+                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+            }
+
+            return;
+        }
+
         for (auto& view : wf::get_core().get_all_views())
         {
             auto toplevel = wf::toplevel_cast(view);
@@ -299,24 +320,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                     toplevel->toplevel()->pending());
             }
 
-            wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
-        }
-
-        if (!recreate_decorations)
-        {
-            return;
-        }
-
-        for (auto& view : wf::get_core().get_all_views())
-        {
-            auto toplevel = wf::toplevel_cast(view);
-            if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
-            {
-                continue;
-            }
-
-            remove_decoration(toplevel);
-            adjust_new_decorations(toplevel);
             wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
         }
     }
