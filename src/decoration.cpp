@@ -212,7 +212,20 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 view->damage();
             }
         });
-        rounded_corner_radius.set_callback([=] {option_changed_cb(false, false);});
+        rounded_corner_radius.set_callback([=]
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                auto toplevel = wf::toplevel_cast(view);
+                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                {
+                    continue;
+                }
+
+                view->damage();
+                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+            }
+        });
 
         // set up the watch on the xsettings file
         inotify_fd = inotify_init1(IN_CLOEXEC);
@@ -312,12 +325,14 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
             view->damage();
             toplevel->toplevel()->get_data<wf::simple_decorator_t>()->effect_updated();
-            if (!resize_decorations)
+
+            auto& pending = toplevel->toplevel()->pending();
+            if (!resize_decorations || (pending.tiled_edges != 0))
             {
+                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
                 continue;
             }
 
-            auto& pending = toplevel->toplevel()->pending();
             if (std::string(overlay_engine) == "rounded_corners")
             {
                 pending.margins =
