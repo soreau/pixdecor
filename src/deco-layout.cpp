@@ -416,6 +416,11 @@ nonstd::observer_ptr<decoration_area_t> decoration_layout_t::find_area_at(
     {
         auto g = area->get_geometry();
         auto b = theme.get_input_size();
+        if (area->get_type() & DECORATION_AREA_MOVE_BIT)
+        {
+            continue;
+        }
+
         if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
         {
             if (b <= MIN_RESIZE_HANDLE_SIZE)
@@ -430,6 +435,26 @@ nonstd::observer_ptr<decoration_area_t> decoration_layout_t::find_area_at(
             {
                 g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, 0, 0});
             }
+        }
+
+        if (maximized && (area->get_type() & DECORATION_AREA_MOVE_BIT))
+        {
+            g.height += b;
+        }
+
+        if (g & point)
+        {
+            return {area};
+        }
+    }
+
+    for (auto& area : this->layout_areas)
+    {
+        auto g = area->get_geometry();
+        auto b = theme.get_input_size();
+        if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
+        {
+            continue;
         }
 
         if (maximized && (area->get_type() & DECORATION_AREA_MOVE_BIT))
