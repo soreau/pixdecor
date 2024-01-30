@@ -23,6 +23,7 @@
 #include "deco-theme.hpp"
 #include <wayfire/window-manager.hpp>
 #include <wayfire/view-transform.hpp>
+#include <wayfire/txn/transaction-manager.hpp>
 
 #include <wayfire/plugins/common/cairo-util.hpp>
 
@@ -415,6 +416,7 @@ wf::simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
         if (!this->view->toplevel()->current().fullscreen)
         {
             deco->resize(wf::dimensions(this->view->get_geometry()));
+            wf::get_core().tx_manager->schedule_object(this->view->toplevel());
         }
     };
 }
