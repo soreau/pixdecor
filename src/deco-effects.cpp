@@ -2470,13 +2470,13 @@ void main() {
     if (pos.x < shadow_radius * 2 && pos.y >= shadow_radius * 2 && pos.y <= height - shadow_radius * 2)
     {
         d = distance(vec2(float(shadow_radius * 2), float(pos.y)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
+        imageStore(out_tex, pos, mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0))));
     }
     // top left corner
     if (pos.x < shadow_radius * 2 + corner_radius && pos.y < shadow_radius * 2 + corner_radius)
     {
         d = distance(vec2(float(shadow_radius * 2 + corner_radius)), vec2(pos)) - float(corner_radius);
-        s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
+        s = mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0)));
         c = imageLoad(in_tex, pos);
         d = distance(vec2(float(shadow_radius * 2 + corner_radius)), vec2(pos));
         imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
@@ -2485,7 +2485,7 @@ void main() {
     if (pos.x < (shadow_radius * 2 + corner_radius) && pos.y > height - (shadow_radius * 2 + corner_radius))
     {
         d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
-        s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
+        s = mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0)));
         c = imageLoad(in_tex, pos);
         d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos));
         imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
@@ -2494,19 +2494,19 @@ void main() {
     if (pos.x >= shadow_radius * 2 + corner_radius && pos.x <= width - shadow_radius * 2 + corner_radius && pos.y < shadow_radius * 2)
     {
         d = distance(vec2(float(pos.x), float(shadow_radius * 2)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
+        imageStore(out_tex, pos, mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0))));
     }
     // right
     if (pos.x > (width - 1) - shadow_radius * 2 && pos.y >= shadow_radius * 2 && pos.y <= (height - 1) - shadow_radius * 2)
     {
         d = distance(vec2(float((width - 1) - shadow_radius * 2), float(pos.y)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
+        imageStore(out_tex, pos, mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0))));
     }
     // top right corner
     if (pos.x > width - (shadow_radius * 2 + corner_radius) && pos.y < (shadow_radius * 2 + corner_radius))
     {
         d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
-        s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
+        s = mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0)));
         c = imageLoad(in_tex, pos);
         d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos));
         imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
@@ -2515,7 +2515,7 @@ void main() {
     if (pos.x > (width - 1) - (shadow_radius * 2 + corner_radius) && pos.y > (height - 1) - (shadow_radius * 2 + corner_radius))
     {
         d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
-        s = mix(c, m, clamp(d * diffuse, 0.0, 1.0));
+        s = mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0)));
         c = imageLoad(in_tex, pos);
         d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos));
         imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
@@ -2524,7 +2524,7 @@ void main() {
     if (pos.x >= (shadow_radius * 2 + corner_radius) && pos.x <= (width - 1) - (shadow_radius * 2 + corner_radius) && pos.y > (height - 1) - shadow_radius * 2)
     {
         d = distance(vec2(float(pos.x), float((height - 1) - shadow_radius * 2)), vec2(pos));
-        imageStore(out_tex, pos, mix(c, m, clamp(d * diffuse, 0.0, 1.0)));
+        imageStore(out_tex, pos, mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0))));
     }
 }
 
