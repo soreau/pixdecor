@@ -489,3 +489,16 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
         .top    = titlebar,
     };
 }
+
+void wf::simple_decorator_t::update_animation()
+{
+    auto margins = get_margins(view->toplevel()->current());
+    auto bbox = deco->get_bounding_box();
+
+    wf::region_t region;
+    region |= wlr_box{bbox.x, bbox.y, bbox.width, margins.top};
+    region |= wlr_box{bbox.x, bbox.y, margins.left, bbox.height};
+    region |= wlr_box{bbox.x, bbox.y + bbox.height - margins.bottom, bbox.width, margins.bottom};
+    region |= wlr_box{bbox.x + bbox.width - margins.right, bbox.y, margins.right, bbox.height};
+    wf::scene::damage_node(deco, region);
+}

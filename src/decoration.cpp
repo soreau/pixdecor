@@ -184,7 +184,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                     continue;
                 }
 
-                view->damage();
+                auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+                deco->update_animation();
             }
         };
 
