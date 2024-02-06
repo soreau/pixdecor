@@ -57,11 +57,18 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             int target_width  = width * scale;
             int target_height = height * scale;
 
-            auto surface = theme.render_text(view->get_title(),
-                target_width, target_height, t_width, view->activated);
-            cairo_surface_upload_to_texture(surface, title_texture.tex);
-            cairo_surface_destroy(surface);
-            title_texture.current_text = view->get_title();
+            if ((view->get_title() != title_texture.current_text) ||
+                (target_width != title_texture.tex.width) ||
+                (target_height != title_texture.tex.height) ||
+                (view->activated != title_texture.rendered_for_activated_state))
+            {
+                auto surface = theme.render_text(view->get_title(),
+                    target_width, target_height, t_width, view->activated);
+                cairo_surface_upload_to_texture(surface, title_texture.tex);
+                cairo_surface_destroy(surface);
+                title_texture.current_text = view->get_title();
+                title_texture.rendered_for_activated_state = view->activated;
+            }
         }
     }
 
@@ -69,6 +76,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         wf::simple_texture_t tex;
         std::string current_text = "";
+        bool rendered_for_activated_state = false;
     } title_texture;
 
   public:
