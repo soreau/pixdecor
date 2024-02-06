@@ -19,7 +19,7 @@ layout (binding = 2, r32f) uniform readonly image2D in_b0v;
 layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
 layout (binding = 3, r32f) uniform readonly image2D in_b0d;
 layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
@@ -75,11 +75,7 @@ void motion(int x, int y)
 
 void main()
 {
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    if (pos.x == px && pos.y == py)
-    {
-        motion(pos.x, pos.y);
-    }
+    motion(px, py);
 }
 )";
 
@@ -3206,7 +3202,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
             GL_CALL(glUniform1i(7, random()));
             GL_CALL(glUniform1i(8, random()));
             GL_CALL(glUniform1i(9, radius * 2));
-            GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
+            GL_CALL(glDispatchCompute(1, 1, 1));
             GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
         }
 
