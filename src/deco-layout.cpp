@@ -8,7 +8,7 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 /**
  * Represents an area of the decoration which reacts to input events.

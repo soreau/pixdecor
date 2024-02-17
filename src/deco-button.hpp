@@ -13,7 +13,7 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 class decoration_theme_t;
 

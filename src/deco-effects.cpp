@@ -5,7 +5,7 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 static const char *motion_source =
     R"(

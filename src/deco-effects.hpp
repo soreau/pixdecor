@@ -7,7 +7,7 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 class smoke_t
 {

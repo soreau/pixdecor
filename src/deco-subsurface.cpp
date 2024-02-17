@@ -69,8 +69,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     } title_texture;
 
   public:
-    wf::decor::decoration_theme_t theme;
-    wf::decor::decoration_layout_t layout;
+    wf::pixdecor::decoration_theme_t theme;
+    wf::pixdecor::decoration_layout_t layout;
     wf::region_t cached_region;
 
     wf::dimensions_t size;
@@ -136,7 +136,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         auto offset = wf::point_t{origin.x, origin.y - (maximized ? -border / 2 : border / 4)};
         for (auto item : renderables)
         {
-            if (item->get_type() == wf::decor::DECORATION_AREA_TITLE)
+            if (item->get_type() == wf::pixdecor::DECORATION_AREA_TITLE)
             {
                 OpenGL::render_begin(fb);
                 fb.logic_scissor(scissor);
@@ -294,22 +294,22 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         handle_action(layout.handle_press_event(ev.state == WLR_BUTTON_PRESSED));
     }
 
-    void handle_action(wf::decor::decoration_layout_t::action_response_t action)
+    void handle_action(wf::pixdecor::decoration_layout_t::action_response_t action)
     {
         if (auto view = _view.lock())
         {
             switch (action.action)
             {
-              case wf::decor::DECORATION_ACTION_MOVE:
+              case wf::pixdecor::DECORATION_ACTION_MOVE:
                 return wf::get_core().default_wm->move_request(view);
 
-              case wf::decor::DECORATION_ACTION_RESIZE:
+              case wf::pixdecor::DECORATION_ACTION_RESIZE:
                 return wf::get_core().default_wm->resize_request(view, action.edges);
 
-              case wf::decor::DECORATION_ACTION_CLOSE:
+              case wf::pixdecor::DECORATION_ACTION_CLOSE:
                 return view->close();
 
-              case wf::decor::DECORATION_ACTION_TOGGLE_MAXIMIZE:
+              case wf::pixdecor::DECORATION_ACTION_TOGGLE_MAXIMIZE:
                 if (view->pending_tiled_edges())
                 {
                     return wf::get_core().default_wm->tile_request(view, 0);
@@ -320,7 +320,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
                 break;
 
-              case wf::decor::DECORATION_ACTION_MINIMIZE:
+              case wf::pixdecor::DECORATION_ACTION_MINIMIZE:
                 return wf::get_core().default_wm->minimize_request(view, true);
                 break;
 

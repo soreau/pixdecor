@@ -6,7 +6,7 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 static constexpr uint32_t DECORATION_AREA_RENDERABLE_BIT = (1 << 16);
 static constexpr uint32_t DECORATION_AREA_RESIZE_BIT     = (1 << 17);

@@ -11,7 +11,7 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 /**
  * A  class which manages the outlook of decorations.

@@ -10,7 +10,7 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 button_t::button_t(const decoration_theme_t& t, std::function<void()> damage) :
     theme(t), damage_callback(damage)

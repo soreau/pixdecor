@@ -6,7 +6,7 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
 wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
