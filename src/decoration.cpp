@@ -17,6 +17,7 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <gio/gio.h>
+#include <dlfcn.h>
 
 int handle_theme_updated(int fd, uint32_t mask, void *data)
 {
@@ -244,6 +245,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         {
             update_colors();
         };
+
+        dlopen("libpangocairo-1.0.so", RTLD_NOW);
     }
 
     void fini() override
