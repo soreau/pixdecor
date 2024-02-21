@@ -792,7 +792,7 @@ void render(int x, int y)
 	c = s.x * 800.0;
 	if (c > 255.0)
 		c = 255.0;
-	a = c * smoke_color.a;
+	a = c;
 	vec3 color;
 	if (ink)
 	{
@@ -809,7 +809,7 @@ void render(int x, int y)
 	{
 		color = mix(decor_color.rgb, smoke_color.rgb, clamp(a, 0.0, 1.0));
 	}
-	imageStore(out_tex, ivec2(x, y), vec4(color, 1.0));
+	imageStore(out_tex, ivec2(x, y), vec4(color, decor_color.a));
 }
 
 void main()
