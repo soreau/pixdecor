@@ -10,6 +10,21 @@
 			<default>5</default>
 			<min>0</min>
 		</option>
+		<option name="titlebar" type="bool">
+			<_short>Titlebar</_short>
+			<_long>Whether or not to render titlebar with title text and buttons.</_long>
+			<default>true</default>
+		</option>
+		<option name="maximized_borders" type="bool">
+			<_short>Draw borders on maximized windows</_short>
+			<_long>Whether or not to render side and bottom decorations on maximized windows.</_long>
+			<default>false</default>
+		</option>
+		<option name="maximized_shadows" type="bool">
+			<_short>Draw shadows on maximized windows</_short>
+			<_long>Whether or not to allocate space for shadows on maximized windows.</_long>
+			<default>false</default>
+		</option>
 		<option name="ignore_views" type="string">
 			<_short>Decoration disabled for specified window types</_short>
 			<_long>Disables window decoration for windows matching the specified criteria.</_long>

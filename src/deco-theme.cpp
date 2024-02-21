@@ -9,6 +9,9 @@ namespace wf
 namespace pixdecor
 {
 wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+wf::option_wrapper_t<bool> titlebar{"pixdecor/titlebar"};
+wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
+wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
 wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
 wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
 wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
@@ -122,13 +125,13 @@ int decoration_theme_t::get_title_height() const
         height = MIN_BAR_HEIGHT;
     }
 
-    return height;
+    return titlebar ? height : 0;
 }
 
 /** @return The available border for resizing */
 int decoration_theme_t::get_border_size() const
 {
-    return border_size;
+    return (!maximized_borders && maximized_shadows && maximized) ? 0 : border_size;
 }
 
 /** @return The input area for resizing */

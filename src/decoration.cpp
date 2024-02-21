@@ -42,6 +42,9 @@ int handle_theme_updated(int fd, uint32_t mask, void *data)
 class wayfire_pixdecor : public wf::plugin_interface_t
 {
     wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+    wf::option_wrapper_t<bool> titlebar{"pixdecor/titlebar"};
+    wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
+    wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
     wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
     wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
     wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
@@ -193,6 +196,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             }
         }
 
+        titlebar.set_callback([=] {option_changed_cb(false, true);});
         effect_type.set_callback([=] {option_changed_cb(false, false);});
         overlay_engine.set_callback([=] {option_changed_cb(true, false);});
         effect_animate.set_callback([=] {option_changed_cb(false, false);});
@@ -224,6 +228,40 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 }
 
                 view->damage();
+                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+            }
+        });
+        maximized_borders.set_callback([=]
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                auto toplevel = wf::toplevel_cast(view);
+                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>() ||
+                    !toplevel->pending_tiled_edges())
+                {
+                    continue;
+                }
+
+                view->damage();
+                remove_decoration(toplevel);
+                adjust_new_decorations(toplevel);
+                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+            }
+        });
+        maximized_shadows.set_callback([=]
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                auto toplevel = wf::toplevel_cast(view);
+                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>() ||
+                    !toplevel->pending_tiled_edges())
+                {
+                    continue;
+                }
+
+                view->damage();
+                remove_decoration(toplevel);
+                adjust_new_decorations(toplevel);
                 wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
             }
         });

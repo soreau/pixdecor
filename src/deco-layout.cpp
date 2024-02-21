@@ -140,6 +140,7 @@ void decoration_layout_t::resize(int width, int height)
 {
     wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
     wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
+    wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
     bool rounded_corners = std::string(overlay_engine) == "rounded_corners";
 
     int border = theme.get_border_size();
@@ -176,7 +177,7 @@ void decoration_layout_t::resize(int width, int height)
     border = MIN_RESIZE_HANDLE_SIZE - theme.get_input_size();
     auto inverse_border = MIN_RESIZE_HANDLE_SIZE - theme.get_border_size();
 
-    if (!maximized)
+    if (!maximized || maximized_borders)
     {
         /* Resizing edges - top */
         wf::geometry_t border_geometry =
