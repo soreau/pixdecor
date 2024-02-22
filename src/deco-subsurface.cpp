@@ -493,7 +493,7 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
 void wf::simple_decorator_t::update_animation()
 {
     auto margins = get_margins(view->toplevel()->current());
-    auto bbox = deco->get_bounding_box();
+    auto bbox    = deco->get_bounding_box();
 
     wf::region_t region;
     region |= wlr_box{bbox.x, bbox.y, bbox.width, margins.top};

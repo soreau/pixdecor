@@ -3040,24 +3040,6 @@ void smoke_t::destroy_textures()
 void smoke_t::run_shader(GLuint program, int width, int height, int title_height, int border_size, int radius)
 {
     GL_CALL(glUseProgram(program));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-    GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-    GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-    GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
-    GL_CALL(glBindImageTexture(4, b1u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
-    GL_CALL(glBindImageTexture(5, b1v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
-    GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
     GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
     GL_CALL(glUniform1i(2, border_size + radius * 2));
     GL_CALL(glUniform1i(5, width));
@@ -3159,7 +3141,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     }
 
     int radius = shadow_radius;
-    int diffuse_iterations = 5;
+    int diffuse_iterations = 2;
 
     OpenGL::render_begin(fb);
     if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
@@ -3172,6 +3154,10 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         recreate_textures(rectangle);
     }
 
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+    GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+
     if (smoke)
     {
         wf::point_t point{int(p.x), int(p.y)};
@@ -3180,18 +3166,28 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
             point.x = point.y = INT_MIN;
         }
 
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
+        GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
+        GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
+        GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
+        GL_CALL(glBindImageTexture(4, b1u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
+        GL_CALL(glBindImageTexture(5, b1v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
+        GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+
         if ((point.x >= radius) && (point.y >= radius))
         {
             GL_CALL(glUseProgram(motion_program));
-            GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-            GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-            GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-            GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-            GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-            GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
             // upload stuff
             GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
             GL_CALL(glUniform1i(2, border_size + radius * 2));
@@ -3241,15 +3237,6 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     if (std::string(effect_type) != "none")
     {
         GL_CALL(glUseProgram(render_program));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-        GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-        if (smoke)
-        {
-            GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-            GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-        }
 
         GLfloat effect_color_f[4] =
         {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
@@ -3278,6 +3265,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GLuint fb;
         GL_CALL(glGenFramebuffers(1, &fb));
         GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
         GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_2D, texture, 0));
@@ -3289,9 +3277,6 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         (std::string(overlay_engine) == "beveled_glass"))
     {
         GL_CALL(glUseProgram(render_overlay_program));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-        GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
         GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
         GL_CALL(glUniform1i(2, border_size + radius * 2));
         GL_CALL(glUniform1i(5, rectangle.width));
@@ -3310,20 +3295,6 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
     }
 
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
     GL_CALL(glUseProgram(0));
     OpenGL::render_end();
 }
