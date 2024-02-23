@@ -105,7 +105,6 @@ void button_t::add_idle_damage()
     this->idle_damage.run_once([=] ()
     {
         this->damage_callback();
-        update_texture();
     });
 }
 }

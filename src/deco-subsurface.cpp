@@ -155,6 +155,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
         theme.render_background(fb, geometry, region, activated, current_cursor_position);
 
+        if (!titlebar_opt)
+        {
+            OpenGL::render_end();
+            return;
+        }
+
         /* Draw title & buttons */
         for (auto item : renderables)
         {
