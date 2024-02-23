@@ -35,8 +35,7 @@ class smoke_t
     void step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
         bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
         int title_height, int border_size, int shadow_radius);
-    void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
-        const wf::geometry_t& scissor);
+    void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle, const wf::region_t& scissor);
     void recreate_textures(wf::geometry_t rectangle);
     void create_programs();
     void destroy_programs();

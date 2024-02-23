@@ -3300,13 +3300,19 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
 }
 
 void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
-    const wf::geometry_t& scissor)
+    const wf::region_t& scissor)
 {
-    OpenGL::render_begin(fb);
-    fb.logic_scissor(scissor);
     OpenGL::render_transformed_texture(wf::texture_t{texture}, rectangle,
-        fb.get_orthographic_projection(), glm::vec4{1}, OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
-    OpenGL::render_end();
+        fb.get_orthographic_projection(), glm::vec4{1},
+        OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
+
+    for (auto& box : scissor)
+    {
+        fb.logic_scissor(wlr_box_from_pixman_box(box));
+        OpenGL::draw_cached();
+    }
+
+    OpenGL::clear_cached();
 }
 
 void smoke_t::effect_updated()

@@ -64,14 +64,17 @@ void button_t::set_pressed(bool is_pressed)
     add_idle_damage();
 }
 
-void button_t::render(const wf::render_target_t& fb, wf::geometry_t geometry,
-    wf::geometry_t scissor)
+void button_t::render(const wf::render_target_t& fb, wf::geometry_t geometry, const wf::region_t& scissor)
 {
-    OpenGL::render_begin(fb);
-    fb.logic_scissor(scissor);
     OpenGL::render_texture(button_texture.tex, fb, geometry, {1, 1, 1, this->hover},
-        OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
-    OpenGL::render_end();
+        OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
+    for (auto& box : scissor)
+    {
+        fb.logic_scissor(wlr_box_from_pixman_box(box));
+        OpenGL::draw_cached();
+    }
+
+    OpenGL::clear_cached();
 
     if (this->hover.running())
     {

@@ -66,7 +66,7 @@ class button_t
      * @param scissor The scissor rectangle to render.
      */
     void render(const wf::render_target_t& fb, wf::geometry_t geometry,
-        wf::geometry_t scissor);
+        const wf::region_t& scissor);
 
   private:
     const decoration_theme_t& theme;

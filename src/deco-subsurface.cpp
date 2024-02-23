@@ -118,16 +118,24 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         return {-current_thickness, -current_titlebar};
     }
 
-    void render_title(const wf::render_target_t& fb,
-        wf::geometry_t geometry, int t_width)
+    void render_title(const wf::render_target_t& fb, const wf::region_t& scissor,
+        const wf::geometry_t& geometry, int t_width)
     {
         update_title(geometry.width, geometry.height, t_width, fb.scale);
         OpenGL::render_texture(title_texture.tex.tex, fb, geometry,
-            glm::vec4(1.0f), OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
+            glm::vec4(1.0f), OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
+
+        for (auto& box : scissor)
+        {
+            fb.logic_scissor(wlr_box_from_pixman_box(box));
+            OpenGL::draw_cached();
+        }
+
+        OpenGL::clear_cached();
+        OpenGL::render_end();
     }
 
-    void render_scissor_box(const wf::render_target_t& fb, wf::point_t origin,
-        const wlr_box& scissor)
+    void render_region(const wf::render_target_t& fb, wf::point_t origin, const wf::region_t& region)
     {
         int border = theme.get_border_size();
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
@@ -140,25 +148,27 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             maximized = view->pending_tiled_edges();
         }
 
-        theme.render_background(fb, geometry, scissor, activated, current_cursor_position);
-
-        /* Draw title & buttons */
         auto renderables = layout.get_renderable_areas();
         auto offset = wf::point_t{origin.x, origin.y - (maximized ? -border / 2 : border / 4)};
+
+        OpenGL::render_begin(fb);
+
+        theme.render_background(fb, geometry, region, activated, current_cursor_position);
+
+        /* Draw title & buttons */
         for (auto item : renderables)
         {
             if (item->get_type() == wf::pixdecor::DECORATION_AREA_TITLE)
             {
-                OpenGL::render_begin(fb);
-                fb.logic_scissor(scissor);
-                render_title(fb, item->get_geometry() + offset, size.width - border * 2);
-                OpenGL::render_end();
+                render_title(fb, region, item->get_geometry() + offset, size.width - border * 2);
             } else // button
             {
                 item->as_button().render(fb,
-                    item->get_geometry() + origin, scissor);
+                    item->get_geometry() + origin, region);
             }
         }
+
+        OpenGL::render_end();
     }
 
     std::optional<wf::scene::input_node_t> find_node_at(const wf::pointf_t& at) override
@@ -255,10 +265,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                     (std::string(overlay_engine) == "rounded_corners" && !maximized) ? shadow_radius : 0);
             }
 
-            for (const auto& box : region)
-            {
-                self->render_scissor_box(target, offset, wlr_box_from_pixman_box(box));
-            }
+            self->render_region(target, offset, region);
         }
     };
 
