@@ -100,6 +100,12 @@ gboolean decoration_theme_t::read_colour(const char *name, wf::color_t & col)
 /** @return The available height for displaying the title */
 int decoration_theme_t::get_font_height_px() const
 {
+    static int font_sz = -1;
+    if (font_sz > 0)
+    {
+        return font_sz;
+    }
+
     char *font = g_settings_get_string(gs, "font-name");
 
     PangoFontDescription *font_desc = pango_font_description_from_string(font);
@@ -111,7 +117,7 @@ int decoration_theme_t::get_font_height_px() const
         font_height /= 3;
     }
 
-    return font_height / PANGO_SCALE;
+    return (font_sz = font_height / PANGO_SCALE);
 }
 
 int decoration_theme_t::get_title_height() const
