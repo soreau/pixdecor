@@ -32,6 +32,8 @@
 
 #include "deco-effects.hpp"
 #include "smoke-shaders.hpp"
+#include "effect-shaders.hpp"
+#include "overlay-shaders.hpp"
 
 
 namespace wf
@@ -41,6 +43,14 @@ namespace pixdecor
 static std::string stitch_smoke_shader(const std::string& source)
 {
     return smoke_header + source + effect_run_for_region_main;
+}
+
+static GLint compile_fragment_effect_program(const std::string& effect_source, const std::string& overlay_source)
+{
+    std::string full_fragment =
+        generic_effect_fragment_header + effect_source + overlay_source + generic_effect_fragment_main;
+
+    return OpenGL::compile_program(generic_effect_vertex_shader, full_fragment);
 }
 
 // ported from https://www.shadertoy.com/view/WdXBW4
@@ -183,13 +193,8 @@ void main() {
     // Mix the cloud color with the background, considering darkness, cover, and alpha
     vec3 finalColor = mix(skycolour, cloudColor * clouddark, cloudPattern + noiseShape + noiseColor) * (1.0 - cloudCover) + cloudColor * cloudCover;
     finalColor = mix(skycolour, finalColor, cloudAlpha);
-
     imageStore(out_tex, pos, vec4(finalColor, 1.0));
-}
-
-
-
-)";
+})";
 
 // ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Dots3.glsl
 static const char *render_source_halftone =
@@ -2143,11 +2148,38 @@ void smoke_t::destroy_programs()
         project2_program     = project3_program = project4_program = project5_program =
             project6_program = advect1_program = advect2_program = render_program =
                 render_overlay_program = GLuint(-1);
+
+    fragment_effect_only_program.free_resources();
 }
 
 void smoke_t::create_programs()
 {
     destroy_programs();
+
+    static std::map<std::string, std::string> fragment_effect_sources = {
+        {"clouds", effect_clouds_fragment},
+    };
+
+    static std::map<std::string, std::string> overlay_effect_sources = {
+        {"none", overlay_no_overlay},
+        {"rounded_corners", overlay_rounded_corners},
+    };
+
+    if (fragment_effect_sources.count(effect_type) &&
+        overlay_effect_sources.count(overlay_engine))
+    {
+        OpenGL::render_begin();
+        GLint program = compile_fragment_effect_program(
+            fragment_effect_sources[effect_type],
+            overlay_effect_sources[overlay_engine]);
+        fragment_effect_only_program.set_simple(program);
+        OpenGL::render_end();
+        return;
+    } else
+    {
+        fragment_effect_only_program.set_simple(0);
+    }
+
     OpenGL::render_begin();
     if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
     {
@@ -2414,6 +2446,13 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
     int title_height, int border_size, int shadow_radius)
 {
+    last_shadow_radius = shadow_radius;
+    if (fragment_effect_only_program.get_program_id(wf::TEXTURE_TYPE_RGBA) > 0)
+    {
+        // Fragment-only programs are directly rendered and don't need any preparation.
+        return;
+    }
+
     bool smoke = (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink");
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
     {
@@ -2592,9 +2631,50 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     OpenGL::render_end();
 }
 
+void smoke_t::run_fragment_shader(const wf::render_target_t& fb,
+    wf::geometry_t rectangle, const wf::region_t& scissor)
+{
+    fragment_effect_only_program.use(wf::TEXTURE_TYPE_RGBA);
+
+    GLfloat vertexData[] = {
+        1.0f * rectangle.x, 1.0f * rectangle.y + rectangle.height,
+        1.0f * rectangle.x + rectangle.width, 1.0f * rectangle.y + rectangle.height,
+        1.0f * rectangle.x + rectangle.width, 1.0f * rectangle.y,
+        1.0f * rectangle.x, 1.0f * rectangle.y,
+    };
+
+    fragment_effect_only_program.attrib_pointer("position", 2, 0, vertexData);
+    fragment_effect_only_program.uniformMatrix4f("MVP", fb.get_orthographic_projection());
+
+    fragment_effect_only_program.uniform1f("current_time", wf::get_current_time() / 30.0);
+    fragment_effect_only_program.uniform1f("width", rectangle.width);
+    fragment_effect_only_program.uniform1f("height", rectangle.height);
+    fragment_effect_only_program.uniform2f("topLeftCorner", rectangle.x, rectangle.y);
+
+    fragment_effect_only_program.uniform1i("shadow_radius", last_shadow_radius * 2);
+    fragment_effect_only_program.uniform1i("corner_radius", rounded_corner_radius);
+
+    glm::vec4 color {
+        shadow_color.value().r, shadow_color.value().g, shadow_color.value().b, shadow_color.value().a};
+    fragment_effect_only_program.uniform4f("shadow_color", color);
+
+    for (auto& box : scissor)
+    {
+        fb.logic_scissor(wlr_box_from_pixman_box(box));
+        GL_CALL(glDrawArrays(GL_TRIANGLE_FAN, 0, 4));
+    }
+
+}
+
 void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
     const wf::region_t& scissor)
 {
+    if (fragment_effect_only_program.get_program_id(wf::TEXTURE_TYPE_RGBA) != 0)
+    {
+        run_fragment_shader(fb, rectangle, scissor);
+        return;
+    }
+
     OpenGL::render_transformed_texture(wf::texture_t{texture}, rectangle,
         fb.get_orthographic_projection(), glm::vec4{1},
         OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
