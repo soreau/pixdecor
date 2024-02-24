@@ -2554,7 +2554,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
             GL_CALL(glUniform4fv(9, 1, shadow_color_f));
         }
 
-        GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
+        GL_CALL(glDispatchCompute(round_up_div(rectangle.width, 16), round_up_div(rectangle.height, 16), 1));
         GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
     }
 
