@@ -92,9 +92,9 @@ layout (binding = 6, r32f) uniform readonly image2D in_b1d;
 layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
 layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
-layout(location = 0) uniform ivec4 region;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 10) uniform int regionInfo[20];
 )";
 
 // Generic main method for a compute shader which runs for a particular region
@@ -102,9 +102,17 @@ static const char *effect_run_for_region_main = R"(
 void main()
 {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    if (all(lessThan(pos, region.zw)))
+    int z = int(gl_GlobalInvocationID.z);
+
+    ivec4 myRegion = ivec4(regionInfo[z * 5], regionInfo[z * 5 + 1], regionInfo[z * 5 + 2], regionInfo[z * 5 + 3]);
+    if (regionInfo[z * 5 + 4] > 0)
     {
-        pos += region.xy;
+        pos = pos.yx;
+    }
+
+    if (all(lessThan(pos, myRegion.zw)))
+    {
+        pos += myRegion.xy;
         run_pixel(pos.x, pos.y);
     }
 })";
@@ -390,10 +398,10 @@ layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
 layout (binding = 3, r32f) uniform readonly image2D in_b0d;
 layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
-layout(location = 0) uniform ivec4 region;
 layout(location = 4) uniform bool ink;
 layout(location = 8) uniform vec4 smoke_color;
 layout(location = 9) uniform vec4 decor_color;
+layout(location = 10) uniform int regionInfo[20];
 
 void run_pixel(int x, int y)
 {

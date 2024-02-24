@@ -2242,38 +2242,48 @@ int roundUpDiv(int a, int b)
 
 void smoke_t::dispatch_region(const wf::region_t& region)
 {
+    std::vector<int> values;
+
+    int maxX = 0;
+    int maxY = 0;
+
     for (auto& box : region)
     {
         auto rect = wlr_box_from_pixman_box(box);
-        GL_CALL(glUniform4i(0, rect.x, rect.y, rect.width, rect.height));
-        GL_CALL(glDispatchCompute(roundUpDiv(rect.width, 16), roundUpDiv(rect.height, 16), 1));
+        values.push_back(rect.x);
+        values.push_back(rect.y);
+        values.push_back(rect.width);
+        values.push_back(rect.height);
+
+        if (rect.width > rect.height)
+        {
+            values.push_back(0); // xy will not be flipped in compute shader
+            maxX = std::max(maxX, rect.width);
+            maxY = std::max(maxY, rect.height);
+        } else
+        {
+            values.push_back(1); // xy will be flipped in compute shader
+            maxX = std::max(maxX, rect.height);
+            maxY = std::max(maxY, rect.width);
+        }
     }
 
+    if (values.size() / 5 > 4)
+    {
+        LOGE("Error: too many regions");
+        return;
+    }
+
+//    LOGI("Dispatching region with ", values.size() / 5, " boxes", " (", maxX, "x", maxY, ")");
+
+    GL_CALL(glUniform1iv(10, values.size(), values.data()));
+    GL_CALL(glDispatchCompute(roundUpDiv(maxX, 16), roundUpDiv(maxY, 16), values.size() / 5));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
 
 void smoke_t::run_shader_region(GLuint program, const wf::region_t &region, const wf::dimensions_t &size)
 {
     GL_CALL(glUseProgram(program));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-    GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-    GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-    GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
-    GL_CALL(glBindImageTexture(4, b1u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
-    GL_CALL(glBindImageTexture(5, b1v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
-    GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-
     GL_CALL(glUniform1i(5, size.width));
     GL_CALL(glUniform1i(6, size.height));
     dispatch_region(region);
