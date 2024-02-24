@@ -184,7 +184,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                     continue;
                 }
 
-                view->damage();
+                auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+                deco->update_animation();
             }
         };
 
@@ -194,6 +195,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             {
                 o->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
             }
+
+            hook_set = true;
         }
 
         titlebar.set_callback([=] {option_changed_cb(false, true);});

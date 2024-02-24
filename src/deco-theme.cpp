@@ -100,6 +100,12 @@ gboolean decoration_theme_t::read_colour(const char *name, wf::color_t & col)
 /** @return The available height for displaying the title */
 int decoration_theme_t::get_font_height_px() const
 {
+    static int font_sz = -1;
+    if (font_sz > 0)
+    {
+        return font_sz;
+    }
+
     char *font = g_settings_get_string(gs, "font-name");
 
     PangoFontDescription *font_desc = pango_font_description_from_string(font);
@@ -111,7 +117,7 @@ int decoration_theme_t::get_font_height_px() const
         font_height /= 3;
     }
 
-    return font_height / PANGO_SCALE;
+    return (font_sz = font_height / PANGO_SCALE);
 }
 
 int decoration_theme_t::get_title_height() const
@@ -159,14 +165,15 @@ void decoration_theme_t::set_maximize(bool state)
  * @param active Whether to use active or inactive colors
  */
 void decoration_theme_t::render_background(const wf::render_target_t& fb,
-    wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active, wf::pointf_t p)
+    wf::geometry_t rectangle, const wf::region_t& scissor, bool active, wf::pointf_t p)
 {
     if ((std::string(effect_type) == "none") && (std::string(overlay_engine) == "none"))
     {
-        OpenGL::render_begin(fb);
-        fb.logic_scissor(scissor);
-        OpenGL::render_rectangle(rectangle, get_decor_color(active), fb.get_orthographic_projection());
-        OpenGL::render_end();
+        for (auto& box : scissor)
+        {
+            fb.logic_scissor(wlr_box_from_pixman_box(box));
+            OpenGL::render_rectangle(rectangle, get_decor_color(active), fb.get_orthographic_projection());
+        }
     } else
     {
         smoke.render_effect(fb, rectangle, scissor);
