@@ -3146,8 +3146,6 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     OpenGL::render_begin(fb);
     if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
     {
-        LOGI("recreating effect textures: ", rectangle.width, " != ", saved_width, " || ", rectangle.height,
-            " != ", saved_height);
         saved_width  = rectangle.width;
         saved_height = rectangle.height;
 
