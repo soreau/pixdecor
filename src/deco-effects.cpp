@@ -2235,7 +2235,7 @@ void smoke_t::destroy_textures()
     b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
 }
 
-int roundUpDiv(int a, int b)
+int round_up_div(int a, int b)
 {
     return (a + b - 1) / b;
 }
@@ -2244,8 +2244,8 @@ void smoke_t::dispatch_region(const wf::region_t& region)
 {
     std::vector<int> values;
 
-    int maxX = 0;
-    int maxY = 0;
+    int max_x = 0;
+    int max_y = 0;
 
     for (auto& box : region)
     {
@@ -2258,13 +2258,13 @@ void smoke_t::dispatch_region(const wf::region_t& region)
         if (rect.width > rect.height)
         {
             values.push_back(0); // xy will not be flipped in compute shader
-            maxX = std::max(maxX, rect.width);
-            maxY = std::max(maxY, rect.height);
+            max_x = std::max(max_x, rect.width);
+            max_y = std::max(max_y, rect.height);
         } else
         {
             values.push_back(1); // xy will be flipped in compute shader
-            maxX = std::max(maxX, rect.height);
-            maxY = std::max(maxY, rect.width);
+            max_x = std::max(max_x, rect.height);
+            max_y = std::max(max_y, rect.width);
         }
     }
 
@@ -2275,7 +2275,7 @@ void smoke_t::dispatch_region(const wf::region_t& region)
     }
 
     GL_CALL(glUniform1iv(10, values.size(), values.data()));
-    GL_CALL(glDispatchCompute(roundUpDiv(maxX, 16), roundUpDiv(maxY, 16), values.size() / 5));
+    GL_CALL(glDispatchCompute(round_up_div(max_x, 16), round_up_div(max_y, 16), values.size() / 5));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
 
