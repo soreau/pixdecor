@@ -2274,8 +2274,6 @@ void smoke_t::dispatch_region(const wf::region_t& region)
         return;
     }
 
-// LOGI("Dispatching region with ", values.size() / 5, " boxes", " (", maxX, "x", maxY, ")");
-
     GL_CALL(glUniform1iv(10, values.size(), values.data()));
     GL_CALL(glDispatchCompute(roundUpDiv(maxX, 16), roundUpDiv(maxY, 16), values.size() / 5));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
