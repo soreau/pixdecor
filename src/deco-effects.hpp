@@ -32,6 +32,9 @@ class smoke_t
     ~smoke_t();
 
     void run_shader(GLuint program, int width, int height, int title_height, int border_size, int radius);
+    void run_shader_region(GLuint program, const wf::region_t &region, const wf::dimensions_t &size);
+    void dispatch_region(const wf::region_t& region);
+
     void step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
         bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
         int title_height, int border_size, int shadow_radius);
