@@ -2274,14 +2274,14 @@ void smoke_t::dispatch_region(const wf::region_t& region)
         return;
     }
 
-//    LOGI("Dispatching region with ", values.size() / 5, " boxes", " (", maxX, "x", maxY, ")");
+// LOGI("Dispatching region with ", values.size() / 5, " boxes", " (", maxX, "x", maxY, ")");
 
     GL_CALL(glUniform1iv(10, values.size(), values.data()));
     GL_CALL(glDispatchCompute(roundUpDiv(maxX, 16), roundUpDiv(maxY, 16), values.size() / 5));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
 
-void smoke_t::run_shader_region(GLuint program, const wf::region_t &region, const wf::dimensions_t &size)
+void smoke_t::run_shader_region(GLuint program, const wf::region_t & region, const wf::dimensions_t & size)
 {
     GL_CALL(glUseProgram(program));
     GL_CALL(glUniform1i(5, size.width));
@@ -2409,8 +2409,8 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
 
     const wf::geometry_t nonshadow_rect = wf::geometry_t{
-        radius * 2,
-        radius * 2,
+        radius* 2,
+        radius* 2,
         rectangle.width - 4 * radius,
         rectangle.height - 4 * radius
     };
@@ -2525,7 +2525,6 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
             GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
             GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
         }
-
     } else if (!smoke && (std::string(overlay_engine) != "none"))
     {
         GLuint fb;

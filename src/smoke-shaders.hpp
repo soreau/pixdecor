@@ -1,4 +1,5 @@
-static const char *motion_source = R"(
+static const char *motion_source =
+    R"(
 #version 320 es
 
 precision lowp image2D;
@@ -98,7 +99,8 @@ layout(location = 10) uniform int regionInfo[20];
 )";
 
 // Generic main method for a compute shader which runs for a particular region
-static const char *effect_run_for_region_main = R"(
+static const char *effect_run_for_region_main =
+    R"(
 void main()
 {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
@@ -117,7 +119,8 @@ void main()
     }
 })";
 
-static const char *diffuse1_source = R"(
+static const char *diffuse1_source =
+    R"(
 void run_pixel(int x, int y)
 {
 	int k;
@@ -150,7 +153,8 @@ void run_pixel(int x, int y)
 }
 )";
 
-static const char *project1_source = R"(
+static const char *project1_source =
+    R"(
 void run_pixel(int x, int y) {
 	int k, l, s;
 	float h;
@@ -171,7 +175,8 @@ void run_pixel(int x, int y) {
 }
 )";
 
-static const char *project2_source = R"(
+static const char *project2_source =
+    R"(
 void run_pixel(int x, int y)
 {
 	int k, l, s;
@@ -192,7 +197,8 @@ void run_pixel(int x, int y)
 	imageStore(out_b0u, ivec2(x, y), vec4((s0.x + u1 + u2 + u3 + u4) / 4.0, 0.0, 0.0, 0.0));
 })";
 
-static const char *project3_source = R"(
+static const char *project3_source =
+    R"(
 void run_pixel(int x, int y)
 {
 	int k, l, s;
@@ -217,7 +223,8 @@ void run_pixel(int x, int y)
 	imageStore(out_b1v, ivec2(x, y), vec4(sv - 0.5 * (u4 - u3) / h, 0.0, 0.0, 0.0));
 })";
 
-static const char *advect1_source = R"(
+static const char *advect1_source =
+    R"(
 void run_pixel(int x, int y) /* b1.u, b1.v, b1.u, b0.u */
 {
 	int stride;
@@ -269,7 +276,8 @@ void run_pixel(int x, int y) /* b1.u, b1.v, b1.u, b0.u */
 	imageStore(out_b0v, ivec2(x, y), vec4(p2, 0.0, 0.0, 0.0));
 })";
 
-static const char *project4_source = R"(
+static const char *project4_source =
+    R"(
 void run_pixel(int x, int y)
 {
 	int k, l, s;
@@ -290,7 +298,8 @@ void run_pixel(int x, int y)
 	imageStore(out_b1v, ivec2(x, y), vec4(-0.5 * h * (u2 - u1 + v2 - v1), 0.0, 0.0, 0.0));
 })";
 
-static const char *project5_source = R"(
+static const char *project5_source =
+    R"(
 void run_pixel(int x, int y)
 {
 	int k, l, s;
@@ -311,7 +320,8 @@ void run_pixel(int x, int y)
 	imageStore(out_b1u, ivec2(x, y), vec4((s0.x + u1 + u2 + u3 + u4) / 4.0, 0.0, 0.0, 0.0));
 })";
 
-static const char *project6_source = R"(
+static const char *project6_source =
+    R"(
 void run_pixel(int x, int y)
 {
 	int k, l, s;
@@ -336,7 +346,8 @@ void run_pixel(int x, int y)
 	imageStore(out_b0v, ivec2(x, y), vec4(sv - 0.5 * (u4 - u3) / h, 0.0, 0.0, 0.0));
 })";
 
-static const char *diffuse2_source = R"(
+static const char *diffuse2_source =
+    R"(
 void run_pixel(int x, int y)
 {
 	int k, stride;
@@ -357,7 +368,8 @@ void run_pixel(int x, int y)
 	imageStore(out_b1d, ivec2(x, y), vec4((sz + a * t) / (1.0 + 4.0 * a) * 0.995, 0.0, 0.0, 0.0));
 })";
 
-static const char *advect2_source = R"(
+static const char *advect2_source =
+    R"(
 void run_pixel(int x, int y) /*b0u, b0v, b1d, b0d*/
 {
 	int stride;
@@ -389,7 +401,8 @@ void run_pixel(int x, int y) /*b0u, b0v, b1d, b0d*/
 	imageStore(out_b0d, ivec2(x, y), vec4(p1, 0.0, 0.0, 0.0));
 })";
 
-static const char *render_source = R"(
+static const char *render_source =
+    R"(
 #version 320 es
 
 precision lowp image2D;
