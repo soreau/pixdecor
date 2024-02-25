@@ -2158,6 +2158,7 @@ void smoke_t::create_programs()
 
     static std::map<std::string, std::string> fragment_effect_sources = {
         {"clouds", effect_clouds_fragment},
+        {"neon_pattern", effect_neon_pattern_fragment},
     };
 
     static std::map<std::string, std::string> overlay_effect_sources = {
