@@ -2652,8 +2652,11 @@ void smoke_t::run_fragment_shader(const wf::render_target_t& fb,
     fragment_effect_only_program.uniform1f("height", rectangle.height);
     fragment_effect_only_program.uniform2f("topLeftCorner", rectangle.x, rectangle.y);
 
-    fragment_effect_only_program.uniform1i("shadow_radius", last_shadow_radius * 2);
-    fragment_effect_only_program.uniform1i("corner_radius", rounded_corner_radius);
+    if (std::string(overlay_engine) == "rounded_corners")
+    {
+        fragment_effect_only_program.uniform1i("shadow_radius", last_shadow_radius * 2);
+        fragment_effect_only_program.uniform1i("corner_radius", rounded_corner_radius);
+    }
 
     glm::vec4 color {
         shadow_color.value().r, shadow_color.value().g, shadow_color.value().b, shadow_color.value().a};
