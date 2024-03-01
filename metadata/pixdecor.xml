@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <wayfire>
 	<plugin name="pixdecor">
-		<_short>PiX Decoration</_short>
-		<_long>Default decorations around XWayland windows for RPi.</_long>
+		<_short>Pix Decoration</_short>
+		<_long>A highly configurable and optionally fancy decorator plugin for wayfire.</_long>
 		<category>Effects</category>
 		<option name="border_size" type="int">
 			<_short>Border size</_short>
