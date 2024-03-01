@@ -3,7 +3,7 @@
 
 A highly configurable and optionally fancy decorator plugin for wayfire.
 
-## Building
+## Installing
 
 Set `--prefix` to the same as the wayfire installation.
 
@@ -12,3 +12,9 @@ $ meson setup build --prefix=/usr
 $ ninja -C build
 # ninja -C build install
 ```
+
+Restart wayfire.
+
+## Running
+
+Disable other decorator plugins and enable pixdecor plugin in core section of `wayfire.ini`.
