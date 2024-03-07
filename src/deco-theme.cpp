@@ -29,7 +29,9 @@ decoration_theme_t::decoration_theme_t()
 }
 
 decoration_theme_t::~decoration_theme_t()
-{}
+{
+    g_object_unref(gs);
+}
 
 void decoration_theme_t::update_colors(void)
 {
@@ -116,6 +118,8 @@ int decoration_theme_t::get_font_height_px() const
         font_height *= 4;
         font_height /= 3;
     }
+
+    pango_font_description_free(font_desc);
 
     return (font_sz = font_height / PANGO_SCALE);
 }

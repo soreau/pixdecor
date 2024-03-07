@@ -102,6 +102,7 @@ class decoration_layout_t
      */
     decoration_layout_t(const decoration_theme_t& theme,
         std::function<void(wlr_box)> damage_callback);
+    ~decoration_layout_t();
 
     /** Regenerate layout using the new size */
     void resize(int width, int height);

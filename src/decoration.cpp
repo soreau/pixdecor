@@ -287,7 +287,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             update_colors();
         };
 
-        dlopen("libpangocairo-1.0.so", RTLD_NOW);
+        dlopen("libpangocairo-1.0.so", RTLD_LAZY);
     }
 
     void fini() override

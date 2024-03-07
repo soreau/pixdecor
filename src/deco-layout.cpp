@@ -64,6 +64,11 @@ decoration_layout_t::decoration_layout_t(const decoration_theme_t& th,
     damage_callback(callback)
 {}
 
+decoration_layout_t::~decoration_layout_t()
+{
+    this->layout_areas.clear();
+}
+
 wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
 {
     // read the string from settings; start at the colon and replace commas with spaces

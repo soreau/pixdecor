@@ -450,6 +450,7 @@ wf::simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
 wf::simple_decorator_t::~simple_decorator_t()
 {
     wf::scene::remove_child(deco);
+    deco.reset();
 }
 
 void wf::simple_decorator_t::update_colors()
