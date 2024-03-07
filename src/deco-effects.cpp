@@ -2339,10 +2339,6 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     destroy_textures();
     create_textures();
 
-    GLuint fb;
-    GL_CALL(glGenFramebuffers(1, &fb));
-    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
-
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
@@ -2352,6 +2348,10 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     {
         return;
     }
+
+    GLuint fb;
+    GL_CALL(glGenFramebuffers(1, &fb));
+    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
 
     wf::color_t clear_color{0, 0, 0, 0};
     GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
