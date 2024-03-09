@@ -2549,7 +2549,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
             GL_CALL(glUniform1i(5, rectangle.width));
             GL_CALL(glUniform1i(6, rectangle.height));
             GL_CALL(glUniform1i(7, radius * 2));
-            GL_CALL(glUniform1f(9, effect_animate ? (wf::get_current_time() / 30.0) : 0.0));
+            GL_CALL(glUniform1f(9, effect_animate ? ((wf::get_current_time() / 30) & 0xFF) : 0.0));
             GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
             GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
         }
