@@ -11,7 +11,7 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 /**
  * A  class which manages the outlook of decorations.
@@ -47,7 +47,7 @@ class decoration_theme_t
      * @param active Whether to use active or inactive colors
      */
     void render_background(const wf::render_target_t& fb,
-        wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active, wf::pointf_t p);
+        wf::geometry_t rectangle, const wf::region_t& scissor, bool active, wf::pointf_t p,int border_size, int title_height);
 
     /**
      * Render the given text on a cairo_surface_t with the given size.

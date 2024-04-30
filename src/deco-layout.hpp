@@ -6,11 +6,12 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 static constexpr uint32_t DECORATION_AREA_RENDERABLE_BIT = (1 << 16);
 static constexpr uint32_t DECORATION_AREA_RESIZE_BIT     = (1 << 17);
-static constexpr uint32_t DECORATION_AREA_MOVE_BIT = (1 << 18);
+static constexpr uint32_t DECORATION_AREA_MOVE_BIT   = (1 << 18);
+static constexpr uint32_t DECORATION_AREA_SHADOW_BIT = (1 << 19);
 
 
 /** Different types of areas around the decoration */
@@ -20,6 +21,7 @@ enum decoration_area_type_t
     DECORATION_AREA_TITLE         =
         DECORATION_AREA_MOVE_BIT | DECORATION_AREA_RENDERABLE_BIT,
     DECORATION_AREA_BUTTON        = DECORATION_AREA_RENDERABLE_BIT,
+    DECORATION_AREA_SHADOW        = DECORATION_AREA_SHADOW_BIT,
     DECORATION_AREA_RESIZE_LEFT   = WLR_EDGE_LEFT | DECORATION_AREA_RESIZE_BIT,
     DECORATION_AREA_RESIZE_RIGHT  = WLR_EDGE_RIGHT | DECORATION_AREA_RESIZE_BIT,
     DECORATION_AREA_RESIZE_TOP    = WLR_EDGE_TOP | DECORATION_AREA_RESIZE_BIT,

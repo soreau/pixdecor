@@ -6,14 +6,18 @@
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
 wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+wf::option_wrapper_t<bool> titlebar{"pixdecor/titlebar"};
+wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
+wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
 wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
 wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
 wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
 wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
-//wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
 wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
 /** Create a new theme with the default parameters */
 decoration_theme_t::decoration_theme_t()
@@ -96,6 +100,12 @@ gboolean decoration_theme_t::read_colour(const char *name, wf::color_t & col)
 /** @return The available height for displaying the title */
 int decoration_theme_t::get_font_height_px() const
 {
+    static int font_sz = -1;
+    if (font_sz > 0)
+    {
+        return font_sz;
+    }
+
     char *font = g_settings_get_string(gs, "font-name");
 
     PangoFontDescription *font_desc = pango_font_description_from_string(font);
@@ -107,7 +117,7 @@ int decoration_theme_t::get_font_height_px() const
         font_height /= 3;
     }
 
-    return font_height / PANGO_SCALE;
+    return (font_sz = font_height / PANGO_SCALE);
 }
 
 int decoration_theme_t::get_title_height() const
@@ -121,19 +131,19 @@ int decoration_theme_t::get_title_height() const
         height = MIN_BAR_HEIGHT;
     }
 
-    return height;
+    return titlebar ? height : 0;
 }
 
 /** @return The available border for resizing */
 int decoration_theme_t::get_border_size() const
 {
-    return border_size;
+    return (!maximized_borders && maximized_shadows && maximized) ? 0 : border_size;
 }
 
 /** @return The input area for resizing */
 int decoration_theme_t::get_input_size() const
 {
-    return std::max(int(border_size), MIN_RESIZE_HANDLE_SIZE);
+    return std::max(get_border_size(), MIN_RESIZE_HANDLE_SIZE);
 }
 
 wf::color_t decoration_theme_t::get_decor_color(bool active) const
@@ -155,17 +165,18 @@ void decoration_theme_t::set_maximize(bool state)
  * @param active Whether to use active or inactive colors
  */
 void decoration_theme_t::render_background(const wf::render_target_t& fb,
-    wf::geometry_t rectangle, const wf::geometry_t& scissor, bool active, wf::pointf_t p)
+    wf::geometry_t rectangle, const wf::region_t& scissor, bool active, wf::pointf_t p,int border_size, int title_height)
 {
-/*    if (std::string(effect_type) == "none")
+    if ((std::string(effect_type) == "none") && (std::string(overlay_engine) == "none"))
     {
-        OpenGL::render_begin(fb);
-        fb.logic_scissor(scissor);
-        OpenGL::render_rectangle(rectangle, get_decor_color(active), fb.get_orthographic_projection());
-        OpenGL::render_end();
+        for (auto& box : scissor)
+        {
+            fb.logic_scissor(wlr_box_from_pixman_box(box));
+            OpenGL::render_rectangle(rectangle, get_decor_color(active), fb.get_orthographic_projection());
+        }
     } else
-   */ {
-        smoke.render_effect(fb, rectangle, scissor);
+    {
+        smoke.render_effect(fb, rectangle, scissor,border_size, title_height);
     }
 }
 
@@ -233,7 +244,7 @@ cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
     }
 
     theme    = g_settings_get_string(gs, "icon-theme");
-    iconfile = g_strdup_printf("/usr/share/icons/%s/%s/ui/window-%s-symbolic.symbolic.png", theme,
+    iconfile = g_strdup_printf("/usr/share/icons/%s/%s/ui/scalable/window-%s-symbolic.symbolic.png", theme,
         get_font_height_px() >= LARGE_ICON_THRESHOLD ? "24x24" : "16x16", icon_name);
     g_free(theme);
 

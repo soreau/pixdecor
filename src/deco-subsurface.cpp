@@ -23,14 +23,19 @@
 #include "deco-theme.hpp"
 #include <wayfire/window-manager.hpp>
 #include <wayfire/view-transform.hpp>
+#include <wayfire/txn/transaction-manager.hpp>
 
 #include <wayfire/plugins/common/cairo-util.hpp>
 
 #include <cairo.h>
 
+wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
-wf::option_wrapper_t<int> effect_diffuse_iterations{"pixdecor/effect_diffuse_iterations"};
+wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
+wf::option_wrapper_t<bool> titlebar_opt{"pixdecor/titlebar"};
+wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
+wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
 
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
     public wf::touch_interaction_t
@@ -52,11 +57,18 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             int target_width  = width * scale;
             int target_height = height * scale;
 
-            auto surface = theme.render_text(view->get_title(),
-                target_width, target_height, t_width, view->activated);
-            cairo_surface_upload_to_texture(surface, title_texture.tex);
-            cairo_surface_destroy(surface);
-            title_texture.current_text = view->get_title();
+            if ((view->get_title() != title_texture.current_text) ||
+                (target_width != title_texture.tex.width) ||
+                (target_height != title_texture.tex.height) ||
+                (view->activated != title_texture.rendered_for_activated_state))
+            {
+                auto surface = theme.render_text(view->get_title(),
+                    target_width, target_height, t_width, view->activated);
+                cairo_surface_upload_to_texture(surface, title_texture.tex);
+                cairo_surface_destroy(surface);
+                title_texture.current_text = view->get_title();
+                title_texture.rendered_for_activated_state = view->activated;
+            }
         }
     }
 
@@ -64,11 +76,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         wf::simple_texture_t tex;
         std::string current_text = "";
+        bool rendered_for_activated_state = false;
     } title_texture;
 
   public:
-    wf::decor::decoration_theme_t theme;
-    wf::decor::decoration_layout_t layout;
+    wf::pixdecor::decoration_theme_t theme;
+    wf::pixdecor::decoration_layout_t layout;
     wf::region_t cached_region;
 
     wf::dimensions_t size;
@@ -87,17 +100,17 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
         // make sure to hide frame if the view is fullscreen
         update_decoration_size();
+
         current_cursor_position.x = current_cursor_position.y = FLT_MIN;
     }
 
     ~simple_decoration_node_t()
-    {
-    }
+    {}
 
     wf::point_t get_offset()
     {
         auto view = _view.lock();
-        if (view && view->pending_tiled_edges())
+        if (view && view->pending_tiled_edges() && !maximized_borders && !maximized_shadows)
         {
             return {0, -current_titlebar};
         }
@@ -105,19 +118,27 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         return {-current_thickness, -current_titlebar};
     }
 
-    void render_title(const wf::render_target_t& fb,
-        wf::geometry_t geometry, int t_width)
+    void render_title(const wf::render_target_t& fb, const wf::region_t& scissor,
+        const wf::geometry_t& geometry, int t_width)
     {
         update_title(geometry.width, geometry.height, t_width, fb.scale);
         OpenGL::render_texture(title_texture.tex.tex, fb, geometry,
-            glm::vec4(1.0f), OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
+            glm::vec4(1.0f), OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
+
+        for (auto& box : scissor)
+        {
+            fb.logic_scissor(wlr_box_from_pixman_box(box));
+            OpenGL::draw_cached();
+        }
+
+        OpenGL::clear_cached();
+        OpenGL::render_end();
     }
 
-    void render_scissor_box(const wf::render_target_t& fb, wf::point_t origin,
-        const wlr_box& scissor)
-    {
+    void render_region(const wf::render_target_t& fb, wf::point_t origin, const wf::region_t& region)
+    {//int title_height
         int border = theme.get_border_size();
-        /* Clear background */
+        int title = theme.get_title_height();
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
         bool activated = false;
@@ -125,39 +146,62 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         if (auto view = _view.lock())
         {
             activated = view->activated;
-            maximized = view->pending_tiled_edges() == 0 ? false : true;
+            maximized = view->pending_tiled_edges();
         }
 
-        theme.render_background(fb, geometry, scissor, activated, current_cursor_position);
-
-        /* Draw title & buttons */
         auto renderables = layout.get_renderable_areas();
         auto offset = wf::point_t{origin.x, origin.y - (maximized ? -border / 2 : border / 4)};
+
+        OpenGL::render_begin(fb);
+
+        theme.render_background(fb, geometry, region, activated, current_cursor_position, border, title);
+
+        if (!titlebar_opt)
+        {
+            OpenGL::render_end();
+            return;
+        }
+
+        /* Draw title & buttons */
         for (auto item : renderables)
         {
-            if (item->get_type() == wf::decor::DECORATION_AREA_TITLE)
+            if (item->get_type() == wf::pixdecor::DECORATION_AREA_TITLE)
             {
-                OpenGL::render_begin(fb);
-                fb.logic_scissor(scissor);
-                render_title(fb, item->get_geometry() + offset, size.width - border * 2);
-                OpenGL::render_end();
+                render_title(fb, region, item->get_geometry() + offset, size.width - border * 2);
             } else // button
             {
                 item->as_button().render(fb,
-                    item->get_geometry() + origin, scissor);
+                    item->get_geometry() + origin, region);
             }
         }
+
+        OpenGL::render_end();
     }
 
     std::optional<wf::scene::input_node_t> find_node_at(const wf::pointf_t& at) override
     {
-        wf::pointf_t local = at - wf::pointf_t{get_offset()};
-        if (cached_region.contains_pointf(local))
+        bool maximized = false;
+        if (auto view = _view.lock())
         {
-            return wf::scene::input_node_t{
-                .node = this,
-                .local_coords = local,
-            };
+            maximized = view->pending_tiled_edges();
+        }
+
+        int border = theme.get_border_size();
+        int r = (std::string(overlay_engine) == "rounded_corners" && !maximized) ? int(shadow_radius) * 2 : 0;
+        r -= MIN_RESIZE_HANDLE_SIZE - std::min(border, MIN_RESIZE_HANDLE_SIZE);
+        wf::pointf_t local = at - wf::pointf_t{get_offset()};
+        if (auto view = _view.lock())
+        {
+            wf::geometry_t g = view->get_geometry();
+            g.x = g.y = 0;
+            g   = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-r, -r, -r, -r});
+            if (wf::region_t{g}.contains_pointf(local))
+            {
+                return wf::scene::input_node_t{
+                    .node = this,
+                    .local_coords = local,
+                };
+            }
         }
 
         return {};
@@ -213,22 +257,22 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             auto offset = self->get_offset();
             wlr_box rectangle{offset.x, offset.y, self->size.width, self->size.height};
             bool activated = false;
+            bool maximized = false;
             if (auto view = self->_view.lock())
             {
                 activated = view->activated;
+                maximized = maximized_shadows ? false : view->pending_tiled_edges();
             }
 
-            if (std::string(effect_type) != "none")
+            if ((std::string(effect_type) != "none") || (std::string(overlay_engine) != "none"))
             {
                 self->theme.smoke.step_effect(target, rectangle, std::string(effect_type) == "ink",
                     self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
-                    self->theme.get_title_height(), self->theme.get_border_size(), effect_diffuse_iterations);
+                    self->theme.get_title_height(), self->theme.get_border_size(),
+                    (std::string(overlay_engine) == "rounded_corners" && !maximized) ? shadow_radius : 0);
             }
 
-            for (const auto& box : region)
-            {
-                self->render_scissor_box(target, offset, wlr_box_from_pixman_box(box));
-            }
+            self->render_region(target, offset, region);
         }
     };
 
@@ -273,22 +317,22 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         handle_action(layout.handle_press_event(ev.state == WLR_BUTTON_PRESSED));
     }
 
-    void handle_action(wf::decor::decoration_layout_t::action_response_t action)
+    void handle_action(wf::pixdecor::decoration_layout_t::action_response_t action)
     {
         if (auto view = _view.lock())
         {
             switch (action.action)
             {
-              case wf::decor::DECORATION_ACTION_MOVE:
+              case wf::pixdecor::DECORATION_ACTION_MOVE:
                 return wf::get_core().default_wm->move_request(view);
 
-              case wf::decor::DECORATION_ACTION_RESIZE:
+              case wf::pixdecor::DECORATION_ACTION_RESIZE:
                 return wf::get_core().default_wm->resize_request(view, action.edges);
 
-              case wf::decor::DECORATION_ACTION_CLOSE:
+              case wf::pixdecor::DECORATION_ACTION_CLOSE:
                 return view->close();
 
-              case wf::decor::DECORATION_ACTION_TOGGLE_MAXIMIZE:
+              case wf::pixdecor::DECORATION_ACTION_TOGGLE_MAXIMIZE:
                 if (view->pending_tiled_edges())
                 {
                     return wf::get_core().default_wm->tile_request(view, 0);
@@ -299,7 +343,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
                 break;
 
-              case wf::decor::DECORATION_ACTION_MINIMIZE:
+              case wf::pixdecor::DECORATION_ACTION_MINIMIZE:
                 return wf::get_core().default_wm->minimize_request(view, true);
                 break;
 
@@ -333,7 +377,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         if (auto view = _view.lock())
         {
             theme.set_maximize(view->pending_tiled_edges());
-            layout.set_maximize(view->pending_tiled_edges());
+            layout.set_maximize(maximized_shadows ? 0 : view->pending_tiled_edges());
             view->damage();
             size = dims;
             layout.resize(size.width, size.height);
@@ -350,7 +394,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         if (auto view = _view.lock())
         {
-            bool fullscreen = view->toplevel()->current().fullscreen;
+            bool fullscreen = view->toplevel()->pending().fullscreen;
             if (fullscreen)
             {
                 current_thickness = 0;
@@ -358,8 +402,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 this->cached_region.clear();
             } else
             {
-                current_thickness = theme.get_border_size();
-                current_titlebar  =
+                current_thickness = theme.get_border_size() +
+                    ((std::string(overlay_engine) == "rounded_corners") ? int(shadow_radius) * 2 : 0);
+                current_titlebar =
                     theme.get_title_height() + current_thickness;
                 this->cached_region = layout.calculate_region();
             }
@@ -386,14 +431,19 @@ wf::simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
     on_view_geometry_changed = [this] (auto)
     {
         deco->resize(wf::dimensions(this->view->get_geometry()));
+        if (!this->view->toplevel()->pending().tiled_edges)
+        {
+            wf::get_core().tx_manager->schedule_object(this->view->toplevel());
+        }
     };
 
     on_view_fullscreen = [this] (auto)
     {
         deco->update_decoration_size();
-        if (!this->view->toplevel()->current().fullscreen)
+        if (!this->view->toplevel()->pending().fullscreen)
         {
             deco->resize(wf::dimensions(this->view->get_geometry()));
+            wf::get_core().tx_manager->schedule_object(this->view->toplevel());
         }
     };
 }
@@ -408,9 +458,10 @@ void wf::simple_decorator_t::update_colors()
     deco->theme.update_colors();
 }
 
-void wf::simple_decorator_t::damage(wayfire_view view)
+void wf::simple_decorator_t::effect_updated()
 {
-    wf::scene::damage_node(deco, deco->get_bounding_box());
+    deco->update_decoration_size();
+    deco->theme.smoke.effect_updated();
 }
 
 wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_state_t& state)
@@ -420,12 +471,30 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
         return {0, 0, 0, 0};
     }
 
-    int thickness = deco->theme.get_border_size();
-    int titlebar  = deco->theme.get_title_height() + thickness;
-    if (state.tiled_edges)
+    deco->theme.set_maximize(state.tiled_edges);
+
+    int thickness = deco->theme.get_border_size() +
+        ((std::string(overlay_engine) == "rounded_corners" &&
+            (!state.tiled_edges || maximized_shadows)) ? int(shadow_radius) * 2 : 0);
+    int titlebar = deco->theme.get_title_height() +
+        ((state.tiled_edges && !titlebar_opt && !maximized_borders && !maximized_shadows) ? 0 : thickness);
+    if (state.tiled_edges && !maximized_borders)
     {
-        thickness = 0;
+        if (maximized_shadows)
+        {
+            thickness -= deco->theme.get_border_size();
+            if (!titlebar_opt)
+            {
+                titlebar = thickness;
+            }
+        } else
+        {
+            thickness = 0;
+        }
     }
+
+    deco->current_thickness = thickness;
+    deco->current_titlebar  = titlebar;
 
     return wf::decoration_margins_t{
         .left   = thickness,
@@ -433,4 +502,17 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
         .bottom = thickness,
         .top    = titlebar,
     };
+}
+
+void wf::simple_decorator_t::update_animation()
+{
+    auto margins = get_margins(view->toplevel()->current());
+    auto bbox    = deco->get_bounding_box();
+
+    wf::region_t region;
+    region |= wlr_box{bbox.x, bbox.y, bbox.width, margins.top};
+    region |= wlr_box{bbox.x, bbox.y, margins.left, bbox.height};
+    region |= wlr_box{bbox.x, bbox.y + bbox.height - margins.bottom, bbox.width, margins.bottom};
+    region |= wlr_box{bbox.x + bbox.width - margins.right, bbox.y, margins.right, bbox.height};
+    wf::scene::damage_node(deco, region);
 }

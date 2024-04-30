@@ -1,826 +1,59 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2024 Scott Moreau <oreaus@gmail.com>
+ * - Ported weston-smoke to compute shader set
+ * Copyright (c) 2024 Ilia Bozhinov <ammen99@gmail.com>
+ * - Awesome optimizations
+ * Copyright (c) 2024 Andrew Pliatsikas <futurebytestore@gmail.com>
+ * - Ported effect shaders to compute/frag
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
 #include <wayfire/debug.hpp>
 
 #include "deco-effects.hpp"
-
-#include <wayfire/option-wrapper.hpp>
+#include "smoke-shaders.hpp"
+#include "effect-shaders.hpp"
+#include "overlay-shaders.hpp"
 
 
 namespace wf
 {
-namespace decor
+namespace pixdecor
 {
-
-
-static const char *motion_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 3) uniform int px;
-layout(location = 4) uniform int py;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-layout(location = 7) uniform int rand1;
-layout(location = 8) uniform int rand2;
-
-float rand(vec2 st) {
-    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+static std::string stitch_smoke_shader(const std::string& source)
+{
+    return smoke_header + source + effect_run_for_region_main;
 }
 
-void motion(int x, int y)
+static GLint compile_fragment_effect_program(const std::string& effect_source, const std::string& overlay_source)
 {
-	int i, i0, i1, j, j0, j1, d = 5;
+    std::string full_fragment =
+        generic_effect_fragment_header + effect_source + overlay_source + generic_effect_fragment_main;
 
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	if (x - d < 1)
-		i0 = 1;
-	else
-		i0 = x - d;
-	if (i0 + 2 * d > width - 1)
-		i1 = width - 1;
-	else
-		i1 = i0 + 2 * d;
-
-	if (y - d < 1)
-		j0 = 1;
-	else
-		j0 = y - d;
-	if (j0 + 2 * d > height - 1)
-		j1 = height - 1;
-	else
-		j1 = j0 + 2 * d;
-
-	for (i = i0; i < i1; i++)
-	{
-		for (j = j0; j < j1; j++) {
-			if (i > border_size && i < width - border_size && j > title_height && j < height - border_size)
-			{
-				continue;
-			}
-			vec4 b0u = imageLoad(in_b0u, ivec2(i, j));
-			vec4 b0v = imageLoad(in_b0v, ivec2(i, j));
-			vec4 b0d = imageLoad(in_b0d, ivec2(i, j));
-			float u = b0u.x;
-			float v = b0v.x;
-			float d = b0d.x;
-			imageStore(out_b0u, ivec2(i, j), vec4(u + float(256 - (rand1 & 512)), 0.0, 0.0, 0.0));
-			imageStore(out_b0v, ivec2(i, j), vec4(v + float(256 - (rand2 & 512)), 0.0, 0.0, 0.0));
-			imageStore(out_b0d, ivec2(i, j), vec4(d + 1.0, 0.0, 0.0, 0.0));
-		}
-	}
+    return OpenGL::compile_program(generic_effect_vertex_shader, full_fragment);
 }
 
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    if (pos.x == px && pos.y == py)
-    {
-        motion(pos.x, pos.y);
-    }
-}
-)";
-
-static const char *diffuse1_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void diffuse1(int x, int y)
-{
-	int k, stride;
-	float t, a = 0.0002;
-
-	stride = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 s = imageLoad(in_b0u, ivec2(x, y));
-	vec4 d1 = imageLoad(in_b1u, ivec2(x - 1, y));
-	vec4 d2 = imageLoad(in_b1u, ivec2(x + 1, y));
-	vec4 d3 = imageLoad(in_b1u, ivec2(x, y - 1));
-	vec4 d4 = imageLoad(in_b1u, ivec2(x, y + 1));
-	float sx = s.x;
-	float du1 = d1.x;
-	float du2 = d2.x;
-	float du3 = d3.x;
-	float du4 = d4.x;
-	float t1 = du1 + du2 + du3 + du4;
-	s = imageLoad(in_b0v, ivec2(x, y));
-	d1 = imageLoad(in_b1v, ivec2(x - 1, y));
-	d2 = imageLoad(in_b1v, ivec2(x + 1, y));
-	d3 = imageLoad(in_b1v, ivec2(x, y - 1));
-	d4 = imageLoad(in_b1v, ivec2(x, y + 1));
-	float sy = s.x;
-	du1 = d1.x;
-	du2 = d2.x;
-	du3 = d3.x;
-	du4 = d4.x;
-	float t2 = du1 + du2 + du3 + du4;
-	imageStore(out_b1u, ivec2(x, y), vec4((sx + a * t1) / (1.0 + 4.0 * a) * 0.995, 0.0, 0.0, 0.0));
-	imageStore(out_b1v, ivec2(x, y), vec4((sy + a * t2) / (1.0 + 4.0 * a) * 0.995, 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    diffuse1(pos.x, pos.y);
-}
-)";
-
-static const char *project1_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void project1(int x, int y)
-{
-	int k, l, s;
-	float h;
-
-	h = 1.0 / float(width);
-	s = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 s1 = imageLoad(in_b1u, ivec2(x - 1, y));
-	vec4 s2 = imageLoad(in_b1u, ivec2(x + 1, y));
-	vec4 s3 = imageLoad(in_b1v, ivec2(x, y - 1));
-	vec4 s4 = imageLoad(in_b1v, ivec2(x, y + 1));
-	float u1 = s1.x;
-	float u2 = s2.x;
-	float v1 = s3.x;
-	float v2 = s4.x;
-	imageStore(out_b0u, ivec2(x, y), vec4(0.0, 0.0, 0.0, 0.0));
-	imageStore(out_b0v, ivec2(x, y), vec4(-0.5 * h * (u2 - u1 + v2 - v1), 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    project1(pos.x, pos.y);
-}
-)";
-
-static const char *project2_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void project2(int x, int y)
-{
-	int k, l, s;
-	float h;
-
-	h = 1.0 / float(width);
-	s = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 s0 = imageLoad(in_b0v, ivec2(x, y));
-	vec4 s1 = imageLoad(in_b0u, ivec2(x - 1, y));
-	vec4 s2 = imageLoad(in_b0u, ivec2(x + 1, y));
-	vec4 s3 = imageLoad(in_b0u, ivec2(x, y - 1));
-	vec4 s4 = imageLoad(in_b0u, ivec2(x, y + 1));
-	float u1 = s1.x;
-	float u2 = s2.x;
-	float u3 = s3.x;
-	float u4 = s4.x;
-	imageStore(out_b0u, ivec2(x, y), vec4((s0.x + u1 + u2 + u3 + u4) / 4.0, 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    project2(pos.x, pos.y);
-}
-)";
-
-static const char *project3_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void project3(int x, int y)
-{
-	int k, l, s;
-	float h;
-
-	h = 1.0 / float(width);
-	s = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 s0x = imageLoad(in_b1u, ivec2(x, y));
-	vec4 s1 = imageLoad(in_b0u, ivec2(x - 1, y));
-	vec4 s2 = imageLoad(in_b0u, ivec2(x + 1, y));
-	vec4 s0y = imageLoad(in_b1v, ivec2(x, y));
-	vec4 s3 = imageLoad(in_b0u, ivec2(x, y - 1));
-	vec4 s4 = imageLoad(in_b0u, ivec2(x, y + 1));
-	float su = s0x.x;
-	float u1 = s1.x;
-	float u2 = s2.x;
-	float sv = s0y.x;
-	float u3 = s3.x;
-	float u4 = s4.x;
-	imageStore(out_b1u, ivec2(x, y), vec4(su - 0.5 * (u2 - u1) / h, 0.0, 0.0, 0.0));
-	imageStore(out_b1v, ivec2(x, y), vec4(sv - 0.5 * (u4 - u3) / h, 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    project3(pos.x, pos.y);
-}
-)";
-
-static const char *advect1_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void advect1(int x, int y) /* b1.u, b1.v, b1.u, b0.u */
-{
-	int stride;
-	int i, j;
-	float fx, fy;
-
-	stride = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 sx = imageLoad(in_b1u, ivec2(x, y));
-	vec4 sy = imageLoad(in_b1v, ivec2(x, y));
-	float ix = float(x) - sx.x;
-	float iy = float(y) - sy.x;
-	if (ix < 0.5)
-		ix = 0.5;
-	if (iy < 0.5)
-		iy = 0.5;
-	if (ix > float(width) - 1.5)
-		ix = float(width) - 1.5;
-	if (iy > float(height) - 1.5)
-		iy = float(height) - 1.5;
-	i = int(ix);
-	j = int(iy);
-	fx = ix - float(i);
-	fy = iy - float(j);
-	vec4 s0x = imageLoad(in_b1u, ivec2(i,     j));
-	vec4 s1x = imageLoad(in_b1u, ivec2(i + 1, j));
-	vec4 s2x = imageLoad(in_b1u, ivec2(i,     j + 1));
-	vec4 s3x = imageLoad(in_b1u, ivec2(i + 1, j + 1));
-	float p1 = (s0x.x * (1.0 - fx) + s1x.x * fx) * (1.0 - fy) + (s2x.x * (1.0 - fx) + s3x.x * fx) * fy;
-	imageStore(out_b0u, ivec2(x, y), vec4(p1, 0.0, 0.0, 0.0));
-	ix = float(x) - sx.x;
-	iy = float(y) - sy.x;
-	if (ix < 0.5)
-		ix = 0.5;
-	if (iy < 0.5)
-		iy = 0.5;
-	if (ix > float(width) - 1.5)
-		ix = float(width) - 1.5;
-	if (iy > float(height) - 1.5)
-		iy = float(height) - 1.5;
-	i = int(ix);
-	j = int(iy);
-	fx = ix - float(i);
-	fy = iy - float(j);
-	vec4 s0y = imageLoad(in_b1v, ivec2(i,     j));
-	vec4 s1y = imageLoad(in_b1v, ivec2(i + 1, j));
-	vec4 s2y = imageLoad(in_b1v, ivec2(i,     j + 1));
-	vec4 s3y = imageLoad(in_b1v, ivec2(i + 1, j + 1));
-	float p2 = (s0y.x * (1.0 - fx) + s1y.x * fx) * (1.0 - fy) + (s2y.x * (1.0 - fx) + s3y.x * fx) * fy;
-	imageStore(out_b0v, ivec2(x, y), vec4(p2, 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    advect1(pos.x, pos.y);
-}
-)";
-
-static const char *project4_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void project4(int x, int y)
-{
-	int k, l, s;
-	float h;
-
-	h = 1.0 / float(width);
-	s = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 s1 = imageLoad(in_b0u, ivec2(x - 1, y));
-	vec4 s2 = imageLoad(in_b0u, ivec2(x + 1, y));
-	vec4 s3 = imageLoad(in_b0v, ivec2(x, y - 1));
-	vec4 s4 = imageLoad(in_b0v, ivec2(x, y + 1));
-	float u1 = s1.x;
-	float u2 = s2.x;
-	float v1 = s3.x;
-	float v2 = s4.x;
-	imageStore(out_b1u, ivec2(x, y), vec4(0.0, 0.0, 0.0, 0.0));
-	imageStore(out_b1v, ivec2(x, y), vec4(-0.5 * h * (u2 - u1 + v2 - v1), 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    project4(pos.x, pos.y);
-}
-)";
-
-static const char *project5_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void project5(int x, int y)
-{
-	int k, l, s;
-	float h;
-
-	h = 1.0 / float(width);
-	s = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 s0 = imageLoad(in_b1v, ivec2(x, y));
-	vec4 s1 = imageLoad(in_b1u, ivec2(x - 1, y));
-	vec4 s2 = imageLoad(in_b1u, ivec2(x + 1, y));
-	vec4 s3 = imageLoad(in_b1u, ivec2(x, y - 1));
-	vec4 s4 = imageLoad(in_b1u, ivec2(x, y + 1));
-	float u1 = s1.x;
-	float u2 = s2.x;
-	float u3 = s3.x;
-	float u4 = s4.x;
-	imageStore(out_b1u, ivec2(x, y), vec4((s0.x + u1 + u2 + u3 + u4) / 4.0, 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    project5(pos.x, pos.y);
-}
-)";
-
-static const char *project6_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void project6(int x, int y)
-{
-	int k, l, s;
-	float h;
-
-	h = 1.0 / float(width);
-	s = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 s0x = imageLoad(in_b0u, ivec2(x, y));
-	vec4 s1 = imageLoad(in_b1u, ivec2(x - 1, y));
-	vec4 s2 = imageLoad(in_b1u, ivec2(x + 1, y));
-	vec4 s0y = imageLoad(in_b0v, ivec2(x, y));
-	vec4 s3 = imageLoad(in_b1u, ivec2(x, y - 1));
-	vec4 s4 = imageLoad(in_b1u, ivec2(x, y + 1));
-	float su = s0x.x;
-	float u1 = s1.x;
-	float u2 = s2.x;
-	float sv = s0y.x;
-	float u3 = s3.x;
-	float u4 = s4.x;
-	imageStore(out_b0u, ivec2(x, y), vec4(su - 0.5 * (u2 - u1) / h, 0.0, 0.0, 0.0));
-	imageStore(out_b0v, ivec2(x, y), vec4(sv - 0.5 * (u4 - u3) / h, 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    project6(pos.x, pos.y);
-}
-)";
-
-static const char *diffuse2_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void diffuse2(int x, int y)
-{
-	int k, stride;
-	float t, a = 0.0002;
-
-	stride = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 s = imageLoad(in_b0d, ivec2(x, y));
-	vec4 d1 = imageLoad(in_b1d, ivec2(x - 1, y));
-	vec4 d2 = imageLoad(in_b1d, ivec2(x + 1, y));
-	vec4 d3 = imageLoad(in_b1d, ivec2(x, y - 1));
-	vec4 d4 = imageLoad(in_b1d, ivec2(x, y + 1));
-	float sz = s.x;
-	float du1 = d1.x;
-	float du2 = d2.x;
-	float du3 = d3.x;
-	float du4 = d4.x;
-	t = du1 + du2 + du3 + du4;
-	imageStore(out_b1d, ivec2(x, y), vec4((sz + a * t) / (1.0 + 4.0 * a) * 0.995, 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    diffuse2(pos.x, pos.y);
-}
-)";
-
-static const char *advect2_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform readonly image2D in_tex;
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 1, r32f) uniform readonly image2D in_b0u;
-layout (binding = 1, r32f) uniform writeonly image2D out_b0u;
-layout (binding = 2, r32f) uniform readonly image2D in_b0v;
-layout (binding = 2, r32f) uniform writeonly image2D out_b0v;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (binding = 3, r32f) uniform writeonly image2D out_b0d;
-layout (binding = 4, r32f) uniform readonly image2D in_b1u;
-layout (binding = 4, r32f) uniform writeonly image2D out_b1u;
-layout (binding = 5, r32f) uniform readonly image2D in_b1v;
-layout (binding = 5, r32f) uniform writeonly image2D out_b1v;
-layout (binding = 6, r32f) uniform readonly image2D in_b1d;
-layout (binding = 6, r32f) uniform writeonly image2D out_b1d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-
-void advect2(int x, int y) /*b0u, b0v, b1d, b0d*/
-{
-	int stride;
-	int i, j;
-	float fx, fy;
-
-	stride = width;
-
-	if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-	    (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
-	{
-		return;
-	}
-
-	vec4 sx = imageLoad(in_b0u, ivec2(x, y));
-	vec4 sy = imageLoad(in_b0v, ivec2(x, y));
-	float ix = float(x) - sx.x;
-	float iy = float(y) - sy.x;
-	if (ix < 0.5)
-		ix = 0.5;
-	if (iy < 0.5)
-		iy = 0.5;
-	if (ix > float(width) - 1.5)
-		ix = float(width) - 1.5;
-	if (iy > float(height) - 1.5)
-		iy = float(height) - 1.5;
-	i = int(ix);
-	j = int(iy);
-	fx = ix - float(i);
-	fy = iy - float(j);
-	vec4 s0z = imageLoad(in_b1d, ivec2(i,     j));
-	vec4 s1z = imageLoad(in_b1d, ivec2(i + 1, j));
-	vec4 s2z = imageLoad(in_b1d, ivec2(i,     j + 1));
-	vec4 s3z = imageLoad(in_b1d, ivec2(i + 1, j + 1));
-	float p1 = (s0z.x * (1.0 - fx) + s1z.x * fx) * (1.0 - fy) + (s2z.x * (1.0 - fx) + s3z.x * fx) * fy;
-	imageStore(out_b0d, ivec2(x, y), vec4(p1, 0.0, 0.0, 0.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    advect2(pos.x, pos.y);
-}
-)";
-
-static const char *render_source =
-    R"(
-#version 320 es
-
-precision lowp image2D;
-
-layout (binding = 0, rgba32f) uniform writeonly image2D out_tex;
-layout (binding = 3, r32f) uniform readonly image2D in_b0d;
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-layout(location = 1) uniform int title_height;
-layout(location = 2) uniform int border_size;
-layout(location = 4) uniform bool ink;
-layout(location = 5) uniform int width;
-layout(location = 6) uniform int height;
-layout(location = 7) uniform vec4 smoke_color;
-layout(location = 8) uniform vec4 decor_color;
-
-void render(int x, int y)
-{
-	float c, r, g, b, a;
-
-	if (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size)
-	{
-		return;
-	}
-
-	vec4 s = imageLoad(in_b0d, ivec2(x, y));
-	c = s.x * 800.0;
-	if (c > 255.0)
-		c = 255.0;
-	a = c * smoke_color.a;
-	vec3 color;
-	if (ink)
-	{
-		if (c > 2.0)
-			color = mix(decor_color.rgb, smoke_color.rgb, clamp(a, 0.0, 1.0));
-		else
-			color = mix(decor_color.rgb, vec3(0.0, 0.0, 0.0), clamp(a, 0.0, 1.0));
-		if (c > 1.5)
-			imageStore(out_tex, ivec2(x, y), vec4(color, 1.0));
-		else
-			imageStore(out_tex, ivec2(x, y), decor_color);
-		return;
-	} else
-	{
-		color = mix(decor_color.rgb, smoke_color.rgb, clamp(a, 0.0, 1.0));
-	}
-	imageStore(out_tex, ivec2(x, y), vec4(color, 1.0));
-}
-
-void main()
-{
-    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    render(pos.x, pos.y);
-}
-)";
-
-
+// ported from https://www.shadertoy.com/view/WdXBW4
 static const char *render_source_clouds =
     R"(
 #version 320 es
@@ -833,6 +66,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time;
 float cloudscale=2.1;  // Added cloudscale parameter
 
@@ -868,21 +102,13 @@ float fbm(vec2 n) {
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    
-    
 
-
-//    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
     
     
       // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -967,21 +193,10 @@ void main() {
     // Mix the cloud color with the background, considering darkness, cover, and alpha
     vec3 finalColor = mix(skycolour, cloudColor * clouddark, cloudPattern + noiseShape + noiseColor) * (1.0 - cloudCover) + cloudColor * cloudCover;
     finalColor = mix(skycolour, finalColor, cloudAlpha);
-
     imageStore(out_tex, pos, vec4(finalColor, 1.0));
-}
+})";
 
-
-
-)";
-
-
-
-
-
-
-
-
+// ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Dots3.glsl
 static const char *render_source_halftone =
     R"(
 #version 310 es
@@ -995,13 +210,8 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-
-
-
-
-
-
-layout(location = 9) uniform float  time;
+layout(location = 7) uniform int radius;
+layout(location = 9) uniform float time;
 
 const vec2 resolution = vec2(1280.0, 720.0);
 const float timeFactor = 0.025;
@@ -1034,19 +244,15 @@ float halftone(vec2 coord, float angle, float t, float amp) {
 }
 
 void main() {
-
-
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
     
        // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
     
     
       // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1059,16 +265,9 @@ void main() {
     // Output the final color
     imageStore(out_tex, pos, vec4(c1 * c2 * c3 * c4, 1.0));
 }
-
-
-
-
-
-
-
 )";
 
-
+// ported from https://www.shadertoy.com/view/WdjGRc
 static const char *render_source_lava =
     R"(
 #version 320 es
@@ -1084,6 +283,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time;
 
 vec3 effect(float speed, vec2 uv, float time, float scale) {
@@ -1110,19 +310,17 @@ vec3 effect(float speed, vec2 uv, float time, float scale) {
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
     
 vec2 uv = vec2(pos) / vec2(1000, 2000);
     uv = 2.0 * uv - 1.0;
     uv *= (10.3 + 0.1 * sin(current_time * 0.01));
 
        // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1137,11 +335,9 @@ vec2 uv = vec2(pos) / vec2(1000, 2000);
     // Output the final color to the output texture
     imageStore(out_tex, pos, vec4(col, 1.0));
 }
-
-
 )";
 
-
+// ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Eyes2.glsl
 static const char *render_source_pattern =
     R"(
 #version 310 es
@@ -1149,15 +345,15 @@ precision highp float;
 precision highp image2D;
 
 layout(binding = 0, rgba32f) writeonly uniform highp image2D out_tex;
-layout(local_size_x = 30, local_size_y = 30, local_size_z = 1) in;
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 
 layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float time;
-const vec2 resolution = vec2(1280.0, 720.0);  // Adjusted to 720p
 
 float rand(vec2 uv)
 {
@@ -1170,13 +366,13 @@ vec3 hue2rgb(float h)
     return clamp(vec3(abs(h - 1.0) - 1.0, 2.0 - abs(h), 2.0 - abs(h - 2.0)), 0.0, 1.0);
 }
 
-vec3 eyes(vec2 coord)
+vec3 eyes(vec2 coord, vec2 resolution)
 {
     const float pi = 3.141592;
     float t = 0.4 * time * 0.05; 
     float aspectRatio = resolution.x / resolution.y;
     float div = 20.0;
-    float sc = resolution.y / div ;
+    float sc = 30.0;
 
     vec2 p = (coord - resolution / 2.0) / sc - 0.5;
 
@@ -1200,25 +396,18 @@ vec3 eyes(vec2 coord)
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    vec2 resolution = vec2(float(width), float(height));
 
- 
- 
- 
-  //  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
 
-    vec3 color = eyes(vec2(pos));
+    vec3 color = eyes(vec2(pos), resolution);
 
     // Output the final color
     imageStore(out_tex, pos, vec4(color, 1.0));
@@ -1227,7 +416,7 @@ void main() {
 
 )";
 
-
+// original (by phodius)
 static const char *render_source_hex =
     R"(
 #version 310 es
@@ -1242,11 +431,12 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float iTime;
-uniform vec2 iResolution;
+vec2 iResolution;
 
 float rand(vec2 co) {
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+    return fract(sin(dot(co.xy, vec2(12.9898, 4.1414))) * 43758.5453);
 }
 
 // Hexagon function
@@ -1269,28 +459,26 @@ vec4 hexagon(vec2 p)
     return vec4(pi + ca - cb * ma, e, f);
 }
 void main() {
-    ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-    // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
 
-    vec2 uv = (vec2(globalID) + 0.5) / 1920.0; // Assuming iResolution is 1920x1080
+    vec2 uv = (vec2(pos) + 0.5) / float(width);
 
     // Generate a random value
     float randVal = rand(uv);
 
     // Apply hexagon logic
-    vec2 pos = (-1920.0 + 2.0 * vec2(globalID)) / 1080.0;
-    vec4 h = hexagon(60.0 * pos + vec2(0.5 * iTime * 0.125));
-    
+    vec2 p = (-float(width) + 2.0 * vec2(pos)) / float(height);
+    vec4 h = hexagon(40.0 * p + vec2(0.5 * iTime * 0.125));
+
     float col = 0.01 + 0.15 * rand(vec2(h.xy)) * 1.0;
     col *= 4.3 + 0.15 * sin(10.0 * h.z);
 
@@ -1303,15 +491,11 @@ void main() {
     vec3 finalColor = mix(shadeColor1, mix(shadeColor2, shadeColor3, randVal), col);
 
     // Use imageStore instead of writing to buffer
-    imageStore(OutputImage, globalID, vec4(finalColor, 1.0));
+    imageStore(OutputImage, pos, vec4(finalColor, 1.0));
 }
-
-
-
-
 )";
 
-
+// ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Zebra.glsl
 static const char *render_source_zebra =
     R"(
 #version 310 es
@@ -1325,6 +509,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float time;
 const float resolutionY = 720.0; // Set to constant resolution of 720p
 const float pi = 3.14159265359;
@@ -1336,17 +521,13 @@ float rand(vec2 uv)
 }
 
 void main() {
-    //ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-        ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1383,8 +564,7 @@ void main() {
 
 )";
 
-
-
+// ported from https://www.shadertoy.com/view/dlGfWV
 static const char *render_source_neural_network =
     R"(
 
@@ -1403,10 +583,8 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-
-
-
-layout(location = 9) uniform float time; // Animated time
+layout(location = 7) uniform int radius;
+layout(location = 9) uniform float time;
 
 uniform vec2 iResolution;
 uniform float iTime;
@@ -1418,16 +596,13 @@ mat2 rotate2D(float r) {
 }
 
 void main() {
-     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1462,8 +637,7 @@ void main() {
 }
 )";
 
-
-
+// Ported from https://www.shadertoy.com/view/llSyDh
 static const char *render_source_hexagon_maze =
     R"(
 #version 320 es
@@ -1479,6 +653,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float iTime;
 uniform vec2 iResolution;
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
@@ -1620,18 +795,14 @@ float getPolarCoord(vec2 q, float dir){
 
 
 void main() {
-    vec2 iResolution = vec2(1280.0, 720.0);
+    vec2 iResolution = vec2(width, height);
     ivec2 id = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -1892,8 +1063,8 @@ void main() {
 
 )";
 
-
-static const char *render_source_raymarched_truchet  =
+// ported from https://www.shadertoy.com/view/4td3zj
+static const char *render_source_raymarched_truchet =
     R"(
 #version 310 es
 
@@ -1908,6 +1079,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float  iTime;
 uniform vec2 iResolution;
 
@@ -2140,7 +1312,7 @@ float Voronoi(in vec2 p){
 
 void main() {
 
-    vec2 iResolution = vec2(1920.0, 1080.0);
+    vec2 iResolution = vec2(width, height);
     ivec2 id = ivec2(gl_GlobalInvocationID.xy);
  float tm = (iTime / 2.) * 0.0125;
  
@@ -2150,16 +1322,13 @@ void main() {
     vec3 rd = normalize(vec3(2. * vec2(id) - iResolution.xy, iResolution.y));
 
 
-      ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -2276,9 +1445,8 @@ col *= 1.3;
 }
 )";
 
-
-
-static const char *render_source_neon_pattern  =
+// ported from https://www.shadertoy.com/view/mtyGWy
+static const char *render_source_neon_pattern =
     R"(
 
  #version 310 es
@@ -2294,7 +1462,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time; 
 
 vec3 palette(float t) {
@@ -2307,20 +1475,17 @@ vec3 palette(float t) {
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
     
        // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
-    vec2 uv = vec2(pos) / vec2(800, 600);
+    vec2 uv = vec2(pos) / vec2(width, height);
     vec2 uv0 = uv;
     vec3 finalColor = vec3(0.0);
 
@@ -2344,9 +1509,8 @@ void main() {
 }
 )";
 
-
-
-static const char *render_source_neon_rings  =
+// original (by phodius)
+static const char *render_source_neon_rings =
     R"(
 #version 310 es
 precision highp float;
@@ -2360,6 +1524,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time; // Animated time
 
 #define PI 3.14159265358979323846
@@ -2367,16 +1532,12 @@ layout(location = 9) uniform float current_time; // Animated time
 
 void main() {
    
-  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
-    
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -2388,7 +1549,7 @@ void main() {
 
     for (int i = 0; i < numCircles; ++i) {
         // Calculate UV coordinates for each circle
-        vec2 uv = vec2(pos) / vec2(300, 300);
+        vec2 uv = vec2(pos) / vec2(width / 3, height / 3);
 
         // Calculate polar coordinates
         float a = atan(uv.y, uv.x);
@@ -2435,8 +1596,8 @@ void main() {
 
 )";
 
-
-static const char *render_source_deco  =
+// ported from https://www.shadertoy.com/view/WdjGRc
+static const char *render_source_deco =
     R"(
 #version 320 es
 precision highp float;
@@ -2451,6 +1612,7 @@ layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 7) uniform int radius;
 layout(location = 9) uniform float current_time;
 
 vec3 effect(float speed, vec2 uv, float time, float scale) {
@@ -2477,19 +1639,16 @@ vec3 effect(float speed, vec2 uv, float time, float scale) {
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-      ivec2 globalID = ivec2(gl_WorkGroupID.xy * gl_WorkGroupSize.xy + gl_LocalInvocationID.xy);
     
-vec2 uv = vec2(pos) / vec2(1000, 2000);
+    vec2 uv = vec2(pos) / vec2(width, height);
     uv = 2.0 * uv - 1.0;
     uv *= (10.3 + 0.1 * sin(current_time * 0.01));
 
-       // Extract x and y coordinates
-    int x = globalID.x;
-    int y = globalID.y;
+    int x = pos.x;
+    int y = pos.y;
 
     // Check if the pixel should be drawn
-    if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
-        (x >= border_size && x <= width - border_size && y >= title_height && y <= height - border_size))
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
     {
         return;
     }
@@ -2506,117 +1665,248 @@ vec2 uv = vec2(pos) / vec2(1000, 2000);
 }
 )";
 
-/*
-static const char *render_source_overlay  =
-    R"(
-#version 320 es
-
-
-
-uniform vec2 iResolution;
-uniform float iTime;
-uniform vec2 iMouse;
-
-layout(binding = 0, rgba32f) readonly uniform highp image2D neural_network_tex;  // Use binding point 0
-layout(binding = 0, rgba32f) writeonly uniform highp image2D image;  // Use binding point 0
+// ported from https://www.shadertoy.com/view/3djfzy
+static const char *render_source_ice =
+    R"(#version 320 es
+precision highp float;
 
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-
-#define MARKER_RADIUS 12.5
-#define THICCNESS 2.0
-
+layout(binding = 0, rgba32f) writeonly uniform highp image2D outputImage;
 
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 9) uniform float current_time;
 
-float sin01(float x) {
-    return (sin(x) + 1.0) / 2.0;
+float rand(in vec2 _st) {
+    return fract(sin(dot(_st.xy, vec2(-0.820, -0.840))) * 4757.153);
+}
+
+float noise(in vec2 _st) {
+    const vec2 d = vec2(0.0, 1.0);
+    vec2 b = floor(_st), f = smoothstep(vec2(0.0), vec2(0.1, 0.3), fract(_st));
+    return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);
+}
+
+float fbm(in vec2 _st) {
+    float v = sin(current_time * 0.005) * 0.2;
+    float a = 0.3;
+    vec2 shift = vec2(100.0);
+    // Rotate to reduce axial bias
+    mat2 rot = mat2(cos(0.5), sin(1.0), -sin(0.5), acos(0.5));
+    for (int i = 0; i < 3; ++i) {
+        v += a * noise(_st);
+        _st = rot * _st * 2.0 + shift;
+        a *= 1.5;
+    }
+    return v;
 }
 
 void main() {
-    ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-    vec2 fragCoord = vec2(storePos);
+    ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
+    if (gid.x >= width || gid.y >= height) return;
 
-    vec4 col = vec4(0.0);
+    vec2 st = (vec2(gid) * 2.0 - vec2(width, height)) / min(float(width), float(height)) * 0.5;
 
-    vec2 p1 = vec2(0.0+THICCNESS , float(height)-THICCNESS );
-    vec2 p2 = vec2(0.0+THICCNESS , 0.0+THICCNESS );
-    
-    vec2 x1 = vec2(float(width)-THICCNESS , float(height)-THICCNESS );
-    vec2 x2 = vec2(float(width)-THICCNESS , 0.0+THICCNESS );
-    
-    vec2 y1 = vec2(0.0+THICCNESS , float(height)-THICCNESS );
-    vec2 y2 = vec2(float(width)-THICCNESS , float(height)-THICCNESS );
-
-    vec2 z1 = vec2(0.0+THICCNESS , 0.0+THICCNESS );
-    vec2 z2 = vec2(float(width)-THICCNESS , 0.0+THICCNESS );
-
-    vec2 p3 = fragCoord;
-    vec2 p12 = p2 - p1;
-    vec2 p13 = p3 - p1;
-    
-    vec2 x3 = fragCoord;
-    vec2 x12 = x2 - x1;
-    vec2 x13 = x3 - x1;
-    
-    vec2 y3 = fragCoord;
-    vec2 y12 = y2 - y1;
-    vec2 y13 = y3 - y1;
-    
-    vec2 z3 = fragCoord;
-    vec2 z12 = z2 - z1;
-    vec2 z13 = z3 - z1;
-    
-    
-    float d = dot(p12, p13) / length(p12); // = length(p13) * cos(angle)
-    float dx = dot(x12, x13) / length(x12);
-    float dy = dot(y12, y13) / length(y12);
-    float dz = dot(z12, z13) / length(z12);
-    
-    vec2 p4 = p1 + normalize(p12) * d;
-    vec2 x4 = x1 + normalize(x12) * dx;
-    vec2 y4 = y1 + normalize(y12) * dy;
-    vec2 z4 = z1 + normalize(z12) * dz;
-    
-   if (((length(p4 - p3) < THICCNESS && length(p4 - p1) <= length(p12) && length(p4 - p2) <= length(p12)) ||
-         (length(x4 - x3) < THICCNESS && length(x4 - x1) <= length(x12) && length(x4 - x2) <= length(x12))) ||
-         (length(y4 - y3) < THICCNESS && length(y4 - y1) <= length(y12) && length(y4 - y2) <= length(y12)) ||
-         (length(z4 - z3) < THICCNESS && length(z4 - z1) <= length(z12) && length(z4 - z2) <= length(z12))) {
-        col += vec4(0.1, 0.1, 0.1, 1.0);
+    vec2 coord = st * 0.2;
+    float len;
+    for (int i = 0; i < 3; i++) {
+        len = length(coord);
+        coord.x += sin(coord.y + current_time * 0.001) * 2.1;
+        coord.y += cos(coord.x + current_time * 0.001 + cos(len * 1.0)) * 1.0;
     }
+    len -= 3.0;
 
-    // Draw the lines connecting the points
-    if (length(fragCoord - p1) < THICCNESS || length(fragCoord - p2) < THICCNESS ||
-        length(fragCoord - x1) < THICCNESS || length(fragCoord - x2) < THICCNESS ||
-        length(fragCoord - y1) < THICCNESS || length(fragCoord - y2) < THICCNESS ||
-        length(fragCoord - z1) < THICCNESS || length(fragCoord - z2) < THICCNESS) {
-        col += vec4(0.1, 0.1, 0.1, 1.0);
-    }
+    vec3 color = vec3(0.0);
 
-   
-   //     vec4 neuralColor = imageLoad(neural_network_tex, ivec2(fragCoord));
-      
-     //   col = mix(col, neuralColor, 0.5);  // Example: simple linear interpolation (blend) with equal weight
-    vec4 neuralColor = imageLoad(neural_network_tex, ivec2(fragCoord));
-    col += neuralColor;
+    vec2 q = vec2(0.0);
+    q.x = fbm(st);
+    q.y = fbm(st + vec2(-0.450, 0.650));
 
-    imageStore(image, storePos, col);
+    vec2 r = vec2(0.0);
+    r.x = fbm(st + 1.0 * q + vec2(0.570, 0.520) + 0.1 * current_time*0.01);
+    r.y = fbm(st + 1.0 * q + vec2(0.340, -0.570) + 0.05 * current_time*0.01);
+    float f = fbm(st + r);
+
+    color = mix(color, cos(len + vec3(0.5, 0.0, -0.1)), 1.0);
+    color = mix(vec3(0.478, 0.738, 0.760), vec3(0.563, 0.580, 0.667), color);
+
+    vec4 fragColor = vec4((f * f * f + .6 * f * f + .5 * f) * color, 1.0);
+
+    imageStore(outputImage, gid, fragColor);
 }
 
+)";
+
+
+// ported from https://www.shadertoy.com/view/XsXXRN
+static const char *render_source_fire =
+    R"(
+
+    #version 320 es
+precision highp float;
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+layout(binding = 0, rgba32f) writeonly uniform highp image2D outputImage;
+
+layout(location = 5) uniform int width;
+layout(location = 6) uniform int height;
+layout(location = 9) uniform float current_time;
+
+float rand(vec2 n) {
+    return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+
+float noise(vec2 n) {
+    const vec2 d = vec2(0.0, 1.0);
+    vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));
+    return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);
+}
+
+float fbm(vec2 n) {
+    float total = 0.0, amplitude = 1.0;
+    for (int i = 0; i < 4; i++) {
+        total += noise(n) * amplitude;
+        n += n;
+        amplitude *= 0.5;
+    }
+    return total;
+}
+
+void main() {
+    ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
+    if (gid.x >= width || gid.y >= height) return;
+
+    // Only flip the y-coordinate when storing the result
+    ivec2 storePos = ivec2(gid.x, height - 1 - gid.y);
+
+    const vec3 c1 = vec3(0.5, 0.0, 0.1);
+    const vec3 c2 = vec3(0.9, 0.0, 0.0);
+    const vec3 c3 = vec3(0.2, 0.0, 0.0);
+    const vec3 c4 = vec3(1.0, 0.9, 0.0);
+    const vec3 c5 = vec3(0.1);
+    const vec3 c6 = vec3(0.9);
+
+    vec2 speed = vec2(0.7, 0.4);
+    float shift = 1.0;
+    float alpha = 1.0;
+
+    // Reduce the effect of current_time by making the change more subtle
+    float timeEffect = current_time * 0.05; // Slowing down the animation by reducing the current_time factor
+
+    vec2 p = vec2(gid) * 8.0 / float(width);
+    float q = fbm(p - timeEffect * 0.1);
+    vec2 r = vec2(fbm(p + q + timeEffect * speed.x - p.x - p.y), fbm(p + q - timeEffect * speed.y));
+    vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);
+    vec4 fragColor = vec4(c * cos(shift * float(gid.y) / float(height)), alpha);
+
+    // Store the color flipped vertically
+    imageStore(outputImage, storePos, fragColor);
+}
 
 )";
-*/
-static const char *render_source_overlay  =
+
+
+
+
+
+
+static const char *rounded_corner_overlay =
     R"(
 #version 320 es
 
+layout(binding = 0, rgba32f) readonly uniform highp image2D in_tex;  // Use binding point 0
+layout(binding = 0, rgba32f) writeonly uniform highp image2D out_tex;  // Use binding point 0
 
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
-uniform vec2 iResolution;
-uniform float iTime;
-uniform vec2 iMouse;
+layout(location = 1) uniform int title_height;
+layout(location = 2) uniform int border_size;
+layout(location = 5) uniform int width;
+layout(location = 6) uniform int height;
+layout(location = 7) uniform int corner_radius;
+layout(location = 8) uniform int shadow_radius;
+layout(location = 9) uniform vec4 shadow_color;
 
+void main() {
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
+    // Check if the pixel should be drawn
+    if (pos.x >= border_size && pos.x <= (width - 1) - border_size && pos.y >= title_height && pos.y <= (height - 1) - border_size)
+    {
+        return;
+    }
+    float d;
+    vec4 c = shadow_color;
+    vec4 m = vec4(0.0);
+    vec4 s;
+    float diffuse = 1.0 / float(shadow_radius == 0 ? 1 : shadow_radius);
+    // left
+    if (pos.x < shadow_radius * 2 && pos.y >= shadow_radius * 2 && pos.y <= height - shadow_radius * 2)
+    {
+        d = distance(vec2(float(shadow_radius * 2), float(pos.y)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0))));
+    }
+    // top left corner
+    if (pos.x < shadow_radius * 2 + corner_radius && pos.y < shadow_radius * 2 + corner_radius)
+    {
+        d = distance(vec2(float(shadow_radius * 2 + corner_radius)), vec2(pos)) - float(corner_radius);
+        s = mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0)));
+        c = imageLoad(in_tex, pos);
+        d = distance(vec2(float(shadow_radius * 2 + corner_radius)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
+    }
+    // bottom left corner
+    if (pos.x < (shadow_radius * 2 + corner_radius) && pos.y > height - (shadow_radius * 2 + corner_radius))
+    {
+        d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
+        s = mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0)));
+        c = imageLoad(in_tex, pos);
+        d = distance(vec2(float((shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
+    }
+    // top
+    if (pos.x >= shadow_radius * 2 + corner_radius && pos.x <= width - shadow_radius * 2 + corner_radius && pos.y < shadow_radius * 2)
+    {
+        d = distance(vec2(float(pos.x), float(shadow_radius * 2)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0))));
+    }
+    // right
+    if (pos.x > (width - 1) - shadow_radius * 2 && pos.y >= shadow_radius * 2 && pos.y <= (height - 1) - shadow_radius * 2)
+    {
+        d = distance(vec2(float((width - 1) - shadow_radius * 2), float(pos.y)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0))));
+    }
+    // top right corner
+    if (pos.x > width - (shadow_radius * 2 + corner_radius) && pos.y < (shadow_radius * 2 + corner_radius))
+    {
+        d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
+        s = mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0)));
+        c = imageLoad(in_tex, pos);
+        d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((shadow_radius * 2 + corner_radius))), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
+    }
+    // bottom right corner
+    if (pos.x > (width - 1) - (shadow_radius * 2 + corner_radius) && pos.y > (height - 1) - (shadow_radius * 2 + corner_radius))
+    {
+        d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos)) - float(corner_radius);
+        s = mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0)));
+        c = imageLoad(in_tex, pos);
+        d = distance(vec2(float((width - 1) - (shadow_radius * 2 + corner_radius)), float((height - 1) - (shadow_radius * 2 + corner_radius))), vec2(pos));
+        imageStore(out_tex, pos, mix(c, s, clamp(d - float(corner_radius), 0.0, 1.0)));
+    }
+    // bottom
+    if (pos.x >= (shadow_radius * 2 + corner_radius) && pos.x <= (width - 1) - (shadow_radius * 2 + corner_radius) && pos.y > (height - 1) - shadow_radius * 2)
+    {
+        d = distance(vec2(float(pos.x), float((height - 1) - shadow_radius * 2)), vec2(pos));
+        imageStore(out_tex, pos, mix(c, m, 1.0 - exp(-pow(d * diffuse, 2.0))));
+    }
+}
+
+)";
+
+static const char *beveled_glass_overlay =
+    R"(
+#version 320 es
 
 layout(binding = 0, rgba32f) readonly uniform highp image2D neural_network_tex;  // Use binding point 0
 layout(binding = 0, rgba32f) writeonly uniform highp image2D image;  // Use binding point 0
@@ -2629,6 +1919,7 @@ layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
+layout(location = 10) uniform int beveled_radius;
 
 layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
@@ -2670,7 +1961,7 @@ float sin01(float x) {
 vec4 drawCurveBenzier(vec2 p1, vec2 p2, int setCount) {
     vec4 col = vec4(0.0);
  ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-  float curveRadius = 5.0;
+  float curveRadius = float(beveled_radius/2);
 // Draw the lines connecting the points
 
     vec2 fragCoord = vec2(storePos);
@@ -2692,7 +1983,7 @@ vec4 drawCurveBenzier(vec2 p1, vec2 p2, int setCount) {
 vec4 drawCurve(vec2 p1, vec2 p2, int setCount) {
     vec4 col = vec4(0.0);
     ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-    float curveRadius = 6.0;
+    float curveRadius = float(beveled_radius + 1);
     vec2 fragCoord = vec2(storePos);
 
     float t = clamp(dot(fragCoord - p1, p2 - p1) / dot(p2 - p1, p2 - p1), 0.0, 1.0);
@@ -2719,6 +2010,14 @@ vec4 drawCurve(vec2 p1, vec2 p2, int setCount) {
 
 void main() {
     ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+
+    int x = storePos.x;
+    int y = storePos.y;
+    // Check if the pixel should be drawn
+    if (x >= border_size && x <= (width - 1) - border_size && y >= title_height && y <= (height - 1) - border_size)
+    {
+        return;
+    }
     vec2 fragCoord = vec2(storePos);
 
  vec4 col = vec4(0.0);
@@ -2736,7 +2035,7 @@ void main() {
     vec2 z1 = vec2(0.0 + THICCNESS + space, 0.0 + THICCNESS);
     vec2 z2 = vec2(float(width) - THICCNESS - space, 0.0 + THICCNESS);
 
- float curveRadius = 5.0;
+ float curveRadius = float(beveled_radius);
 // Draw the lines connecting the points
 
 int setwidth = int(width);
@@ -2744,7 +2043,7 @@ int setheight = int(height);
 
 
 if (setwidth<=400 && setheight<=300 ){
- 	col += drawCurveBenzier(p1, p2, setheight);
+    col += drawCurveBenzier(p1, p2, setheight);
     col += drawCurveBenzier(x1, x2, setheight);
     col += drawCurveBenzier(y1, y2, setwidth);
     col += drawCurveBenzier(z1, z2, setwidth);
@@ -2754,29 +2053,29 @@ else {
     col += drawCurve(x1, x2, setheight);
     col += drawCurve(y1, y2, setwidth);
     col += drawCurve(z1, z2, setwidth);
-	}
+    }
 
 
 float INNERspace = 0.0; 
 
 
 //left
-    vec2 INNERp1 = vec2(0.0 - THICCNESS+ float(border_size)/2.0, float(height)  - THICCNESS - INNERspace-float(border_size)/2.0 );
-    vec2 INNERp2 = vec2(0.0 - THICCNESS+ float(border_size)/2.0,0.0 - THICCNESS + INNERspace+float(border_size)/2.0 +float(title_height-border_size));
+    vec2 INNERp1 = vec2(0.0 - THICCNESS+ float(border_size), float(height)  - THICCNESS - INNERspace-float(border_size) );
+    vec2 INNERp2 = vec2(0.0 - THICCNESS+ float(border_size),0.0 - THICCNESS + INNERspace+float(border_size) +float(title_height-border_size));
 //right     
-    vec2 INNERx1 = vec2(float(width) + THICCNESS-float(border_size)/2.0, float(height)- THICCNESS - INNERspace-float(border_size)/2.0);
-    vec2 INNERx2 = vec2(float(width) + THICCNESS-float(border_size)/2.0,0.0 - THICCNESS + INNERspace+float(border_size)/2.0 +float(title_height-border_size));
+    vec2 INNERx1 = vec2(float(width) + THICCNESS-float(border_size), float(height)- THICCNESS - INNERspace-float(border_size));
+    vec2 INNERx2 = vec2(float(width) + THICCNESS-float(border_size),0.0 - THICCNESS + INNERspace+float(border_size) +float(title_height-border_size));
 //bottom
-    vec2 INNERy1 = vec2(0.0 + THICCNESS + INNERspace+float(border_size)/2.0, float(height)   + THICCNESS -float(border_size)/2.0);
-    vec2 INNERy2 = vec2(float(width) - THICCNESS - INNERspace-float(border_size)/2.0, float(height) + THICCNESS-float(border_size)/2.0);
+    vec2 INNERy1 = vec2(0.0 + THICCNESS + INNERspace+float(border_size), float(height)   + THICCNESS -float(border_size));
+    vec2 INNERy2 = vec2(float(width) - THICCNESS - INNERspace-float(border_size), float(height) + THICCNESS-float(border_size));
 //top
-   vec2 INNERz1 = vec2(0.0 +INNERspace+float(border_size)/2.0, 0.0 - THICCNESS + INNERspace+float(border_size)/2.0 +float(title_height-border_size));
-    vec2 INNERz2 = vec2(float(width) - THICCNESS - INNERspace-float(border_size)/2.0 ,0.0 - THICCNESS + INNERspace+float(border_size)/2.0 +float(title_height-border_size));
+   vec2 INNERz1 = vec2(0.0 +INNERspace+float(border_size), 0.0 - THICCNESS + INNERspace+float(border_size) +float(title_height-border_size));
+    vec2 INNERz2 = vec2(float(width) - THICCNESS - INNERspace-float(border_size) ,0.0 - THICCNESS + INNERspace+float(border_size) +float(title_height-border_size));
 
 
 
 if (setwidth<=400 && setheight<=300 ){
- 	col += drawCurveBenzier(INNERp1, INNERp2, setheight);
+    col += drawCurveBenzier(INNERp1, INNERp2, setheight);
     col += drawCurveBenzier(INNERx1, INNERx2, setheight);
     col += drawCurveBenzier(INNERy1, INNERy2, setwidth);
     col += drawCurveBenzier(INNERz1, INNERz2, setwidth);
@@ -2933,10 +2232,6 @@ else{
 
 )";
 
-
-
-
-
 void setup_shader(GLuint *program, std::string source)
 {
     auto compute_shader  = OpenGL::compile_shader(source.c_str(), GL_COMPUTE_SHADER);
@@ -2966,106 +2261,230 @@ static void seed_random()
     clock_gettime(CLOCK_MONOTONIC, &ts);
     srandom(ts.tv_nsec);
 }
-wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+
+void smoke_t::destroy_programs()
+{
+    if (motion_program != GLuint(-1))
+    {
+        GL_CALL(glDeleteProgram(motion_program));
+        GL_CALL(glDeleteProgram(diffuse1_program));
+        GL_CALL(glDeleteProgram(diffuse2_program));
+        GL_CALL(glDeleteProgram(project1_program));
+        GL_CALL(glDeleteProgram(project2_program));
+        GL_CALL(glDeleteProgram(project3_program));
+        GL_CALL(glDeleteProgram(project4_program));
+        GL_CALL(glDeleteProgram(project5_program));
+        GL_CALL(glDeleteProgram(project6_program));
+        GL_CALL(glDeleteProgram(advect1_program));
+        GL_CALL(glDeleteProgram(advect2_program));
+    }
+
+    if (render_program != GLuint(-1))
+    {
+        GL_CALL(glDeleteProgram(render_program));
+    }
+
+    if (render_overlay_program != GLuint(-1))
+    {
+        GL_CALL(glDeleteProgram(render_overlay_program));
+    }
+
+    motion_program = diffuse1_program = diffuse2_program = project1_program =
+        project2_program     = project3_program = project4_program = project5_program =
+            project6_program = advect1_program = advect2_program = render_program =
+                render_overlay_program = GLuint(-1);
+
+    fragment_effect_only_program.free_resources();
+ 
+
+    fragment_effect_only_program.~program_t();
+    new (&fragment_effect_only_program) OpenGL::program_t{};
+
+}
+
+void smoke_t::create_programs()
+{
+    destroy_programs();
+
+
+    static std::map<std::string, std::string> fragment_effect_sources = {
+        {"clouds", effect_clouds_fragment},
+        {"halftone", effect_halftone_fragment},
+        {"pattern", effect_pattern_fragment},
+        {"lava", effect_lava_fragment},
+        {"hex", effect_hex_fragment},
+        {"zebra", effect_zebra_fragment},
+        {"neural_network", effect_neural_network_fragment},
+        {"hexagon_maze", effect_hexagon_maze_fragment},
+        {"raymarched_truchet", effect_raymarched_truchet_fragment},
+        {"neon_pattern", effect_neon_pattern_fragment},
+        {"neon_rings", effect_neon_rings_fragment},
+        {"deco", effect_deco_fragment},
+        {"ice", effect_ice_fragment},
+        {"fire", effect_fire_fragment},
+      //  {"smoke", effect_render_fragment},
+
+    };
+
+    static std::map<std::string, std::string> overlay_effect_sources = {
+        {"none", overlay_no_overlay},
+        {"rounded_corners", overlay_rounded_corners},
+        {"beveled_glass", overlay_beveled_glass},
+    };
+
+
+ if (std::string(compute_fragment_shader) == "fragment_shader"){   
+     
+      if (fragment_effect_sources.count(effect_type) &&
+        overlay_effect_sources.count(overlay_engine))
+    {
+        OpenGL::render_begin();
+        GLint program = compile_fragment_effect_program(
+            fragment_effect_sources[effect_type],
+            overlay_effect_sources[overlay_engine]);
+        fragment_effect_only_program.set_simple(program);
+        OpenGL::render_end();
+        return;
+    }
+}
+    OpenGL::render_begin();
+    if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink") )
+    {
+        setup_shader(&motion_program, motion_source);
+        setup_shader(&diffuse1_program, stitch_smoke_shader(diffuse1_source));
+        setup_shader(&diffuse2_program, stitch_smoke_shader(diffuse2_source));
+        setup_shader(&project1_program, stitch_smoke_shader(project1_source));
+        setup_shader(&project2_program, stitch_smoke_shader(project2_source));
+        setup_shader(&project3_program, stitch_smoke_shader(project3_source));
+        setup_shader(&project4_program, stitch_smoke_shader(project4_source));
+        setup_shader(&project5_program, stitch_smoke_shader(project5_source));
+        setup_shader(&project6_program, stitch_smoke_shader(project6_source));
+        setup_shader(&advect1_program, stitch_smoke_shader(advect1_source));
+        setup_shader(&advect2_program, stitch_smoke_shader(advect2_source));
+        setup_shader(&render_program, std::string(render_source) + effect_run_for_region_main);
+    } 
+    else if ((std::string(effect_type) == "fumes"))
+    {
+        setup_shader(&motion_program, fumes_motion_source);
+        setup_shader(&diffuse1_program, stitch_smoke_shader(fumes_diffuse1_source));
+/**/        setup_shader(&diffuse2_program, stitch_smoke_shader(fumes_diffuse2_source));
+        setup_shader(&project1_program, stitch_smoke_shader(fumes_project1_source));
+        setup_shader(&project2_program, stitch_smoke_shader(fumes_project2_source));
+        setup_shader(&project3_program, stitch_smoke_shader(fumes_project3_source));
+/**/        setup_shader(&project4_program, stitch_smoke_shader(fumes_project4_source));
+/**/        setup_shader(&project5_program, stitch_smoke_shader(fumes_project5_source));
+/**/        setup_shader(&project6_program, stitch_smoke_shader(fumes_project6_source));
+        setup_shader(&advect1_program, stitch_smoke_shader(fumes_advect1_source));
+/**/        setup_shader(&advect2_program, stitch_smoke_shader(fumes_advect2_source));
+        setup_shader(&render_program, std::string(fumes_render_source) + effect_run_for_region_main);
+    } 
+ else if ((std::string(effect_type) == "fast_smoke"))
+    {
+        setup_shader(&motion_program, fast_smoke_motion_source);
+        setup_shader(&diffuse1_program, stitch_smoke_shader(fast_smoke_diffuse1_source));
+/**/        setup_shader(&diffuse2_program, stitch_smoke_shader(fast_smoke_diffuse2_source));
+        setup_shader(&project1_program, stitch_smoke_shader(fast_smoke_project1_source));
+        setup_shader(&project2_program, stitch_smoke_shader(fast_smoke_project2_source));
+        setup_shader(&project3_program, stitch_smoke_shader(fast_smoke_project3_source));
+/**/        setup_shader(&project4_program, stitch_smoke_shader(fast_smoke_project4_source));
+/**/        setup_shader(&project5_program, stitch_smoke_shader(fast_smoke_project5_source));
+/**/        setup_shader(&project6_program, stitch_smoke_shader(fast_smoke_project6_source));
+        setup_shader(&advect1_program, stitch_smoke_shader(fast_smoke_advect1_source));
+/**/        setup_shader(&advect2_program, stitch_smoke_shader(fast_smoke_advect2_source));
+        setup_shader(&render_program, std::string(fast_smoke_render_source) + effect_run_for_region_main);
+    } 
+
+
+
+      else if ((std::string(effect_type) == "flame"))
+    {
+        setup_shader(&motion_program, flame_motion_source);
+        setup_shader(&diffuse1_program, stitch_smoke_shader(flame_diffuse1_source));
+/**/        setup_shader(&diffuse2_program, stitch_smoke_shader(flame_diffuse2_source));
+        setup_shader(&project1_program, stitch_smoke_shader(flame_project1_source));
+        setup_shader(&project2_program, stitch_smoke_shader(flame_project2_source));
+        setup_shader(&project3_program, stitch_smoke_shader(flame_project3_source));
+/**/        setup_shader(&project4_program, stitch_smoke_shader(flame_project4_source));
+/**/        setup_shader(&project5_program, stitch_smoke_shader(flame_project5_source));
+/**/        setup_shader(&project6_program, stitch_smoke_shader(flame_project6_source));
+        setup_shader(&advect1_program, stitch_smoke_shader(flame_advect1_source));
+/**/        setup_shader(&advect2_program, stitch_smoke_shader(flame_advect2_source));
+        setup_shader(&render_program, std::string(flame_render_source) + effect_run_for_region_main);
+    }  
+ 
+
+    else if (std::string(effect_type) == "clouds")
+    {
+        setup_shader(&render_program, render_source_clouds);
+    } else if (std::string(effect_type) == "halftone")
+    {
+        setup_shader(&render_program, render_source_halftone);
+    } else if (std::string(effect_type) == "pattern")
+    {
+        setup_shader(&render_program, render_source_pattern);
+    } else if (std::string(effect_type) == "lava")
+    {
+        setup_shader(&render_program, render_source_lava);
+    } else if (std::string(effect_type) == "hex")
+    {
+        setup_shader(&render_program, render_source_hex);
+    } else if (std::string(effect_type) == "zebra")
+    {
+        setup_shader(&render_program, render_source_zebra);
+    } else if (std::string(effect_type) == "neural_network")
+    {
+        setup_shader(&render_program, render_source_neural_network);
+    } else if (std::string(effect_type) == "hexagon_maze")
+    {
+        setup_shader(&render_program, render_source_hexagon_maze);
+    } else if (std::string(effect_type) == "raymarched_truchet")
+    {
+        setup_shader(&render_program, render_source_raymarched_truchet);
+    } else if (std::string(effect_type) == "neon_pattern")
+    {
+        setup_shader(&render_program, render_source_neon_pattern);
+    } else if (std::string(effect_type) == "neon_rings")
+    {
+        setup_shader(&render_program, render_source_neon_rings);
+    } else if (std::string(effect_type) == "deco")
+    {
+        setup_shader(&render_program, render_source_deco);
+    }
+    else if (std::string(effect_type) == "ice")
+    {
+        setup_shader(&render_program, render_source_ice);
+    }
+    else if (std::string(effect_type) == "fire")
+    {
+        setup_shader(&render_program, render_source_fire);
+    }
+    if (std::string(overlay_engine) == "rounded_corners")
+    {
+        setup_shader(&render_overlay_program, rounded_corner_overlay);
+    } else if (std::string(overlay_engine) == "beveled_glass")
+    {
+        setup_shader(&render_overlay_program, beveled_glass_overlay);
+    }
+
+    OpenGL::render_end();
+}
 
 smoke_t::smoke_t()
 {
-    OpenGL::render_begin();
-  
+    motion_program = diffuse1_program = diffuse2_program = project1_program =
+        project2_program     = project3_program = project4_program = project5_program =
+            project6_program = advect1_program = advect2_program = render_program =
+                render_overlay_program = GLuint(-1);
 
-if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
-{
-    setup_shader(&motion_program, motion_source);
-    setup_shader(&diffuse1_program, diffuse1_source);
-    setup_shader(&diffuse2_program, diffuse2_source);
-    setup_shader(&project1_program, project1_source);
-    setup_shader(&project2_program, project2_source);
-    setup_shader(&project3_program, project3_source);
-    setup_shader(&project4_program, project4_source);
-    setup_shader(&project5_program, project5_source);
-    setup_shader(&project6_program, project6_source);
-    setup_shader(&advect1_program, advect1_source);
-    setup_shader(&advect2_program, advect2_source);
-
-    setup_shader(&render_program, render_source);
-}   
-
-
- 	if (std::string(effect_type) == "clouds")
- 	{
-   	setup_shader(&render_program, render_source_clouds);
-	}
-	else if (std::string(effect_type) == "halftone")
- 	{
-   	setup_shader(&render_program, render_source_halftone);
-	}
-	else if (std::string(effect_type) == "pattern")
- 	{
-   	setup_shader(&render_program, render_source_pattern);
-	}
-	else if (std::string(effect_type) == "lava")
- 	{
-   	setup_shader(&render_program, render_source_lava);
-	}
-	else if (std::string(effect_type) == "hex")
- 	{
-   	setup_shader(&render_program, render_source_hex);
-	}
-	else if (std::string(effect_type) == "zebra")
- 	{
-   	setup_shader(&render_program, render_source_zebra);
-	}
-	else if (std::string(effect_type) == "neural_network")
- 	{
-   	setup_shader(&render_program, render_source_neural_network);
-	}
-	else if (std::string(effect_type) == "hexagon_maze")
- 	{
-   	setup_shader(&render_program, render_source_hexagon_maze);
-	}
-	else if (std::string(effect_type) == "raymarched_truchet")
- 	{
-   	setup_shader(&render_program, render_source_raymarched_truchet);
-	}
-	else if (std::string(effect_type) == "neon_pattern")
- 	{
-   	setup_shader(&render_program, render_source_neon_pattern );
-	}
-	else if (std::string(effect_type) == "neon_rings")
- 	{
-   	setup_shader(&render_program, render_source_neon_rings );
-	}
-	else if (std::string(effect_type) == "deco")
- 	{
-   	setup_shader(&render_program, render_source_deco);
-   	}
-
-   		setup_shader(&render_overlay_program, render_source_overlay);
- 
     texture = b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
-    OpenGL::render_end();
+
+    create_programs();
     seed_random();
 }
 
 smoke_t::~smoke_t()
 {
- 
-if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
-{
-    GL_CALL(glDeleteProgram(motion_program));
-    GL_CALL(glDeleteProgram(diffuse1_program));
-    GL_CALL(glDeleteProgram(diffuse2_program));
-    GL_CALL(glDeleteProgram(project1_program));
-    GL_CALL(glDeleteProgram(project2_program));
-    GL_CALL(glDeleteProgram(project3_program));
-    GL_CALL(glDeleteProgram(project4_program));
-    GL_CALL(glDeleteProgram(project5_program));
-    GL_CALL(glDeleteProgram(project6_program));
-    GL_CALL(glDeleteProgram(advect1_program));
-    GL_CALL(glDeleteProgram(advect2_program));
-}
-    GL_CALL(glDeleteProgram(render_program));
-    GL_CALL(glDeleteProgram(render_overlay_program));
+    destroy_programs();
     destroy_textures();
 }
 
@@ -3082,395 +2501,480 @@ void smoke_t::create_textures()
 
 void smoke_t::destroy_textures()
 {
-    if (texture == GLuint(-1))
+    if (texture != GLuint(-1))
+    {
+        GL_CALL(glDeleteTextures(1, &texture));
+        texture = GLuint(-1);
+    }
+
+    if (b0u == GLuint(-1))
     {
         return;
     }
 
-    GL_CALL(glDeleteTextures(1, &texture));
     GL_CALL(glDeleteTextures(1, &b0u));
     GL_CALL(glDeleteTextures(1, &b0v));
     GL_CALL(glDeleteTextures(1, &b0d));
     GL_CALL(glDeleteTextures(1, &b1u));
     GL_CALL(glDeleteTextures(1, &b1v));
     GL_CALL(glDeleteTextures(1, &b1d));
+
+    b0u = b0v = b0d = b1u = b1v = b1d = GLuint(-1);
 }
 
+int round_up_div(int a, int b)
+{
+    return (a + b - 1) / b;
+}
 
+void smoke_t::dispatch_region(const wf::region_t& region)
+{
+    std::vector<int> values;
 
+    int max_x = 0;
+    int max_y = 0;
 
-void smoke_t::run_shader(GLuint program, int width, int height, int title_height, int border_size)
+    for (auto& box : region)
+    {
+        auto rect = wlr_box_from_pixman_box(box);
+        values.push_back(rect.x);
+        values.push_back(rect.y);
+        values.push_back(rect.width);
+        values.push_back(rect.height);
+
+        if (rect.width > rect.height)
+        {
+            values.push_back(0); // xy will not be flipped in compute shader
+            max_x = std::max(max_x, rect.width);
+            max_y = std::max(max_y, rect.height);
+        } else
+        {
+            values.push_back(1); // xy will be flipped in compute shader
+            max_x = std::max(max_x, rect.height);
+            max_y = std::max(max_y, rect.width);
+        }
+    }
+
+    if (values.size() / 5 > 4)
+    {
+        LOGE("Error: too many regions");
+        return;
+    }
+
+    GL_CALL(glUniform1iv(10, values.size(), values.data()));
+    GL_CALL(glDispatchCompute(round_up_div(max_x, 16), round_up_div(max_y, 16), values.size() / 5));
+    GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+}
+
+void smoke_t::run_shader_region(GLuint program, const wf::region_t & region, const wf::dimensions_t & size)
 {
     GL_CALL(glUseProgram(program));
-  
+    GL_CALL(glUniform1i(5, size.width));
+    GL_CALL(glUniform1i(6, size.height));
+    dispatch_region(region);
+}
 
- GL_CALL(glUniform1i(glGetUniformLocation(program, "neural_network_tex"), 0));
-
-GL_CALL(glDispatchCompute(width / 15, height / 15, 1));
-GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-    GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
- 
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-    GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-    GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
-    GL_CALL(glBindImageTexture(4, b1u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
-    GL_CALL(glBindImageTexture(5, b1v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
-    GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glUniform1i(1, title_height + border_size * 2));
-    GL_CALL(glUniform1i(2, border_size * 2));
+void smoke_t::run_shader(GLuint program, int width, int height, int title_height, int border_size, int radius, int beveled_radius)
+{
+    GL_CALL(glUseProgram(program));
+    GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+    GL_CALL(glUniform1i(2, border_size + radius * 2));
     GL_CALL(glUniform1i(5, width));
     GL_CALL(glUniform1i(6, height));
+    GL_CALL(glUniform1i(9, radius * 2));
+    GL_CALL(glUniform1i(10, beveled_radius));
     GL_CALL(glDispatchCompute(width / 15, height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
 
-void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
-    bool ink,  wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
-    int title_height, int border_size, int diffuse_iterations)
+void smoke_t::recreate_textures(wf::geometry_t rectangle)
 {
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
     {
         return;
     }
 
+    destroy_textures();
+    create_textures();
+
+    GLuint fb;
+    GL_CALL(glGenFramebuffers(1, &fb));
+    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
+
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, rectangle.width, rectangle.height));
+    if ((std::string(effect_type) != "smoke") && (std::string(effect_type) != "ink")&& (std::string(effect_type) != "fumes") && (std::string(effect_type) != "fast_smoke") && (std::string(effect_type) != "flame"))
+    {
+        return;
+    }
+
+    wf::color_t clear_color{0, 0, 0, 0};
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, texture, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
+
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b0u, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b0v, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b0d, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b1u, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b1v, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
+    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, b1d, 0));
+    OpenGL::clear(clear_color, GL_COLOR_BUFFER_BIT);
+
+    GL_CALL(glDeleteFramebuffers(1, &fb));
+}
+
+void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
+    bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
+    int title_height, int border_size, int shadow_radius)
+{
+    last_shadow_radius = shadow_radius;
+    if (fragment_effect_only_program.get_program_id(wf::TEXTURE_TYPE_RGBA) > 0)
+    {
+        // Fragment-only programs are directly rendered and don't need any preparation.
+        return;
+    }
+
+    bool smoke = (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"|| (std::string(effect_type) == "fumes") || (std::string(effect_type) == "fast_smoke") || (std::string(effect_type) == "flame"));
+    if ((rectangle.width <= 0) || (rectangle.height <= 0))
+    {
+        return;
+    }
+
+    int radius = shadow_radius;
+    int diffuse_iterations = 2;
+
+
+    if (std::string(effect_type) == "fumes")
+    {
+
+        diffuse_iterations = 10;
+    }
+
+
     OpenGL::render_begin(fb);
     if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
     {
-        LOGI("recreating smoke textures: ", rectangle.width, " != ", saved_width, " || ", rectangle.height,
-            " != ", saved_height);
         saved_width  = rectangle.width;
         saved_height = rectangle.height;
 
-        destroy_textures();
-        create_textures();
-
-        std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
-
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
+        recreate_textures(rectangle);
     }
 
-    GL_CALL(glUseProgram(motion_program));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-    GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-    GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-    GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    wf::point_t point{int(p.x), int(p.y)};
-    // upload stuff
-    GL_CALL(glUniform1i(1, title_height + border_size));
-    GL_CALL(glUniform1i(2, border_size));
-    GL_CALL(glUniform1i(3, point.x));
-    GL_CALL(glUniform1i(4, point.y));
-    GL_CALL(glUniform1i(5, rectangle.width));
-    GL_CALL(glUniform1i(6, rectangle.height));
-    GL_CALL(glUniform1i(7, random()));
-    GL_CALL(glUniform1i(8, random()));
-    GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
-    GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
- 
-if (std::string(effect_type) == "smoke" || std::string(effect_type) == "ink" )
+    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+    GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+
+    const wf::geometry_t nonshadow_rect = wf::geometry_t{
+        radius* 2,
+        radius* 2,
+        rectangle.width - 4 * radius,
+        rectangle.height - 4 * radius
+    };
+
+    wf::geometry_t inner_part = {
+        border_size + radius * 2,
+        title_height + border_size + radius * 2,
+        rectangle.width - border_size * 2 - radius * 4,
+        rectangle.height - border_size * 2 - title_height - radius * 4,
+    };
+
+    wf::region_t border_region = nonshadow_rect;
+    border_region ^= inner_part;
+    border_region.expand_edges(1);
+    border_region &= nonshadow_rect;
+
+    if (smoke)
+    {
+        wf::point_t point{int(p.x), int(p.y)};
+        if ((p.x == FLT_MIN) || (p.y == FLT_MIN))
+        {
+            point.x = point.y = INT_MIN;
+        }
+
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
+        GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
+        GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
+        GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
+        GL_CALL(glBindImageTexture(4, b1u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
+        GL_CALL(glBindImageTexture(5, b1v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
+        GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+
+
+        if ((point.x >= radius) && (point.y >= radius))
+        {
+            GL_CALL(glUseProgram(motion_program));
+            // upload stuff
+            GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+            GL_CALL(glUniform1i(2, border_size + radius * 2));
+            GL_CALL(glUniform1i(3, point.x));
+            GL_CALL(glUniform1i(4, point.y));
+            GL_CALL(glUniform1i(5, rectangle.width));
+            GL_CALL(glUniform1i(6, rectangle.height));
+            GL_CALL(glUniform1i(7, random()));
+            GL_CALL(glUniform1i(8, random()));
+            GL_CALL(glUniform1i(9, radius * 2));
+            GL_CALL(glDispatchCompute(1, 1, 1));
+            GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+        }
+
+
+
+
+
+
+
+
+
+
+
+        for (int k = 0; k < diffuse_iterations; k++)
+        {
+            run_shader_region(diffuse1_program, border_region, wf::dimensions(rectangle));
+        }
+
+        run_shader_region(project1_program, border_region, wf::dimensions(rectangle));
+        for (int k = 0; k < diffuse_iterations; k++)
+        {
+            run_shader_region(project2_program, border_region, wf::dimensions(rectangle));
+        }
+
+        run_shader_region(project3_program, border_region, wf::dimensions(rectangle));
+        run_shader_region(advect1_program, border_region, wf::dimensions(rectangle));
+        run_shader_region(project4_program, border_region, wf::dimensions(rectangle));
+        for (int k = 0; k < diffuse_iterations; k++)
+        {
+            run_shader_region(project5_program, border_region, wf::dimensions(rectangle));
+        }
+
+        run_shader_region(project6_program, border_region, wf::dimensions(rectangle));
+        for (int k = 0; k < diffuse_iterations; k++)
+        {
+            run_shader_region(diffuse2_program, border_region, wf::dimensions(rectangle));
+        }
+
+        run_shader_region(advect2_program, border_region, wf::dimensions(rectangle));
+    }
+
+    if (std::string(effect_type) != "none")
+    {
+        GL_CALL(glUseProgram(render_program));
+
+        GLfloat effect_color_f[4] =
+        {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
+            GLfloat(effect_color.a)};
+        GLfloat decor_color_f[4] =
+        {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
+        if (smoke)
+        {
+            GL_CALL(glUniform1i(4, ink));
+            GL_CALL(glUniform4fv(8, 1, effect_color_f));
+            GL_CALL(glUniform4fv(9, 1, decor_color_f));
+            dispatch_region(border_region);
+        } else
+        {
+            GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+            GL_CALL(glUniform1i(2, border_size + radius * 2));
+            GL_CALL(glUniform1i(5, rectangle.width));
+            GL_CALL(glUniform1i(6, rectangle.height));
+            GL_CALL(glUniform1i(7, radius * 2));
+            GL_CALL(glUniform1f(9, effect_animate ? (wf::get_current_time() / 30.0) : 0.0));
+            GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
+            GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+        }
+    } else if (!smoke && (std::string(overlay_engine) != "none"))
+    {
+        GLuint fb;
+        GL_CALL(glGenFramebuffers(1, &fb));
+        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+        GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+            GL_TEXTURE_2D, texture, 0));
+        OpenGL::clear(decor_color, GL_COLOR_BUFFER_BIT);
+        GL_CALL(glDeleteFramebuffers(1, &fb));
+    }
+
+    if ((std::string(overlay_engine) == "rounded_corners") ||
+        (std::string(overlay_engine) == "beveled_glass"))
+    {
+        GL_CALL(glUseProgram(render_overlay_program));
+        GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+        GL_CALL(glUniform1i(2, border_size + radius * 2));
+        GL_CALL(glUniform1i(5, rectangle.width));
+        GL_CALL(glUniform1i(6, rectangle.height));
+        GL_CALL(glUniform1i(7, rounded_corner_radius));
+       
+
+        if (std::string(overlay_engine) == "beveled_glass")
+        {
+        GL_CALL(glUniform1i(10, beveled_radius));
+        }
+
+        if (std::string(overlay_engine) == "rounded_corners")
+        {
+           
+            GLfloat shadow_color_f[4] =
+            {GLfloat(wf::color_t(shadow_color).r), GLfloat(wf::color_t(shadow_color).g),
+                GLfloat(wf::color_t(shadow_color).b), GLfloat(wf::color_t(shadow_color).a)};
+            GL_CALL(glUniform1i(8, radius));
+            GL_CALL(glUniform4fv(9, 1, shadow_color_f));
+        }
+
+        GL_CALL(glDispatchCompute(round_up_div(rectangle.width, 16), round_up_div(rectangle.height, 16), 1));
+        GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+    }
+
+    GL_CALL(glUseProgram(0));
+    OpenGL::render_end();
+}
+
+void smoke_t::run_fragment_shader(const wf::render_target_t& fb,
+    wf::geometry_t rectangle, const wf::region_t& scissor,int border_size, int title_height)
 {
+    glm::vec4 color;
 
-    for (int k = 0; k < diffuse_iterations; k++)
+    fragment_effect_only_program.use(wf::TEXTURE_TYPE_RGBA);
+
+    GLfloat vertexData[] = {
+        1.0f * rectangle.x, 1.0f * rectangle.y + rectangle.height,
+        1.0f * rectangle.x + rectangle.width, 1.0f * rectangle.y + rectangle.height,
+        1.0f * rectangle.x + rectangle.width, 1.0f * rectangle.y,
+        1.0f * rectangle.x, 1.0f * rectangle.y,
+    };
+    
+
+    fragment_effect_only_program.attrib_pointer("position", 2, 0, vertexData);
+    fragment_effect_only_program.uniformMatrix4f("MVP", fb.get_orthographic_projection());
+
+    fragment_effect_only_program.uniform1f("current_time", wf::get_current_time() / 30.0);
+    fragment_effect_only_program.uniform1i("border_size", border_size);
+    fragment_effect_only_program.uniform1i("title_height", title_height);
+    fragment_effect_only_program.uniform1f("width", rectangle.width);
+    fragment_effect_only_program.uniform1f("height", rectangle.height);
+
+    if (std::string(overlay_engine) == "rounded_corners")
     {
-        run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size);
+        fragment_effect_only_program.uniform1i("shadow_radius", last_shadow_radius * 2);
+        fragment_effect_only_program.uniform1i("corner_radius", rounded_corner_radius);
+        fragment_effect_only_program.uniform2f("topLeftCorner", rectangle.x, rectangle.y);
+        color = glm::vec4(shadow_color.value().r,shadow_color.value().g,shadow_color.value().b,shadow_color.value().a);
+        fragment_effect_only_program.uniform4f("shadow_color", color);
+//testing purposes
+     // Assuming color is of type glm::vec4
+glm::vec4 black(0.5f, 0.5f, 0.5f, 1.0f); // RGB values for black, A set to 1 for full opacity
+glm::vec4 white(1.0f, 1.0f, 1.0f, .8f); // RGB values for white, A set to 1 for full opacity
+
+// Assuming 'fragment_effect_only_program' is your shader program object
+fragment_effect_only_program.uniform4f("decor_color", black); // Set decor_color to black
+fragment_effect_only_program.uniform4f("smoke_color", white); // Set smoke_color to white
+
+    }
+    
+    else if (std::string(overlay_engine) == "beveled_glass")
+    {
+       fragment_effect_only_program.uniform2f("topLeftCorner", rectangle.x, rectangle.y);
+       fragment_effect_only_program.uniform1i("border_size", border_size);
+       fragment_effect_only_program.uniform1i("title_height", title_height+border_size);
+       fragment_effect_only_program.uniform1i("beveled_radius", beveled_radius);
+
+
     }
 
-    run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
+  
+    for (auto& box : scissor)
     {
-        run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size);
+        fb.logic_scissor(wlr_box_from_pixman_box(box));
+        GL_CALL(glDrawArrays(GL_TRIANGLE_FAN, 0, 4));
     }
-
-    run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size);
-    run_shader(advect1_program, rectangle.width, rectangle.height, title_height, border_size);
-    run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size);
- }  
-    GL_CALL(glUseProgram(render_program));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-    GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-    GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-
-
-    GLfloat effect_color_f[4] =
-    {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
-        GLfloat(effect_color.a)};
-    GLfloat decor_color_f[4] =
-    {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
-    GL_CALL(glUniform1i(1, title_height + border_size * 2));
-    GL_CALL(glUniform1i(2, border_size * 2));
-    GL_CALL(glUniform1i(4, ink));
-    GL_CALL(glUniform1i(5, rectangle.width));
-    GL_CALL(glUniform1i(6, rectangle.height));
-    GL_CALL(glUniform4fv(7, 1, effect_color_f));
-    GL_CALL(glUniform4fv(8, 1, decor_color_f));
-    GL_CALL(glUniform1f(9, wf::get_current_time() / 30.0));
-
-    GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
-    GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glUseProgram(0));
-    OpenGL::render_end();
-
-
- OpenGL::render_begin(fb);
-    if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
-    {
-        LOGI("recreating smoke textures: ", rectangle.width, " != ", saved_width, " || ", rectangle.height,
-            " != ", saved_height);
-        saved_width  = rectangle.width;
-        saved_height = rectangle.height;
-
-        destroy_textures();
-        create_textures();
-
-        std::vector<GLfloat> clear_data(rectangle.width * rectangle.height * 4, 0);
-
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RGBA, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, rectangle.width, rectangle.height));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.width, rectangle.height, GL_RED, GL_FLOAT,
-            &clear_data[0]);
-    }
-
-  /*  GL_CALL(glUseProgram(motion_program));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-    GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-    GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-    GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-    */
-    //wf::point_t point{int(p.x), int(p.y)};
-    // upload stuff
-    GL_CALL(glUniform1i(1, title_height + border_size));
-    GL_CALL(glUniform1i(2, border_size));
-    GL_CALL(glUniform1i(3, point.x));
-    GL_CALL(glUniform1i(4, point.y));
-    GL_CALL(glUniform1i(5, rectangle.width));
-    GL_CALL(glUniform1i(6, rectangle.height));
-    GL_CALL(glUniform1i(7, random()));
-    GL_CALL(glUniform1i(8, random()));
-    GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
-    GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-/*    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(diffuse1_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(project1_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(project2_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(project3_program, rectangle.width, rectangle.height, title_height, border_size);
-    run_shader(advect1_program, rectangle.width, rectangle.height, title_height, border_size);
-    run_shader(project4_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(project5_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(project6_program, rectangle.width, rectangle.height, title_height, border_size);
-    for (int k = 0; k < diffuse_iterations; k++)
-    {
-        run_shader(diffuse2_program, rectangle.width, rectangle.height, title_height, border_size);
-    }
-
-    run_shader(advect2_program, rectangle.width, rectangle.height, title_height, border_size);
-  */ 
-    GL_CALL(glUseProgram(render_overlay_program));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-    GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-    GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-
-
-   // GLfloat effect_color_f[4] =
-   // {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
-     //   GLfloat(effect_color.a)};
- //   GLfloat decor_color_f[4] =
-   // {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
-    GL_CALL(glUniform1i(1, title_height + border_size * 2));
-    GL_CALL(glUniform1i(2, border_size * 2));
-    GL_CALL(glUniform1i(4, ink));
-    GL_CALL(glUniform1i(5, rectangle.width));
-    GL_CALL(glUniform1i(6, rectangle.height));
-    GL_CALL(glUniform4fv(7, 1, effect_color_f));
-    GL_CALL(glUniform4fv(8, 1, decor_color_f));
-    GL_CALL(glUniform1f(9, wf::get_current_time() / 30.0));
-
-    GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
-    GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CALL(glUseProgram(0));
-    OpenGL::render_end();
-
 
 }
 
 void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
-    const wf::geometry_t& scissor)
+    const wf::region_t& scissor, int border_size, int title_height)
 {
-    OpenGL::render_begin(fb);
-    fb.logic_scissor(scissor);
+
+ 
+    if (fragment_effect_only_program.get_program_id(wf::TEXTURE_TYPE_RGBA) != 0)
+    {
+   run_fragment_shader(fb, rectangle, scissor, border_size, title_height);
+
+        return;
+    }
     OpenGL::render_transformed_texture(wf::texture_t{texture}, rectangle,
-        fb.get_orthographic_projection(), glm::vec4{1}, OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
+        fb.get_orthographic_projection(), glm::vec4{1},
+        OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
+
+    for (auto& box : scissor)
+    {
+        fb.logic_scissor(wlr_box_from_pixman_box(box));
+        OpenGL::draw_cached();
+    }
+
+    OpenGL::clear_cached();
+}
+
+void smoke_t::effect_updated()
+{
+    create_programs();
+    OpenGL::render_begin();
+    recreate_textures(wf::geometry_t{0, 0, saved_width, saved_height});
     OpenGL::render_end();
 }
-}
+} // namespace pixdecor
 }
