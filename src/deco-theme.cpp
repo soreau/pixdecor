@@ -35,68 +35,10 @@ decoration_theme_t::~decoration_theme_t()
 
 void decoration_theme_t::update_colors(void)
 {
-    if (!read_colour("theme_selected_bg_color", fg))
-    {
-        fg = wf::color_t(fg_color);
-    }
-
-    if (!read_colour("theme_selected_fg_color", fg_text))
-    {
-        fg_text = wf::color_t(fg_text_color);
-    }
-
-    if (!read_colour("theme_unfocused_bg_color", bg))
-    {
-        bg = wf::color_t(bg_color);
-    }
-
-    if (!read_colour("theme_unfocused_fg_color", bg_text))
-    {
-        bg_text = wf::color_t(bg_text_color);
-    }
-}
-
-gboolean decoration_theme_t::read_colour(const char *name, wf::color_t & col)
-{
-    FILE *fp;
-    char *cmd, *line, *theme;
-    size_t len;
-    int i, n, ir, ig, ib;
-
-    theme = g_settings_get_string(gs, "gtk-theme");
-
-    for (i = 0; i < 2; i++)
-    {
-        n    = 0;
-        line = NULL;
-        len  = 0;
-        cmd  = g_strdup_printf(
-            "bash -O extglob -c \"grep -hPo '(?<=@define-color\\s%s\\s)#[0-9A-Fa-f]{6}' %s/themes/%s/gtk-3.0/!(*-dark).css 2> /dev/null\"", name,
-            i ? "/usr/share" : g_get_user_data_dir(), theme);
-        fp = popen(cmd, "r");
-        if (fp)
-        {
-            if (getline(&line, &len, fp) > 0)
-            {
-                n = sscanf(line, "#%02x%02x%02x", &ir, &ig, &ib);
-                g_free(line);
-            }
-
-            pclose(fp);
-        }
-
-        g_free(cmd);
-
-        if (n == 3)
-        {
-            col = {ir / 255.0, ig / 255.0, ib / 255.0, 1.0};
-            g_free(theme);
-            return true;
-        }
-    }
-
-    g_free(theme);
-    return false;
+    fg = wf::color_t(fg_color);
+    bg = wf::color_t(bg_color);
+    fg_text = wf::color_t(fg_text_color);
+    bg_text = wf::color_t(bg_text_color);
 }
 
 /** @return The available height for displaying the title */
