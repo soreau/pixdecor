@@ -145,6 +145,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     void render_region(const wf::render_target_t& fb, wf::point_t origin, const wf::region_t& region)
     {
         int border = theme.get_border_size();
+        int title = theme.get_title_height();
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
         bool activated = false;
@@ -160,7 +161,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
         OpenGL::render_begin(fb);
 
-        theme.render_background(fb, geometry, region, activated, current_cursor_position);
+         theme.render_background(fb, geometry, region, activated, current_cursor_position,border, title);
 
         if (!titlebar_opt)
         {

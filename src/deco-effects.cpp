@@ -31,7 +31,9 @@
 #include <wayfire/debug.hpp>
 
 #include "deco-effects.hpp"
+#include "effect-shaders.hpp"
 #include "smoke-shaders.hpp"
+#include "overlay-shaders.hpp"
 
 
 namespace wf
@@ -42,6 +44,15 @@ static std::string stitch_smoke_shader(const std::string& source)
 {
     return smoke_header + source + effect_run_for_region_main;
 }
+
+static GLint compile_fragment_effect_program(const std::string& effect_source, const std::string& overlay_source)
+{
+    std::string full_fragment =
+        generic_effect_fragment_header + effect_source + overlay_source + generic_effect_fragment_main;
+
+    return OpenGL::compile_program(generic_effect_vertex_shader, full_fragment);
+}
+
 
 // ported from https://www.shadertoy.com/view/WdXBW4
 static const char *render_source_clouds =
@@ -183,13 +194,8 @@ void main() {
     // Mix the cloud color with the background, considering darkness, cover, and alpha
     vec3 finalColor = mix(skycolour, cloudColor * clouddark, cloudPattern + noiseShape + noiseColor) * (1.0 - cloudCover) + cloudColor * cloudCover;
     finalColor = mix(skycolour, finalColor, cloudAlpha);
-
     imageStore(out_tex, pos, vec4(finalColor, 1.0));
-}
-
-
-
-)";
+})";
 
 // ported from https://github.com/keijiro/ShaderSketches/blob/master/Fragment/Dots3.glsl
 static const char *render_source_halftone =
@@ -1660,6 +1666,151 @@ void main() {
 }
 )";
 
+// ported from https://www.shadertoy.com/view/3djfzy
+static const char *render_source_ice =
+    R"(#version 320 es
+precision highp float;
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+layout(binding = 0, rgba32f) writeonly uniform highp image2D outputImage;
+
+layout(location = 5) uniform int width;
+layout(location = 6) uniform int height;
+layout(location = 9) uniform float current_time;
+
+float rand(in vec2 _st) {
+    return fract(sin(dot(_st.xy, vec2(-0.820, -0.840))) * 4757.153);
+}
+
+float noise(in vec2 _st) {
+    const vec2 d = vec2(0.0, 1.0);
+    vec2 b = floor(_st), f = smoothstep(vec2(0.0), vec2(0.1, 0.3), fract(_st));
+    return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);
+}
+
+float fbm(in vec2 _st) {
+    float v = sin(current_time * 0.005) * 0.2;
+    float a = 0.3;
+    vec2 shift = vec2(100.0);
+    // Rotate to reduce axial bias
+    mat2 rot = mat2(cos(0.5), sin(1.0), -sin(0.5), acos(0.5));
+    for (int i = 0; i < 3; ++i) {
+        v += a * noise(_st);
+        _st = rot * _st * 2.0 + shift;
+        a *= 1.5;
+    }
+    return v;
+}
+
+void main() {
+    ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
+    if (gid.x >= width || gid.y >= height) return;
+
+    vec2 st = (vec2(gid) * 2.0 - vec2(width, height)) / min(float(width), float(height)) * 0.5;
+
+    vec2 coord = st * 0.2;
+    float len;
+    for (int i = 0; i < 3; i++) {
+        len = length(coord);
+        coord.x += sin(coord.y + current_time * 0.001) * 2.1;
+        coord.y += cos(coord.x + current_time * 0.001 + cos(len * 1.0)) * 1.0;
+    }
+    len -= 3.0;
+
+    vec3 color = vec3(0.0);
+
+    vec2 q = vec2(0.0);
+    q.x = fbm(st);
+    q.y = fbm(st + vec2(-0.450, 0.650));
+
+    vec2 r = vec2(0.0);
+    r.x = fbm(st + 1.0 * q + vec2(0.570, 0.520) + 0.1 * current_time*0.01);
+    r.y = fbm(st + 1.0 * q + vec2(0.340, -0.570) + 0.05 * current_time*0.01);
+    float f = fbm(st + r);
+
+    color = mix(color, cos(len + vec3(0.5, 0.0, -0.1)), 1.0);
+    color = mix(vec3(0.478, 0.738, 0.760), vec3(0.563, 0.580, 0.667), color);
+
+    vec4 fragColor = vec4((f * f * f + .6 * f * f + .5 * f) * color, 1.0);
+
+    imageStore(outputImage, gid, fragColor);
+}
+
+)";
+
+
+// ported from https://www.shadertoy.com/view/XsXXRN
+static const char *render_source_fire =
+    R"(
+
+    #version 320 es
+precision highp float;
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+layout(binding = 0, rgba32f) writeonly uniform highp image2D outputImage;
+
+layout(location = 5) uniform int width;
+layout(location = 6) uniform int height;
+layout(location = 9) uniform float current_time;
+
+float rand(vec2 n) {
+    return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+
+float noise(vec2 n) {
+    const vec2 d = vec2(0.0, 1.0);
+    vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));
+    return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);
+}
+
+float fbm(vec2 n) {
+    float total = 0.0, amplitude = 1.0;
+    for (int i = 0; i < 4; i++) {
+        total += noise(n) * amplitude;
+        n += n;
+        amplitude *= 0.5;
+    }
+    return total;
+}
+
+void main() {
+    ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
+    if (gid.x >= width || gid.y >= height) return;
+
+    // Only flip the y-coordinate when storing the result
+    ivec2 storePos = ivec2(gid.x, height - 1 - gid.y);
+
+    const vec3 c1 = vec3(0.5, 0.0, 0.1);
+    const vec3 c2 = vec3(0.9, 0.0, 0.0);
+    const vec3 c3 = vec3(0.2, 0.0, 0.0);
+    const vec3 c4 = vec3(1.0, 0.9, 0.0);
+    const vec3 c5 = vec3(0.1);
+    const vec3 c6 = vec3(0.9);
+
+    vec2 speed = vec2(0.7, 0.4);
+    float shift = 1.0;
+    float alpha = 1.0;
+
+    // Reduce the effect of current_time by making the change more subtle
+    float timeEffect = current_time * 0.05; // Slowing down the animation by reducing the current_time factor
+
+    vec2 p = vec2(gid) * 8.0 / float(width);
+    float q = fbm(p - timeEffect * 0.1);
+    vec2 r = vec2(fbm(p + q + timeEffect * speed.x - p.x - p.y), fbm(p + q - timeEffect * speed.y));
+    vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);
+    vec4 fragColor = vec4(c * cos(shift * float(gid.y) / float(height)), alpha);
+
+    // Store the color flipped vertically
+    imageStore(outputImage, storePos, fragColor);
+}
+
+)";
+
+
+
+
+
+
 static const char *rounded_corner_overlay =
     R"(
 #version 320 es
@@ -1769,7 +1920,7 @@ layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout(location = 5) uniform int width;
 layout(location = 6) uniform int height;
-layout(location = 7) uniform int radius;
+layout(location = 10) uniform int beveled_radius;
 
 layout(location = 1) uniform int title_height;
 layout(location = 2) uniform int border_size;
@@ -1811,7 +1962,7 @@ float sin01(float x) {
 vec4 drawCurveBenzier(vec2 p1, vec2 p2, int setCount) {
     vec4 col = vec4(0.0);
  ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-  float curveRadius = float(radius);
+  float curveRadius = float(beveled_radius/2);
 // Draw the lines connecting the points
 
     vec2 fragCoord = vec2(storePos);
@@ -1833,7 +1984,7 @@ vec4 drawCurveBenzier(vec2 p1, vec2 p2, int setCount) {
 vec4 drawCurve(vec2 p1, vec2 p2, int setCount) {
     vec4 col = vec4(0.0);
     ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-    float curveRadius = float(radius + 1);
+    float curveRadius = float(beveled_radius + 1);
     vec2 fragCoord = vec2(storePos);
 
     float t = clamp(dot(fragCoord - p1, p2 - p1) / dot(p2 - p1, p2 - p1), 0.0, 1.0);
@@ -1885,7 +2036,7 @@ void main() {
     vec2 z1 = vec2(0.0 + THICCNESS + space, 0.0 + THICCNESS);
     vec2 z2 = vec2(float(width) - THICCNESS - space, 0.0 + THICCNESS);
 
- float curveRadius = float(radius);
+ float curveRadius = float(beveled_radius);
 // Draw the lines connecting the points
 
 int setwidth = int(width);
@@ -1903,7 +2054,7 @@ else {
     col += drawCurve(x1, x2, setheight);
     col += drawCurve(y1, y2, setwidth);
     col += drawCurve(z1, z2, setwidth);
-	}
+    }
 
 
 float INNERspace = 0.0; 
@@ -2143,13 +2294,60 @@ void smoke_t::destroy_programs()
         project2_program     = project3_program = project4_program = project5_program =
             project6_program = advect1_program = advect2_program = render_program =
                 render_overlay_program = GLuint(-1);
+/*
+    fragment_effect_only_program.free_resources();
+ 
+    fragment_effect_only_program.~program_t();
+    new (&fragment_effect_only_program) OpenGL::program_t{};*/
 }
 
 void smoke_t::create_programs()
 {
     destroy_programs();
-    OpenGL::render_begin();
-    if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+
+    static std::map<std::string, std::string> fragment_effect_sources = {
+        {"clouds", effect_clouds_fragment},
+        {"halftone", effect_halftone_fragment},
+        {"pattern", effect_pattern_fragment},
+        {"lava", effect_lava_fragment},
+        {"hex", effect_hex_fragment},
+        {"zebra", effect_zebra_fragment},
+        {"neural_network", effect_neural_network_fragment},
+        {"hexagon_maze", effect_hexagon_maze_fragment},
+        {"raymarched_truchet", effect_raymarched_truchet_fragment},
+        {"neon_pattern", effect_neon_pattern_fragment},
+        {"neon_rings", effect_neon_rings_fragment},
+        {"deco", effect_deco_fragment},
+        {"ice", effect_ice_fragment},
+        {"fire", effect_fire_fragment},
+      //  {"smoke", effect_render_fragment},
+
+    };
+
+    static std::map<std::string, std::string> overlay_effect_sources = {
+        {"none", overlay_no_overlay},
+        {"rounded_corners", overlay_rounded_corners},
+        {"beveled_glass", overlay_beveled_glass},
+    };
+
+
+     if (std::string(compute_fragment_shader) == "fragment_shader"){   
+         
+          if (fragment_effect_sources.count(effect_type) &&
+            overlay_effect_sources.count(overlay_engine))
+        {
+            OpenGL::render_begin();
+            GLint program = compile_fragment_effect_program(
+                fragment_effect_sources[effect_type],
+                overlay_effect_sources[overlay_engine]);
+            fragment_effect_only_program.set_simple(program);
+            OpenGL::render_end();
+            return;
+        }
+    }
+
+     OpenGL::render_begin();
+    if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink") )
     {
         setup_shader(&motion_program, motion_source);
         setup_shader(&diffuse1_program, stitch_smoke_shader(diffuse1_source));
@@ -2163,7 +2361,58 @@ void smoke_t::create_programs()
         setup_shader(&advect1_program, stitch_smoke_shader(advect1_source));
         setup_shader(&advect2_program, stitch_smoke_shader(advect2_source));
         setup_shader(&render_program, std::string(render_source) + effect_run_for_region_main);
-    } else if (std::string(effect_type) == "clouds")
+    } 
+    else if ((std::string(effect_type) == "fumes"))
+    {
+        setup_shader(&motion_program, fumes_motion_source);
+        setup_shader(&diffuse1_program, stitch_smoke_shader(fumes_diffuse1_source));
+/**/        setup_shader(&diffuse2_program, stitch_smoke_shader(fumes_diffuse2_source));
+        setup_shader(&project1_program, stitch_smoke_shader(fumes_project1_source));
+        setup_shader(&project2_program, stitch_smoke_shader(fumes_project2_source));
+        setup_shader(&project3_program, stitch_smoke_shader(fumes_project3_source));
+/**/        setup_shader(&project4_program, stitch_smoke_shader(fumes_project4_source));
+/**/        setup_shader(&project5_program, stitch_smoke_shader(fumes_project5_source));
+/**/        setup_shader(&project6_program, stitch_smoke_shader(fumes_project6_source));
+        setup_shader(&advect1_program, stitch_smoke_shader(fumes_advect1_source));
+/**/        setup_shader(&advect2_program, stitch_smoke_shader(fumes_advect2_source));
+        setup_shader(&render_program, std::string(fumes_render_source) + effect_run_for_region_main);
+    } 
+ else if ((std::string(effect_type) == "fast_smoke"))
+    {
+        setup_shader(&motion_program, fast_smoke_motion_source);
+        setup_shader(&diffuse1_program, stitch_smoke_shader(fast_smoke_diffuse1_source));
+/**/        setup_shader(&diffuse2_program, stitch_smoke_shader(fast_smoke_diffuse2_source));
+        setup_shader(&project1_program, stitch_smoke_shader(fast_smoke_project1_source));
+        setup_shader(&project2_program, stitch_smoke_shader(fast_smoke_project2_source));
+        setup_shader(&project3_program, stitch_smoke_shader(fast_smoke_project3_source));
+/**/        setup_shader(&project4_program, stitch_smoke_shader(fast_smoke_project4_source));
+/**/        setup_shader(&project5_program, stitch_smoke_shader(fast_smoke_project5_source));
+/**/        setup_shader(&project6_program, stitch_smoke_shader(fast_smoke_project6_source));
+        setup_shader(&advect1_program, stitch_smoke_shader(fast_smoke_advect1_source));
+/**/        setup_shader(&advect2_program, stitch_smoke_shader(fast_smoke_advect2_source));
+        setup_shader(&render_program, std::string(fast_smoke_render_source) + effect_run_for_region_main);
+    } 
+
+
+
+      else if ((std::string(effect_type) == "flame"))
+    {
+        setup_shader(&motion_program, flame_motion_source);
+        setup_shader(&diffuse1_program, stitch_smoke_shader(flame_diffuse1_source));
+/**/        setup_shader(&diffuse2_program, stitch_smoke_shader(flame_diffuse2_source));
+        setup_shader(&project1_program, stitch_smoke_shader(flame_project1_source));
+        setup_shader(&project2_program, stitch_smoke_shader(flame_project2_source));
+        setup_shader(&project3_program, stitch_smoke_shader(flame_project3_source));
+/**/        setup_shader(&project4_program, stitch_smoke_shader(flame_project4_source));
+/**/        setup_shader(&project5_program, stitch_smoke_shader(flame_project5_source));
+/**/        setup_shader(&project6_program, stitch_smoke_shader(flame_project6_source));
+        setup_shader(&advect1_program, stitch_smoke_shader(flame_advect1_source));
+/**/        setup_shader(&advect2_program, stitch_smoke_shader(flame_advect2_source));
+        setup_shader(&render_program, std::string(flame_render_source) + effect_run_for_region_main);
+    }  
+ 
+
+    else if (std::string(effect_type) == "clouds")
     {
         setup_shader(&render_program, render_source_clouds);
     } else if (std::string(effect_type) == "halftone")
@@ -2200,7 +2449,14 @@ void smoke_t::create_programs()
     {
         setup_shader(&render_program, render_source_deco);
     }
-
+    else if (std::string(effect_type) == "ice")
+    {
+        setup_shader(&render_program, render_source_ice);
+    }
+    else if (std::string(effect_type) == "fire")
+    {
+        setup_shader(&render_program, render_source_fire);
+    }
     if (std::string(overlay_engine) == "rounded_corners")
     {
         setup_shader(&render_overlay_program, rounded_corner_overlay);
@@ -2211,6 +2467,7 @@ void smoke_t::create_programs()
 
     OpenGL::render_end();
 }
+
 
 smoke_t::smoke_t()
 {
@@ -2325,10 +2582,10 @@ void smoke_t::run_shader(GLuint program, int width, int height, int title_height
     GL_CALL(glUniform1i(5, width));
     GL_CALL(glUniform1i(6, height));
     GL_CALL(glUniform1i(9, radius * 2));
+  //  GL_CALL(glUniform1i(10, beveled_radius));
     GL_CALL(glDispatchCompute(width / 15, height / 15, 1));
     GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
 }
-
 void smoke_t::recreate_textures(wf::geometry_t rectangle)
 {
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
@@ -2339,19 +2596,19 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     destroy_textures();
     create_textures();
 
+    GLuint fb;
+    GL_CALL(glGenFramebuffers(1, &fb));
+    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
+
     GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, rectangle.width, rectangle.height));
-    if ((std::string(effect_type) != "smoke") && (std::string(effect_type) != "ink"))
+    if ((std::string(effect_type) != "smoke") && (std::string(effect_type) != "ink")&& (std::string(effect_type) != "fumes") && (std::string(effect_type) != "fast_smoke") && (std::string(effect_type) != "flame"))
     {
         return;
     }
-
-    GLuint fb;
-    GL_CALL(glGenFramebuffers(1, &fb));
-    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
 
     wf::color_t clear_color{0, 0, 0, 0};
     GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -2410,11 +2667,19 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     GL_CALL(glDeleteFramebuffers(1, &fb));
 }
 
+
 void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
     bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
     int title_height, int border_size, int shadow_radius)
 {
-    bool smoke = (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink");
+    last_shadow_radius = shadow_radius;
+    if (fragment_effect_only_program.get_program_id(wf::TEXTURE_TYPE_RGBA) > 0)
+    {
+        // Fragment-only programs are directly rendered and don't need any preparation.
+        return;
+    }
+
+    bool smoke = (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"|| (std::string(effect_type) == "fumes") || (std::string(effect_type) == "fast_smoke") || (std::string(effect_type) == "flame"));
     if ((rectangle.width <= 0) || (rectangle.height <= 0))
     {
         return;
@@ -2422,6 +2687,14 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
 
     int radius = shadow_radius;
     int diffuse_iterations = 2;
+
+
+    if (std::string(effect_type) == "fumes")
+    {
+
+        diffuse_iterations = 10;
+    }
+
 
     OpenGL::render_begin(fb);
     if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
@@ -2482,6 +2755,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
         GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
 
+
         if ((point.x >= radius) && (point.y >= radius))
         {
             GL_CALL(glUseProgram(motion_program));
@@ -2498,6 +2772,16 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
             GL_CALL(glDispatchCompute(1, 1, 1));
             GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
         }
+
+
+
+
+
+
+
+
+
+
 
         for (int k = 0; k < diffuse_iterations; k++)
         {
@@ -2549,7 +2833,7 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
             GL_CALL(glUniform1i(5, rectangle.width));
             GL_CALL(glUniform1i(6, rectangle.height));
             GL_CALL(glUniform1i(7, radius * 2));
-            GL_CALL(glUniform1f(9, effect_animate ? ((wf::get_current_time() / 30) & 0xFF) : 0.0));
+            GL_CALL(glUniform1f(9, effect_animate ? (wf::get_current_time() / 30.0) : 0.0));
             GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
             GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
         }
@@ -2575,8 +2859,16 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
         GL_CALL(glUniform1i(5, rectangle.width));
         GL_CALL(glUniform1i(6, rectangle.height));
         GL_CALL(glUniform1i(7, rounded_corner_radius));
+       
+
+        if (std::string(overlay_engine) == "beveled_glass")
+        {
+      //  GL_CALL(glUniform1i(10, beveled_radius));
+        }
+
         if (std::string(overlay_engine) == "rounded_corners")
         {
+           
             GLfloat shadow_color_f[4] =
             {GLfloat(wf::color_t(shadow_color).r), GLfloat(wf::color_t(shadow_color).g),
                 GLfloat(wf::color_t(shadow_color).b), GLfloat(wf::color_t(shadow_color).a)};
@@ -2592,9 +2884,79 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     OpenGL::render_end();
 }
 
-void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
-    const wf::region_t& scissor)
+
+void smoke_t::run_fragment_shader(const wf::render_target_t& fb,
+    wf::geometry_t rectangle, const wf::region_t& scissor,int border_size, int title_height)
 {
+    glm::vec4 color;
+
+    fragment_effect_only_program.use(wf::TEXTURE_TYPE_RGBA);
+
+    GLfloat vertexData[] = {
+        1.0f * rectangle.x, 1.0f * rectangle.y + rectangle.height,
+        1.0f * rectangle.x + rectangle.width, 1.0f * rectangle.y + rectangle.height,
+        1.0f * rectangle.x + rectangle.width, 1.0f * rectangle.y,
+        1.0f * rectangle.x, 1.0f * rectangle.y,
+    };
+    
+
+    fragment_effect_only_program.attrib_pointer("position", 2, 0, vertexData);
+    fragment_effect_only_program.uniformMatrix4f("MVP", fb.get_orthographic_projection());
+
+    fragment_effect_only_program.uniform1f("current_time", wf::get_current_time() / 30.0);
+    fragment_effect_only_program.uniform1i("border_size", border_size);
+    fragment_effect_only_program.uniform1i("title_height", title_height);
+    fragment_effect_only_program.uniform1f("width", rectangle.width);
+    fragment_effect_only_program.uniform1f("height", rectangle.height);
+
+    if (std::string(overlay_engine) == "rounded_corners")
+    {
+        fragment_effect_only_program.uniform1i("shadow_radius", last_shadow_radius * 2);
+        fragment_effect_only_program.uniform1i("corner_radius", rounded_corner_radius);
+        fragment_effect_only_program.uniform2f("topLeftCorner", rectangle.x, rectangle.y);
+        color = glm::vec4(shadow_color.value().r,shadow_color.value().g,shadow_color.value().b,shadow_color.value().a);
+        fragment_effect_only_program.uniform4f("shadow_color", color);
+//testing purposes
+     // Assuming color is of type glm::vec4
+glm::vec4 black(0.5f, 0.5f, 0.5f, 1.0f); // RGB values for black, A set to 1 for full opacity
+glm::vec4 white(1.0f, 1.0f, 1.0f, .8f); // RGB values for white, A set to 1 for full opacity
+
+// Assuming 'fragment_effect_only_program' is your shader program object
+fragment_effect_only_program.uniform4f("decor_color", black); // Set decor_color to black
+fragment_effect_only_program.uniform4f("smoke_color", white); // Set smoke_color to white
+
+    }
+    
+    else if (std::string(overlay_engine) == "beveled_glass")
+    {
+       fragment_effect_only_program.uniform2f("topLeftCorner", rectangle.x, rectangle.y);
+       fragment_effect_only_program.uniform1i("border_size", border_size);
+       fragment_effect_only_program.uniform1i("title_height", title_height+border_size);
+       fragment_effect_only_program.uniform1i("beveled_radius", beveled_radius);
+
+
+    }
+
+  
+    for (auto& box : scissor)
+    {
+        fb.logic_scissor(wlr_box_from_pixman_box(box));
+        GL_CALL(glDrawArrays(GL_TRIANGLE_FAN, 0, 4));
+    }
+
+}
+
+void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
+    const wf::region_t& scissor, int border_size, int title_height)
+{
+
+ 
+    if (fragment_effect_only_program.get_program_id(wf::TEXTURE_TYPE_RGBA) != 0)
+    {
+   run_fragment_shader(fb, rectangle, scissor, border_size, title_height);
+
+        return;
+    }
     OpenGL::render_transformed_texture(wf::texture_t{texture}, rectangle,
         fb.get_orthographic_projection(), glm::vec4{1},
         OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
