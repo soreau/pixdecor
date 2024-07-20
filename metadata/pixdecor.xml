@@ -4,165 +4,193 @@
 		<_short>Pix Decoration</_short>
 		<_long>A highly configurable and optionally fancy decorator plugin for wayfire.</_long>
 		<category>Effects</category>
-		<option name="border_size" type="int">
-			<_short>Border size</_short>
-			<_long>Sets the border size in pixels.</_long>
-			<default>5</default>
-			<min>0</min>
-		</option>
-		<option name="titlebar" type="bool">
-			<_short>Titlebar</_short>
-			<_long>Whether or not to render titlebar with title text and buttons.</_long>
-			<default>true</default>
-		</option>
-		<option name="maximized_borders" type="bool">
-			<_short>Draw borders on maximized windows</_short>
-			<_long>Whether or not to render side and bottom decorations on maximized windows.</_long>
-			<default>false</default>
-		</option>
-		<option name="maximized_shadows" type="bool">
-			<_short>Draw shadows on maximized windows</_short>
-			<_long>Whether or not to allocate space for shadows on maximized windows.</_long>
-			<default>false</default>
-		</option>
-		<option name="ignore_views" type="string">
-			<_short>Decoration disabled for specified window types</_short>
-			<_long>Disables window decoration for windows matching the specified criteria.</_long>
-			<default>none</default>
-		</option>
-		<option name="always_decorate" type="string">
-			<_short>Decoration applied for specified window types</_short>
-			<_long>Forces window decoration for windows matching the specified criteria.</_long>
-			<default>none</default>
-		</option>
-		<option name="fg_color" type="color">
-			<_short>Color when focused</_short>
-			<_long>Color of the window border when it has focus.</_long>
-			<default>0.9 0.65 0.04 1.0</default>
-		</option>
-		<option name="bg_color" type="color">
-			<_short>Color when not focused</_short>
-			<_long>Color of the window border when it does not have focus.</_long>
-			<default>0.07 0.27 0.5 0.85</default>
-		</option>
-		<option name="fg_text_color" type="color">
-			<_short>Text color when focused</_short>
-			<_long>Color of the window titlebar text when it has focus.</_long>
-			<default>1.0 1.0 1.0 1.0</default>
-		</option>
-		<option name="bg_text_color" type="color">
-			<_short>Text color when not focused</_short>
-			<_long>Color of the window titlebar text when it does not have focus.</_long>
-			<default>0.7 0.7 0.7 1.0</default>
-		</option>
-		<option name="overlay_engine" type="string">
-			<_short>Overlay Engine</_short>
-			<_long>Sets the overlay engine.</_long>
-			<default>none</default>
-			<desc>
-				<value>none</value>
-				<_name>None</_name>
-			</desc>
-			<desc>
-				<value>rounded_corners</value>
-				<_name>Rounded Corners</_name>
-			</desc>
-			<desc>
-				<value>beveled_glass</value>
-				<_name>Beveled Glass</_name>
-			</desc>
-		</option>
-		<option name="effect_type" type="string">
-			<_short>Effect Type</_short>
-			<_long>Sets the effect type.</_long>
-			<default>none</default>
-			<desc>
-				<value>none</value>
-				<_name>None</_name>
-			</desc>
-			<desc>
-				<value>smoke</value>
-				<_name>Smoke</_name>
-			</desc>
-			<desc>
-				<value>ink</value>
-				<_name>Ink</_name>
-			</desc>
-			<desc>
-				<value>clouds</value>
-				<_name>Clouds</_name>
-			</desc>
-			<desc>
-				<value>halftone</value>
-				<_name>Halftone</_name>
-			</desc>
-			<desc>
-				<value>pattern</value>
-				<_name>Pattern</_name>
-			</desc>
-			<desc>
-				<value>lava</value>
-				<_name>Lava</_name>
-			</desc>
-			<desc>
-				<value>hex</value>
-				<_name>Hex</_name>
-			</desc>
-			<desc>
-				<value>zebra</value>
-				<_name>Zebra</_name>
-			</desc>
-			<desc>
-				<value>neural_network</value>
-				<_name>Neural network</_name>
-			</desc>
-			<desc>
-				<value>hexagon_maze</value>
-				<_name>Hexagon maze</_name>
-			</desc>
-			<desc>
-				<value>raymarched_truchet</value>
-				<_name>Raymarched truchet</_name>
-			</desc>
-			<desc>
-				<value>neon_pattern</value>
-				<_name>Neon pattern</_name>
-			</desc>
-			<desc>
-				<value>neon_rings</value>
-				<_name>Neon rings</_name>
-			</desc>
-			<desc>
-				<value>deco</value>
-				<_name>Deco</_name>
-			</desc>
-		</option>
-		<option name="effect_color" type="color">
-			<_short>Effect Color</_short>
-			<_long>Color of the titlebar background effect.</_long>
-			<default>0.88 0.11 0.14 1.0</default>
-		</option>
-		<option name="animate" type="bool">
-			<_short>Animate Effects</_short>
-			<_long>WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations.</_long>
-			<default>false</default>
-		</option>
-		<option name="rounded_corner_radius" type="int">
-			<_short>Rounded Corner Radius</_short>
-			<_long>The radius for corners.</_long>
-			<default>5</default>
-			<min>0</min>
-		</option>
-		<option name="shadow_radius" type="int">
-			<_short>Shadow Radius</_short>
-			<_long>The radius for shadows.</_long>
-			<default>10</default>
-			<min>0</min>
-		</option>
-		<option name="shadow_color" type="color">
-			<_short>Shadow Color</_short>
-			<_long>Color of the drop shadows.</_long>
-			<default>0.0 0.0 0.0 0.25</default>
-		</option>
+		<group>
+			<_short>General</_short>
+			<option name="border_size" type="int">
+				<_short>Border size</_short>
+				<_long>Sets the border size in pixels.</_long>
+				<default>5</default>
+				<min>0</min>
+			</option>
+			<option name="titlebar" type="bool">
+				<_short>Titlebar</_short>
+				<_long>Whether or not to render titlebar with title text and buttons.</_long>
+				<default>true</default>
+			</option>
+			<option name="maximized_borders" type="bool">
+				<_short>Draw borders on maximized windows</_short>
+				<_long>Whether or not to render side and bottom decorations on maximized windows.</_long>
+				<default>false</default>
+			</option>
+			<option name="maximized_shadows" type="bool">
+				<_short>Draw shadows on maximized windows</_short>
+				<_long>Whether or not to allocate space for shadows on maximized windows.</_long>
+				<default>false</default>
+			</option>
+			<option name="ignore_views" type="string">
+				<_short>Decoration disabled for specified window types</_short>
+				<_long>Disables window decoration for windows matching the specified criteria.</_long>
+				<default>none</default>
+			</option>
+			<option name="always_decorate" type="string">
+				<_short>Decoration applied for specified window types</_short>
+				<_long>Forces window decoration for windows matching the specified criteria.</_long>
+				<default>none</default>
+			</option>
+			<option name="fg_color" type="color">
+				<_short>Color when focused</_short>
+				<_long>Color of the window border when it has focus.</_long>
+				<default>0.9 0.65 0.04 1.0</default>
+			</option>
+			<option name="bg_color" type="color">
+				<_short>Color when not focused</_short>
+				<_long>Color of the window border when it does not have focus.</_long>
+				<default>0.07 0.27 0.5 0.85</default>
+			</option>
+			<option name="fg_text_color" type="color">
+				<_short>Text color when focused</_short>
+				<_long>Color of the window titlebar text when it has focus.</_long>
+				<default>1.0 1.0 1.0 1.0</default>
+			</option>
+			<option name="bg_text_color" type="color">
+				<_short>Text color when not focused</_short>
+				<_long>Color of the window titlebar text when it does not have focus.</_long>
+				<default>0.7 0.7 0.7 1.0</default>
+			</option>
+			<option name="overlay_engine" type="string">
+				<_short>Overlay Engine</_short>
+				<_long>Sets the overlay engine.</_long>
+				<default>none</default>
+				<desc>
+					<value>none</value>
+					<_name>None</_name>
+				</desc>
+				<desc>
+					<value>rounded_corners</value>
+					<_name>Rounded Corners</_name>
+				</desc>
+				<desc>
+					<value>beveled_glass</value>
+					<_name>Beveled Glass</_name>
+				</desc>
+			</option>
+			<option name="effect_type" type="string">
+				<_short>Effect Type</_short>
+				<_long>Sets the effect type.</_long>
+				<default>none</default>
+				<desc>
+					<value>none</value>
+					<_name>None</_name>
+				</desc>
+				<desc>
+					<value>smoke</value>
+					<_name>Smoke</_name>
+				</desc>
+				<desc>
+					<value>ink</value>
+					<_name>Ink</_name>
+				</desc>
+				<desc>
+					<value>clouds</value>
+					<_name>Clouds</_name>
+				</desc>
+				<desc>
+					<value>halftone</value>
+					<_name>Halftone</_name>
+				</desc>
+				<desc>
+					<value>pattern</value>
+					<_name>Pattern</_name>
+				</desc>
+				<desc>
+					<value>lava</value>
+					<_name>Lava</_name>
+				</desc>
+				<desc>
+					<value>hex</value>
+					<_name>Hex</_name>
+				</desc>
+				<desc>
+					<value>zebra</value>
+					<_name>Zebra</_name>
+				</desc>
+				<desc>
+					<value>neural_network</value>
+					<_name>Neural network</_name>
+				</desc>
+				<desc>
+					<value>hexagon_maze</value>
+					<_name>Hexagon maze</_name>
+				</desc>
+				<desc>
+					<value>raymarched_truchet</value>
+					<_name>Raymarched truchet</_name>
+				</desc>
+				<desc>
+					<value>neon_pattern</value>
+					<_name>Neon pattern</_name>
+				</desc>
+				<desc>
+					<value>neon_rings</value>
+					<_name>Neon rings</_name>
+				</desc>
+				<desc>
+					<value>deco</value>
+					<_name>Deco</_name>
+				</desc>
+			</option>
+			<option name="effect_color" type="color">
+				<_short>Effect Color</_short>
+				<_long>Color of the titlebar background effect.</_long>
+				<default>0.88 0.11 0.14 1.0</default>
+			</option>
+			<option name="animate" type="bool">
+				<_short>Animate Effects</_short>
+				<_long>WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations.</_long>
+				<default>false</default>
+			</option>
+			<option name="rounded_corner_radius" type="int">
+				<_short>Rounded Corner Radius</_short>
+				<_long>The radius for corners.</_long>
+				<default>5</default>
+				<min>0</min>
+			</option>
+			<option name="shadow_radius" type="int">
+				<_short>Shadow Radius</_short>
+				<_long>The radius for shadows.</_long>
+				<default>10</default>
+				<min>0</min>
+			</option>
+			<option name="shadow_color" type="color">
+				<_short>Shadow Color</_short>
+				<_long>Color of the drop shadows.</_long>
+				<default>0.0 0.0 0.0 0.25</default>
+			</option>
+		</group>
+		<group>
+			<_short>Shade</_short>
+			<option name="enable_shade" type="bool">
+				<_short>Enable Shade Effect</_short>
+				<_long>Use the axis binding or scroll on the titlebar of pixdecor windows to shade windows into their respective titlebars.</_long>
+				<default>true</default>
+			</option>
+			<option name="shade_duration" type="animation">
+				<_short>Shade Duration</_short>
+				<_long>The duration of the shade animation in milliseconds.</_long>
+				<default>1000ms sigmoid</default>
+				<min>0</min>
+			</option>
+			<option name="shade_modifier" type="key">
+				<_short>Shade Modifier</_short>
+				<_long>When the shade modifier key is held down, you can scroll down and up to shade and unshade the window.</_long>
+				<default>&lt;super&gt; &lt;ctrl&gt;</default>
+			</option>
+			<option name="csd_titlebar_height" type="int">
+				<_short>CSD Titlebar Height</_short>
+				<_long>Because there is no way to know the client surface titlebar height, this is an option to adjust it.</_long>
+				<default>32</default>
+				<min>0</min>
+			</option>
+		</group>
 	</plugin>
 </wayfire>
