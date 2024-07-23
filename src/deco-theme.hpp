@@ -35,7 +35,6 @@ class decoration_theme_t
     /** @return The decoration color */
     wf::color_t get_decor_color(bool active) const;
 
-    gboolean read_colour(const char *name, wf::color_t & col);
     void update_colors(void);
 
     /**

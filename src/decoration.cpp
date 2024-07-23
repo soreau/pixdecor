@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <gio/gio.h>
 #include <dlfcn.h>
+#include <wayfire/bindings-repository.hpp>
+#include "shade.hpp"
 
 int handle_theme_updated(int fd, uint32_t mask, void *data)
 {
@@ -59,6 +61,9 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<wf::color_t> shadow_color{"pixdecor/shadow_color"};
     wf::view_matcher_t ignore_views{"pixdecor/ignore_views"};
     wf::view_matcher_t always_decorate{"pixdecor/always_decorate"};
+    wf::option_wrapper_t<wf::keybinding_t> shade_modifier{"pixdecor/shade_modifier"};
+    wf::option_wrapper_t<int> csd_titlebar_height{"pixdecor/csd_titlebar_height"};
+    wf::option_wrapper_t<bool> enable_shade{"pixdecor/enable_shade"};
     wf::wl_idle_call idle_update_views;
     int inotify_fd;
     int wd_cfg_file;
@@ -68,6 +73,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::effect_hook_t pre_hook;
     wf::output_t *output;
     bool hook_set = false;
+
+    wf::axis_callback shade_axis_cb;
 
     wf::signal::connection_t<wf::txn::new_transaction_signal> on_new_tx =
         [=] (wf::txn::new_transaction_signal *ev)
@@ -109,12 +116,140 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         update_view_decoration(ev->view);
     };
 
+    wf::signal::connection_t<wf::view_app_id_changed_signal> on_app_id_changed =
+        [=] (wf::view_app_id_changed_signal *ev)
+    {
+        update_view_decoration(ev->view);
+    };
+
+    wf::signal::connection_t<wf::view_title_changed_signal> on_title_changed =
+        [=] (wf::view_title_changed_signal *ev)
+    {
+        update_view_decoration(ev->view);
+    };
+
+    void pop_transformer(wayfire_view view)
+    {
+        if (view->get_transformed_node()->get_transformer(shade_transformer_name))
+        {
+            view->get_transformed_node()->rem_transformer(shade_transformer_name);
+        }
+    }
+
+    void remove_shade_transformers()
+    {
+        for (auto& view : wf::get_core().get_all_views())
+        {
+            pop_transformer(view);
+        }
+    }
+
+    std::shared_ptr<wf::pixdecor::pixdecor_shade> ensure_transformer(wayfire_view view, int titlebar_height)
+    {
+        auto tmgr = view->get_transformed_node();
+        if (auto tr = tmgr->get_transformer<wf::pixdecor::pixdecor_shade>(shade_transformer_name))
+        {
+            return tr;
+        }
+
+        auto node = std::make_shared<wf::pixdecor::pixdecor_shade>(view, titlebar_height);
+        tmgr->add_transformer(node, wf::TRANSFORMER_2D, shade_transformer_name);
+        auto tr = tmgr->get_transformer<wf::pixdecor::pixdecor_shade>(shade_transformer_name);
+
+        return tr;
+    }
+
+    void init_shade(wayfire_view view, bool shade, int titlebar_height)
+    {
+        if (!bool(enable_shade))
+        {
+            return;
+        }
+
+        if (shade)
+        {
+            if (view && view->is_mapped())
+            {
+                auto tr = ensure_transformer(view, titlebar_height);
+                tr->set_titlebar_height(titlebar_height);
+                tr->init_animation(shade);
+            }
+        } else
+        {
+            if (auto tr =
+                    view->get_transformed_node()->get_transformer<wf::pixdecor::pixdecor_shade>(
+                        shade_transformer_name))
+            {
+                tr->set_titlebar_height(titlebar_height);
+                tr->init_animation(shade);
+            }
+        }
+    }
+
   public:
 
     void init() override
     {
         wf::get_core().connect(&on_decoration_state_changed);
+        wf::get_core().connect(&on_app_id_changed);
+        wf::get_core().connect(&on_title_changed);
         wf::get_core().tx_manager->connect(&on_new_tx);
+        if (bool(enable_shade))
+        {
+            wf::get_core().bindings->add_axis(shade_modifier, &shade_axis_cb);
+        }
+
+        shade_axis_cb = [=] (wlr_pointer_axis_event *ev)
+        {
+            auto v = wf::get_core().get_cursor_focus_view();
+            if (ev->orientation == WLR_AXIS_ORIENTATION_VERTICAL)
+            {
+                if (auto toplevel = wf::toplevel_cast(v))
+                {
+                    auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+                    init_shade(v, ev->delta < 0 ? true : false,
+                        deco ? deco->get_titlebar_height() : csd_titlebar_height);
+                    return true;
+                }
+
+                return true;
+            }
+
+            return false;
+        };
+
+        enable_shade.set_callback([=]
+        {
+            if (bool(enable_shade))
+            {
+                wf::get_core().bindings->add_axis(shade_modifier, &shade_axis_cb);
+            }
+
+            {
+                wf::get_core().bindings->rem_binding(&shade_axis_cb);
+                remove_shade_transformers();
+            }
+        });
+
+        csd_titlebar_height.set_callback([=] ()
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                if (auto tr =
+                        view->get_transformed_node()->get_transformer<wf::pixdecor::pixdecor_shade>(
+                            shade_transformer_name))
+                {
+                    auto toplevel = toplevel_cast(view);
+                    if (toplevel)
+                    {
+                        if (!toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                        {
+                            tr->set_titlebar_height(csd_titlebar_height);
+                        }
+                    }
+                }
+            }
+        });
 
         for (auto& view : wf::get_core().get_all_views())
         {
@@ -308,6 +443,9 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 o->render->rem_effect(&pre_hook);
             }
         }
+
+        wf::get_core().bindings->rem_binding(&shade_axis_cb);
+        remove_shade_transformers();
 
         wl_event_source_remove(evsrc);
         inotify_rm_watch(inotify_fd, wd_cfg_file);

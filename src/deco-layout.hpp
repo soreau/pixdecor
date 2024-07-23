@@ -81,6 +81,9 @@ enum decoration_layout_action_t
     DECORATION_ACTION_CLOSE           = 3,
     DECORATION_ACTION_TOGGLE_MAXIMIZE = 4,
     DECORATION_ACTION_MINIMIZE        = 5,
+    /* Axis actions */
+    DECORATION_ACTION_SHADE           = 6,
+    DECORATION_ACTION_UNSHADE         = 7,
 };
 
 class decoration_theme_t;
@@ -139,6 +142,14 @@ class decoration_layout_t
      *  event.
      */
     action_response_t handle_press_event(bool pressed = true);
+
+    /**
+     * Handle axis event.
+     * @param delta The delta of the axis event denoting direction
+     * @return The action which needs to be carried out in response to this
+     *  event.
+     */
+    action_response_t handle_axis_event(int delta);
 
     /**
      * Handle focus lost event.

@@ -411,6 +411,18 @@ decoration_layout_t::action_response_t decoration_layout_t::handle_press_event(
     return {DECORATION_ACTION_NONE, 0};
 }
 
+decoration_layout_t::action_response_t decoration_layout_t::handle_axis_event(
+    int delta)
+{
+    if (delta < 0)
+    {
+        return {DECORATION_ACTION_SHADE, 0};
+    } else
+    {
+        return {DECORATION_ACTION_UNSHADE, 0};
+    }
+}
+
 /**
  * Find the layout area at the given coordinates, if any
  * @return The layout area or null on failure
