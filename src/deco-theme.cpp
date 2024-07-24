@@ -170,8 +170,8 @@ cairo_surface_t*decoration_theme_t::render_text(std::string text,
 cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
     const button_state_t& state, bool active) const
 {
-    auto w = state.width * 4.0;
-    auto h = state.height * 4.0;
+    auto w = state.width;
+    auto h = state.height;
     cairo_surface_t *button_surface = cairo_image_surface_create(
         CAIRO_FORMAT_ARGB32, w, h);
 
