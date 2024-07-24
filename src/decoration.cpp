@@ -19,6 +19,7 @@
 #include <gio/gio.h>
 #include <dlfcn.h>
 #include <wayfire/bindings-repository.hpp>
+#include <wayfire/plugins/ipc/ipc-activator.hpp>
 #include "shade.hpp"
 
 int handle_theme_updated(int fd, uint32_t mask, void *data)
@@ -64,6 +65,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<wf::keybinding_t> shade_modifier{"pixdecor/shade_modifier"};
     wf::option_wrapper_t<int> csd_titlebar_height{"pixdecor/csd_titlebar_height"};
     wf::option_wrapper_t<bool> enable_shade{"pixdecor/enable_shade"};
+    wf::ipc_activator_t pixdecor_toggle_shade{"pixdecor/shade_toggle"};
     wf::wl_idle_call idle_update_views;
     int inotify_fd;
     int wd_cfg_file;
@@ -73,6 +75,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::effect_hook_t pre_hook;
     wf::output_t *output;
     bool hook_set = false;
+    bool last_direction = false;
 
     wf::axis_callback shade_axis_cb;
 
@@ -198,6 +201,25 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         {
             wf::get_core().bindings->add_axis(shade_modifier, &shade_axis_cb);
         }
+
+        pixdecor_toggle_shade.set_handler([=] (wf::output_t *output, wayfire_view view)
+        {
+            if (!bool(enable_shade))
+            {
+                last_direction = false;
+                return false;
+            }
+
+            if (auto toplevel = wf::toplevel_cast(view))
+            {
+                auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+                init_shade(view, last_direction = !last_direction,
+                    deco ? deco->get_titlebar_height() : csd_titlebar_height);
+                return true;
+            }
+
+            return false;
+        });
 
         shade_axis_cb = [=] (wlr_pointer_axis_event *ev)
         {

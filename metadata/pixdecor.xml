@@ -185,6 +185,11 @@
 				<_long>When the shade modifier key is held down, you can scroll down and up to shade and unshade the window.</_long>
 				<default>&lt;super&gt; &lt;ctrl&gt;</default>
 			</option>
+			<option name="shade_toggle" type="activator">
+				<_short>Toggle Window Shade</_short>
+				<_long>Toggles shade for the active window.</_long>
+				<default></default>
+			</option>
 			<option name="csd_titlebar_height" type="int">
 				<_short>CSD Titlebar Height</_short>
 				<_long>Because there is no way to know the client surface titlebar height, this is an option to adjust it.</_long>
