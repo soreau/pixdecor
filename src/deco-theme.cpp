@@ -170,35 +170,62 @@ cairo_surface_t*decoration_theme_t::render_text(std::string text,
 cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
     const button_state_t& state, bool active) const
 {
-    cairo_surface_t *cspng;
-    const char *icon_name;
-    char *iconfile, *theme;
+    auto w = state.width * 4.0;
+    auto h = state.height * 4.0;
+    cairo_surface_t *button_surface = cairo_image_surface_create(
+        CAIRO_FORMAT_ARGB32, w, h);
 
+    auto cr = cairo_create(button_surface);
+    cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+
+    cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+    cairo_set_source_rgba(cr, 0, 0, 0, 0);
+    cairo_rectangle(cr, 0, 0, w, h);
+    cairo_fill(cr);
+
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+
+    /** Draw the button  */
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+    cairo_set_source_rgba(cr, 0, 0, 0, 1);
+    auto line_width = 3.0;
     switch (button)
     {
       case BUTTON_CLOSE:
-        icon_name = "close";
+        cairo_set_line_width(cr, line_width * state.border);
+        cairo_move_to(cr, 1.0 * w / 4.0,
+            1.0 * h / 4.0);
+        cairo_line_to(cr, 3.0 * w / 4.0,
+            3.0 * h / 4.0);
+        cairo_move_to(cr, 3.0 * w / 4.0,
+            1.0 * h / 4.0);
+        cairo_line_to(cr, 1.0 * w / 4.0,
+            3.0 * h / 4.0);
+        cairo_stroke(cr);
         break;
 
       case BUTTON_TOGGLE_MAXIMIZE:
-        icon_name = "maximize";
+        cairo_set_line_width(cr, line_width * state.border * 0.75);
+        cairo_rectangle(cr, w / 4.0, h / 4.0, w / 2.0, h / 2.0);
+        cairo_stroke(cr);
         break;
 
       case BUTTON_MINIMIZE:
-        icon_name = "minimize";
+        cairo_set_line_width(cr, line_width * state.border * 0.75);
+        cairo_move_to(cr, 1.0 * w / 4.0,
+            3.0 * h / 4.0);
+        cairo_line_to(cr, 3.0 * w / 4.0,
+            3.0 * h / 4.0);
+        cairo_stroke(cr);
         break;
+
+      default:
+        assert(false);
     }
 
-    theme    = g_settings_get_string(gs, "icon-theme");
-    iconfile = g_strdup_printf("/usr/share/icons/%s/%s/ui/window-%s-symbolic.symbolic.png", theme,
-        get_font_height_px() >= LARGE_ICON_THRESHOLD ? "24x24" : "16x16", icon_name);
-    g_free(theme);
+    cairo_destroy(cr);
 
-    // read the icon into a surface
-    cspng = cairo_image_surface_create_from_png(iconfile);
-    g_free(iconfile);
-
-    return cspng;
+    return button_surface;
 }
 }
 }
