@@ -31,11 +31,11 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
     wayfire_view view;
     wf::output_t *output;
     int titlebar_height;
-    bool last_direction;
     wf::option_wrapper_t<wf::animation_description_t> shade_duration{"pixdecor/shade_duration"};
     shade_animation_t progression{shade_duration};
 
   public:
+    bool last_direction;
     class simple_node_render_instance_t : public wf::scene::transformer_render_instance_t<transformer_base_node_t>
     {
         wf::signal::connection_t<node_damage_signal> on_node_damaged =
@@ -199,6 +199,11 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
     void set_titlebar_height(int titlebar_height)
     {
         this->titlebar_height = titlebar_height;
+    }
+
+    bool get_direction()
+    {
+        return this->last_direction;
     }
 
     virtual ~pixdecor_shade()

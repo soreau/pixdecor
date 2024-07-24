@@ -75,7 +75,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::effect_hook_t pre_hook;
     wf::output_t *output;
     bool hook_set = false;
-    bool last_direction = false;
 
     wf::axis_callback shade_axis_cb;
 
@@ -206,14 +205,20 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         {
             if (!bool(enable_shade))
             {
-                last_direction = false;
                 return false;
             }
 
             if (auto toplevel = wf::toplevel_cast(view))
             {
+                bool direction = true;
                 auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
-                init_shade(view, last_direction = !last_direction,
+                if (auto tr =
+                        view->get_transformed_node()->get_transformer<wf::pixdecor::pixdecor_shade>(
+                            shade_transformer_name))
+                {
+                    direction = !tr->get_direction();
+                }
+                init_shade(view, direction,
                     deco ? deco->get_titlebar_height() : csd_titlebar_height);
                 return true;
             }
