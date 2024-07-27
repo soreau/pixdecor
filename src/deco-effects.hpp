@@ -19,12 +19,12 @@ class smoke_t
         advect1_program, advect2_program, render_program, render_overlay_program,
         texture, b0u, b0v, b0d, b1u, b1v, b1d, neural_network_tex;
 
-        int last_shadow_radius = 0;
+    int last_shadow_radius = 0;
 
- OpenGL::program_t fragment_effect_only_program{};
+    OpenGL::program_t fragment_effect_only_program{};
 
     int saved_width = -1, saved_height = -1;
-  
+
     wf::option_wrapper_t<std::string> compute_fragment_shader{"pixdecor/compute_fragment_shader"};
     wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
     wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
@@ -37,18 +37,20 @@ class smoke_t
     smoke_t();
     ~smoke_t();
 
-     void run_shader(GLuint program, int width, int height, int title_height, int border_size, int radius);
-     void run_fragment_shader(const wf::render_target_t& fb,
-        wf::geometry_t rectangle, const wf::region_t& scissor,int border_size, int title_height);
+    void run_shader(GLuint program, int width, int height, int title_height, int border_size, int radius);
+    void run_fragment_shader(const wf::render_target_t& fb,
+        wf::geometry_t rectangle, const wf::region_t& scissor, int border_size, int title_height);
     void run_shader_region(GLuint program, const wf::region_t & region, const wf::dimensions_t & size);
     void dispatch_region(const wf::region_t& region);
 
     void step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
         bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
         int title_height, int border_size, int shadow_radius);
- //   void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle, const wf::region_t& scissor);
-   void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle, const wf::region_t& scissor,int border_size,int title_height );
-   
+    // void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle, const wf::region_t&
+    // scissor);
+    void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle, const wf::region_t& scissor,
+        int border_size, int title_height);
+
     void recreate_textures(wf::geometry_t rectangle);
     void create_programs();
     void destroy_programs();

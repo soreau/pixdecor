@@ -445,14 +445,14 @@ void run_pixel(int x, int y)
 })";
 
 /*///////////////////////////////////////////////
-	  ______  _    _  __  __  ______   _____ 
-	 |  ____|| |  | ||  \/  ||  ____| / ____|
-	 | |__   | |  | || \  / || |__    | (___   
-	 |  __|  | |  | || |\/| ||  __|    \___ \
-	 | |     | |__| || |  | || |____   ____) |
-	 |_|      \____/ |_|  |_||______| |_____/ 
-
-*////////////////////////////////////////////////
+ *     ______  _    _  __  __  ______   _____
+ |  ____|| |  | ||  \/  ||  ____| / ____|
+ | |__   | |  | || \  / || |__    | (___
+ |  __|  | |  | || |\/| ||  __|    \___ \
+ | |     | |__| || |  | || |____   ____) |
+ |_|      \____/ |_|  |_||______| |_____/
+ |
+ *////////////////////////////////////////////////
 
 static const char *fumes_motion_source =
     R"(
@@ -716,7 +716,7 @@ void run_pixel(int x, int y)
 
 })";
 
-//math from https://inria.hal.science/inria-00596050/document
+// math from https://inria.hal.science/inria-00596050/document
 static const char *fumes_render_source =
     R"(
 #version 320 es
@@ -863,14 +863,14 @@ imageStore(out_tex, coords, finalColor);
 
 
 /*///////////////////////////////////////////////
-          _____ 
-         / ____|
-         | (___   
-   fast  \ ___ \ moke
-         ____) |
-        |_____/ 
-
-*////////////////////////////////////////////////
+ *         _____
+ *        / ____|
+ | (___
+ |  fast  \ ___ \ moke
+ |        ____) |
+ |_____/
+ |
+ *////////////////////////////////////////////////
 
 static const char *fast_smoke_motion_source =
     R"(
@@ -1134,7 +1134,7 @@ void run_pixel(int x, int y)
 
 })";
 
-//math from https://inria.hal.science/inria-00596050/document
+// math from https://inria.hal.science/inria-00596050/document
 static const char *fast_smoke_render_source =
     R"(
 #version 320 es
@@ -1290,14 +1290,14 @@ imageStore(out_tex, coords, finalColor);
 
 
 /*///////////////////////////////////////////////
-	  ______  _   ____     ______
-	 |  ____|| | |  __ \  |  ____|
-	 | |__   | | | |__\ | |  |____
-	 |  __|  | | | ___  | |  ____|
-	 | |     | | | |  \ \ |  |____
-	 |_|     |_| |_|  |_| |______|
-
-*////////////////////////////////////////////////
+ *     ______  _   ____     ______
+ |  ____|| | |  __ \  |  ____|
+ | |__   | | | |__\ | |  |____
+ |  __|  | | | ___  | |  ____|
+ | |     | | | |  \ \ |  |____
+ |_|     |_| |_|  |_| |______|
+ |
+ *////////////////////////////////////////////////
 
 
 static const char *flame_motion_source =
@@ -1563,7 +1563,7 @@ void run_pixel(int x, int y)
 })";
 
 static const char *flame_render_source =
-R"(
+    R"(
 #version 320 es
 
 precision lowp image2D;
@@ -1646,110 +1646,112 @@ void run_pixel(int x, int y)
 
 
 /*
-  int stride;
-    int i, j;
-    float fx, fy;
-    stride = width;
-
-    vec4 sx = imageLoad(in_b1u, ivec2(x, y));
-    vec4 sy = imageLoad(in_b1v, ivec2(x, y));
-    float ix = float(x) - sx.x;
-    float iy = float(y) - sy.x;
-    
-
-    ix = clamp(ix, 0.5, float(width) - 1.5);
-    iy = clamp(iy, 0.5, float(height) - 1.5);
-
-    i = int(ix);
-    j = int(iy);
-    fx = ix - float(i);
-    fy = iy - float(j);
-
-    // Process u component
-    vec4 s0x = imageLoad(in_b1u, ivec2(i, j));
-    vec4 s1x = imageLoad(in_b1u, ivec2(i + 1, j));
-    vec4 s2x = imageLoad(in_b1u, ivec2(i, j + 1));
-    vec4 s3x = imageLoad(in_b1u, ivec2(i + 1, j + 1));
-    float p1 = (s0x.x * (1.0 - fx) + s1x.x * fx) * (1.0 - fy) + (s2x.x * (1.0 - fx) + s3x.x * fx) * fy;
-    imageStore(out_b0u, ivec2(x, y), vec4(p1, 0.0, 0.0, 0.0));
-
-    ix = float(x) - sx.x;
-    iy = float(y) - sy.x;
-
-    ix = clamp(ix, 0.5, float(width) - 1.5);
-    iy = clamp(iy, 0.5, float(height) - 1.5);
-    
-    i = int(ix);
-    j = int(iy);
-    fx = ix - float(i);
-    fy = iy - float(j);
-
-    // Process v component
-    vec4 s0y = imageLoad(in_b1v, ivec2(i, j));
-    vec4 s1y = imageLoad(in_b1v, ivec2(i + 1, j));
-    vec4 s2y = imageLoad(in_b1v, ivec2(i, j + 1));
-    vec4 s3y = imageLoad(in_b1v, ivec2(i + 1, j + 1));
-    float p2 = (s0y.x * (1.0 - fx) + s1y.x * fx) * (1.0 - fy) + (s2y.x * (1.0 - fx) + s3y.x * fx) * fy;
-    imageStore(out_b0v, ivec2(x, y), vec4(p2, 0.0, 0.0, 0.0));
-
-    int k, l, s;
-    float h;
-
-    h = 1.0 / float(width);
-    s = width;
-
-    vec4 s0 = imageLoad(in_b0v, ivec2(x, y));
-    vec4 s1 = imageLoad(in_b0u, ivec2(x - 1, y));
-    vec4 s2 = imageLoad(in_b0u, ivec2(x + 1, y));
-    vec4 s3 = imageLoad(in_b0u, ivec2(x, y - 1));
-    vec4 s4 = imageLoad(in_b0u, ivec2(x, y + 1));
-    float u1 = s1.x;
-    float u2 = s2.x;
-    float u3 = s3.x;
-    float u4 = s4.x;
-
-    imageStore(out_b0u, ivec2(x, y), vec4((s0.x + u1 + u2 + u3 + u4) / 4.0, 0.0, 0.0, 0.0));
-    
-    vec4 s0x = imageLoad(in_b1u, ivec2(x, y));
-    vec4 s1 = imageLoad(in_b0u, ivec2(x - 1, y));
-    vec4 s2 = imageLoad(in_b0u, ivec2(x + 1, y));
-    vec4 s0y = imageLoad(in_b1v, ivec2(x, y));
-    vec4 s3 = imageLoad(in_b0u, ivec2(x, y - 1));
-    vec4 s4 = imageLoad(in_b0u, ivec2(x, y + 1));
-    float su = s0x.x;
-    float u1 = s1.x;
-    float u2 = s2.x;
-    float sv = s0y.x;
-    float u3 = s3.x;
-    float u4 = s4.x;
-    imageStore(out_b1u, ivec2(x, y), vec4(su - 0.5 * (u2 - u1) / h, 0.0, 0.0, 0.0));
-    imageStore(out_b1v, ivec2(x, y), vec4(sv - 0.5 * (u4 - u3) / h, 0.0, 0.0, 0.0));
-
-    int k;
-    float t = 0.0002;
-    float a = 0.002;
-    vec4 s = imageLoad(in_b0u, ivec2(x, y));
-    vec4 d1 = imageLoad(in_b1u, ivec2(x - 1, y));
-    vec4 d2 = imageLoad(in_b1u, ivec2(x + 1, y));
-    vec4 d3 = imageLoad(in_b1u, ivec2(x, y - 1));
-    vec4 d4 = imageLoad(in_b1u, ivec2(x, y + 1));
-    float sx = s.x;
-    float du1 = d1.x;
-    float du2 = d2.x;
-    float du3 = d3.x;
-    float du4 = d4.x;
-    float t1 = du1 + du2 + du3 + du4;
-    s = imageLoad(in_b0v, ivec2(x, y));
-    d1 = imageLoad(in_b1v, ivec2(x - 1, y));
-    d2 = imageLoad(in_b1v, ivec2(x + 1, y));
-    d3 = imageLoad(in_b1v, ivec2(x, y - 1));
-    d4 = imageLoad(in_b1v, ivec2(x, y + 1));
-    float sy = s.x;
-    du1 = d1.x;
-    du2 = d2.x;
-    du3 = d3.x;
-    du4 = d4.x;
-    float t2 = du1 + du2 + du3 + du4;
-    imageStore(out_b1u, ivec2(x, y), vec4((sx + a * t1) / (1.0 + 4.0 * a) * 0.9999999999999999999999999999999999999999995, 0.0, 0.0, 0.0));
-    imageStore(out_b1v, ivec2(x, y), vec4((sy + a * t2) / (1.0 + 4.0 * a) * 0.9999999999999999999999999999999999999999995, 0.0, 0.0, 0.0));
-*/
+ *  int stride;
+ *   int i, j;
+ *   float fx, fy;
+ *   stride = width;
+ *
+ *   vec4 sx = imageLoad(in_b1u, ivec2(x, y));
+ *   vec4 sy = imageLoad(in_b1v, ivec2(x, y));
+ *   float ix = float(x) - sx.x;
+ *   float iy = float(y) - sy.x;
+ *
+ *
+ *   ix = clamp(ix, 0.5, float(width) - 1.5);
+ *   iy = clamp(iy, 0.5, float(height) - 1.5);
+ *
+ *   i = int(ix);
+ *   j = int(iy);
+ *   fx = ix - float(i);
+ *   fy = iy - float(j);
+ *
+ *   // Process u component
+ *   vec4 s0x = imageLoad(in_b1u, ivec2(i, j));
+ *   vec4 s1x = imageLoad(in_b1u, ivec2(i + 1, j));
+ *   vec4 s2x = imageLoad(in_b1u, ivec2(i, j + 1));
+ *   vec4 s3x = imageLoad(in_b1u, ivec2(i + 1, j + 1));
+ *   float p1 = (s0x.x * (1.0 - fx) + s1x.x * fx) * (1.0 - fy) + (s2x.x * (1.0 - fx) + s3x.x * fx) * fy;
+ *   imageStore(out_b0u, ivec2(x, y), vec4(p1, 0.0, 0.0, 0.0));
+ *
+ *   ix = float(x) - sx.x;
+ *   iy = float(y) - sy.x;
+ *
+ *   ix = clamp(ix, 0.5, float(width) - 1.5);
+ *   iy = clamp(iy, 0.5, float(height) - 1.5);
+ *
+ *   i = int(ix);
+ *   j = int(iy);
+ *   fx = ix - float(i);
+ *   fy = iy - float(j);
+ *
+ *   // Process v component
+ *   vec4 s0y = imageLoad(in_b1v, ivec2(i, j));
+ *   vec4 s1y = imageLoad(in_b1v, ivec2(i + 1, j));
+ *   vec4 s2y = imageLoad(in_b1v, ivec2(i, j + 1));
+ *   vec4 s3y = imageLoad(in_b1v, ivec2(i + 1, j + 1));
+ *   float p2 = (s0y.x * (1.0 - fx) + s1y.x * fx) * (1.0 - fy) + (s2y.x * (1.0 - fx) + s3y.x * fx) * fy;
+ *   imageStore(out_b0v, ivec2(x, y), vec4(p2, 0.0, 0.0, 0.0));
+ *
+ *   int k, l, s;
+ *   float h;
+ *
+ *   h = 1.0 / float(width);
+ *   s = width;
+ *
+ *   vec4 s0 = imageLoad(in_b0v, ivec2(x, y));
+ *   vec4 s1 = imageLoad(in_b0u, ivec2(x - 1, y));
+ *   vec4 s2 = imageLoad(in_b0u, ivec2(x + 1, y));
+ *   vec4 s3 = imageLoad(in_b0u, ivec2(x, y - 1));
+ *   vec4 s4 = imageLoad(in_b0u, ivec2(x, y + 1));
+ *   float u1 = s1.x;
+ *   float u2 = s2.x;
+ *   float u3 = s3.x;
+ *   float u4 = s4.x;
+ *
+ *   imageStore(out_b0u, ivec2(x, y), vec4((s0.x + u1 + u2 + u3 + u4) / 4.0, 0.0, 0.0, 0.0));
+ *
+ *   vec4 s0x = imageLoad(in_b1u, ivec2(x, y));
+ *   vec4 s1 = imageLoad(in_b0u, ivec2(x - 1, y));
+ *   vec4 s2 = imageLoad(in_b0u, ivec2(x + 1, y));
+ *   vec4 s0y = imageLoad(in_b1v, ivec2(x, y));
+ *   vec4 s3 = imageLoad(in_b0u, ivec2(x, y - 1));
+ *   vec4 s4 = imageLoad(in_b0u, ivec2(x, y + 1));
+ *   float su = s0x.x;
+ *   float u1 = s1.x;
+ *   float u2 = s2.x;
+ *   float sv = s0y.x;
+ *   float u3 = s3.x;
+ *   float u4 = s4.x;
+ *   imageStore(out_b1u, ivec2(x, y), vec4(su - 0.5 * (u2 - u1) / h, 0.0, 0.0, 0.0));
+ *   imageStore(out_b1v, ivec2(x, y), vec4(sv - 0.5 * (u4 - u3) / h, 0.0, 0.0, 0.0));
+ *
+ *   int k;
+ *   float t = 0.0002;
+ *   float a = 0.002;
+ *   vec4 s = imageLoad(in_b0u, ivec2(x, y));
+ *   vec4 d1 = imageLoad(in_b1u, ivec2(x - 1, y));
+ *   vec4 d2 = imageLoad(in_b1u, ivec2(x + 1, y));
+ *   vec4 d3 = imageLoad(in_b1u, ivec2(x, y - 1));
+ *   vec4 d4 = imageLoad(in_b1u, ivec2(x, y + 1));
+ *   float sx = s.x;
+ *   float du1 = d1.x;
+ *   float du2 = d2.x;
+ *   float du3 = d3.x;
+ *   float du4 = d4.x;
+ *   float t1 = du1 + du2 + du3 + du4;
+ *   s = imageLoad(in_b0v, ivec2(x, y));
+ *   d1 = imageLoad(in_b1v, ivec2(x - 1, y));
+ *   d2 = imageLoad(in_b1v, ivec2(x + 1, y));
+ *   d3 = imageLoad(in_b1v, ivec2(x, y - 1));
+ *   d4 = imageLoad(in_b1v, ivec2(x, y + 1));
+ *   float sy = s.x;
+ *   du1 = d1.x;
+ *   du2 = d2.x;
+ *   du3 = d3.x;
+ *   du4 = d4.x;
+ *   float t2 = du1 + du2 + du3 + du4;
+ *   imageStore(out_b1u, ivec2(x, y), vec4((sx + a * t1) / (1.0 + 4.0 * a) *
+ * 0.9999999999999999999999999999999999999999995, 0.0, 0.0, 0.0));
+ *   imageStore(out_b1v, ivec2(x, y), vec4((sy + a * t2) / (1.0 + 4.0 * a) *
+ * 0.9999999999999999999999999999999999999999995, 0.0, 0.0, 0.0));
+ */

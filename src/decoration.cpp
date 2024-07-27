@@ -218,6 +218,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     direction = !tr->get_direction();
                 }
+
                 init_shade(view, direction,
                     deco ? deco->get_titlebar_height() : csd_titlebar_height);
                 return true;

@@ -1,10 +1,12 @@
-static const char *overlay_no_overlay = R"(
+static const char *overlay_no_overlay =
+    R"(
 vec4 overlay_function(vec2 position)
 {
     return effect_color(position);
 })";
 
-static const char *overlay_rounded_corners = R"(
+static const char *overlay_rounded_corners =
+    R"(
 uniform int corner_radius;
 uniform int shadow_radius;
 uniform vec4 shadow_color;
@@ -46,7 +48,8 @@ vec4 overlay_function(vec2 pos)
 
 
 
-static const char *overlay_beveled_glass = R"(
+static const char *overlay_beveled_glass =
+    R"(
 
 
 #define MARKER_RADIUS 12.5
@@ -402,11 +405,3 @@ vec4 shadow = vec4(edgeShadow.rgb, edgeShadow.a * clamp(1.0 - shadow_d  / float(
  return combine_col;
   
 })";
-
-
-
-
-
-
-
-

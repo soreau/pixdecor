@@ -1,4 +1,5 @@
-static const char *generic_effect_vertex_shader = R"(
+static const char *generic_effect_vertex_shader =
+    R"(
 #version 320 es
 
 in highp vec2 position;
@@ -12,7 +13,8 @@ void main() {
     gl_Position = MVP * vec4(position.xy, 0.0, 1.0);
 })";
 
-static const char *generic_effect_fragment_header = R"(
+static const char *generic_effect_fragment_header =
+    R"(
 #version 320 es
 precision highp float;
 precision highp image2D;
@@ -27,14 +29,16 @@ uniform float height;
 out vec4 fragColor;
 )";
 
-static const char *generic_effect_fragment_main = R"(
+static const char *generic_effect_fragment_main =
+    R"(
 void main()
 {
     fragColor = overlay_function(relativePosition);
 })";
 
 // ported from https://www.shadertoy.com/view/WdXBW4
-static const char *effect_clouds_fragment = R"(
+static const char *effect_clouds_fragment =
+    R"(
 float cloudscale=2.1;  // Added cloudscale parameter
 const mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
 
@@ -153,7 +157,8 @@ vec4 effect_color(vec2 pos)
 })";
 
 // ported from https://www.shadertoy.com/view/mtyGWy
-static const char *effect_neon_pattern_fragment = R"(
+static const char *effect_neon_pattern_fragment =
+    R"(
 vec3 palette(float t) {
     vec3 a = vec3(0.5, 0.5, 0.5);
     vec3 b = vec3(0.5, 0.5, 0.5);
@@ -182,7 +187,8 @@ vec4 effect_color(vec2 pos) {
     return vec4(finalColor, 1.0);
 })";
 
-static const char *effect_halftone_fragment = R"(
+static const char *effect_halftone_fragment =
+    R"(
 
 
 
@@ -237,7 +243,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_zebra_fragment = R"(
+static const char *effect_zebra_fragment =
+    R"(
 
 const float resolutionY = 720.0;
 
@@ -284,7 +291,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_lava_fragment = R"(
+static const char *effect_lava_fragment =
+    R"(
 
 
 
@@ -334,7 +342,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_pattern_fragment = R"(
+static const char *effect_pattern_fragment =
+    R"(
 
 
 float rand(vec2 uv) {
@@ -390,7 +399,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_hex_fragment = R"(
+static const char *effect_hex_fragment =
+    R"(
 
 
 
@@ -457,7 +467,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_neural_network_fragment = R"(
+static const char *effect_neural_network_fragment =
+    R"(
 
 const vec2 iResolution = vec2(1920.0, 1080.0);
 
@@ -512,7 +523,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_hexagon_maze_fragment = R"(
+static const char *effect_hexagon_maze_fragment =
+    R"(
 
 
 
@@ -947,7 +959,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_raymarched_truchet_fragment = R"(
+static const char *effect_raymarched_truchet_fragment =
+    R"(
 
 float heightMap(in vec2 p) {
     p *= 3.0;
@@ -1109,7 +1122,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_neon_rings_fragment = R"(
+static const char *effect_neon_rings_fragment =
+    R"(
 
 #define PI 3.14159265358979323846
 #define TWO_PI 6.28318530717958647692
@@ -1192,7 +1206,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_deco_fragment = R"(
+static const char *effect_deco_fragment =
+    R"(
 
 vec3 effect(float speed, vec2 uv, float time, float scale) {
     float t = mod(time * 0.005, 6.0);
@@ -1340,7 +1355,8 @@ vec4 effect_color(vec2 pos) {
 
 
 
-static const char *effect_fire_fragment = R"(
+static const char *effect_fire_fragment =
+    R"(
 
 vec3 effect(float speed, vec2 uv, float time, float scale) {
 
