@@ -130,6 +130,21 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         update_view_decoration(ev->view);
     };
 
+    wf::signal::connection_t<wf::output_added_signal> on_output_added =
+        [=] (wf::output_added_signal *ev)
+    {
+        if (effect_animate || (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+        {
+            ev->output->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
+        }
+    };
+
+    wf::signal::connection_t<wf::output_removed_signal> on_output_removed =
+        [=] (wf::output_removed_signal *ev)
+    {
+        ev->output->render->rem_effect(&pre_hook);
+    };
+
     void pop_transformer(wayfire_view view)
     {
         if (view->get_transformed_node()->get_transformer(shade_transformer_name))
@@ -192,10 +207,14 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
     void init() override
     {
+        auto& ol = wf::get_core().output_layout;
+        ol->connect(&on_output_added);
+        ol->connect(&on_output_removed);
         wf::get_core().connect(&on_decoration_state_changed);
         wf::get_core().connect(&on_app_id_changed);
         wf::get_core().connect(&on_title_changed);
         wf::get_core().tx_manager->connect(&on_new_tx);
+
         if (bool(enable_shade))
         {
             wf::get_core().bindings->add_axis(shade_modifier, &shade_axis_cb);
@@ -218,6 +237,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 {
                     direction = !tr->get_direction();
                 }
+
                 init_shade(view, direction,
                     deco ? deco->get_titlebar_height() : csd_titlebar_height);
                 return true;
@@ -470,6 +490,9 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 o->render->rem_effect(&pre_hook);
             }
         }
+
+        on_output_added.disconnect();
+        on_output_removed.disconnect();
 
         wf::get_core().bindings->rem_binding(&shade_axis_cb);
         remove_shade_transformers();
