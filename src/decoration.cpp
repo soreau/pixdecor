@@ -389,7 +389,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             hook_set = true;
         }
 
-        titlebar.set_callback([=] {option_changed_cb(false, true);});
+        titlebar.set_callback([=] {option_changed_cb(true, false);});
         effect_type.set_callback([=] {option_changed_cb(false, false);});
         overlay_engine.set_callback([=] {option_changed_cb(true, false);});
         effect_animate.set_callback([=] {option_changed_cb(false, false);});
@@ -581,12 +581,10 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
             } else
             {
-                pending.margins =
-                {int(shadow_radius) * 2, int(shadow_radius) * 2,
-                    int(shadow_radius) * 2, int(shadow_radius) * 2};
                 pending.geometry = wf::shrink_geometry_by_margins(pending.geometry, pending.margins);
                 pending.margins  = toplevel->toplevel()->get_data<wf::simple_decorator_t>()->get_margins(
                     toplevel->toplevel()->pending());
+                pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
             }
 
             wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
@@ -640,7 +638,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         auto& pending = toplevel->pending();
         pending.margins = deco->get_margins(pending);
 
-        if (!pending.fullscreen && !pending.tiled_edges)
+        if (!pending.fullscreen && !pending.tiled_edges && !view->is_mapped())
         {
             toplevel->pending().geometry = wf::expand_geometry_by_margins(
                 toplevel->pending().geometry, pending.margins);
