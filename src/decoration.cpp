@@ -118,6 +118,13 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         update_view_decoration(ev->view);
     };
 
+    // allows criteria containing maximized or floating check
+    wf::signal::connection_t<wf::view_tiled_signal> on_view_tiled =
+        [=] (wf::view_tiled_signal *ev)
+    {
+        update_view_decoration(ev->view);
+    };
+
     wf::signal::connection_t<wf::view_app_id_changed_signal> on_app_id_changed =
         [=] (wf::view_app_id_changed_signal *ev)
     {
@@ -211,9 +218,10 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         ol->connect(&on_output_added);
         ol->connect(&on_output_removed);
         wf::get_core().connect(&on_decoration_state_changed);
+        wf::get_core().tx_manager->connect(&on_new_tx);
         wf::get_core().connect(&on_app_id_changed);
         wf::get_core().connect(&on_title_changed);
-        wf::get_core().tx_manager->connect(&on_new_tx);
+        wf::get_core().connect(&on_view_tiled);
 
         if (bool(enable_shade))
         {
