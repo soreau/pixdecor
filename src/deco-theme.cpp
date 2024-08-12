@@ -9,6 +9,7 @@ namespace wf
 namespace pixdecor
 {
 wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
 wf::option_wrapper_t<bool> titlebar{"pixdecor/titlebar"};
 wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
 wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
@@ -131,7 +132,7 @@ void decoration_theme_t::render_background(const wf::render_target_t& fb,
  * The caller is responsible for freeing the memory afterwards.
  */
 cairo_surface_t*decoration_theme_t::render_text(std::string text,
-    int width, int height, int t_width, bool active) const
+    int width, int height, int t_width, int border, int buttons_width, bool active) const
 {
     const auto format = CAIRO_FORMAT_ARGB32;
     auto surface = cairo_image_surface_create(format, width, height);
@@ -146,7 +147,7 @@ cairo_surface_t*decoration_theme_t::render_text(std::string text,
     PangoFontDescription *font_desc;
     PangoLayout *layout;
     char *font = g_settings_get_string(gs, "font-name");
-    int w, h;
+    int x, w, h;
 
     // render text
     font_desc = pango_font_description_from_string(font);
@@ -157,7 +158,26 @@ cairo_surface_t*decoration_theme_t::render_text(std::string text,
     cairo_set_source_rgba(cr, active ? fg_text.r : bg_text.r, active ? fg_text.g : bg_text.g,
         active ? fg_text.b : bg_text.b, 1);
     pango_layout_get_pixel_size(layout, &w, &h);
-    cairo_translate(cr, (t_width - w) / 2, (height - h) / 2);
+    switch (int(title_text_align))
+    {
+      // left
+      case 0:
+        x = border;
+        break;
+
+      // right
+      case 2:
+        x = t_width - (w + buttons_width + border);
+        break;
+
+      // center
+      case 1:
+      default:
+        x = (t_width - w) / 2;
+        break;
+    }
+
+    cairo_translate(cr, x, (height - h) / 2);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(font_desc);
     g_object_unref(layout);

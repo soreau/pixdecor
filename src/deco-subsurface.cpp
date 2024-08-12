@@ -40,6 +40,7 @@ wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
 wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
 wf::option_wrapper_t<int> csd_titlebar_height{"pixdecor/csd_titlebar_height"};
 wf::option_wrapper_t<bool> enable_shade{"pixdecor/enable_shade"};
+wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
 
 
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
@@ -55,23 +56,25 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
     };
 
-    void update_title(int width, int height, int t_width, double scale)
+    void update_title(int width, int height, int t_width, int border, int buttons_width, double scale)
     {
         if (auto view = _view.lock())
         {
             int target_width  = width * scale;
             int target_height = height * scale;
 
-            if ((view->get_title() != title_texture.current_text) ||
+            if ((int(title_text_align) != title_texture.title_text_align) ||
+                (view->get_title() != title_texture.current_text) ||
                 (target_width != title_texture.tex.width) ||
                 (target_height != title_texture.tex.height) ||
                 (view->activated != title_texture.rendered_for_activated_state))
             {
                 auto surface = theme.render_text(view->get_title(),
-                    target_width, target_height, t_width, view->activated);
+                    target_width, target_height, t_width, border, buttons_width, view->activated);
                 cairo_surface_upload_to_texture(surface, title_texture.tex);
                 cairo_surface_destroy(surface);
-                title_texture.current_text = view->get_title();
+                title_texture.current_text     = view->get_title();
+                title_texture.title_text_align = int(title_text_align);
                 title_texture.rendered_for_activated_state = view->activated;
             }
         }
@@ -82,6 +85,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         wf::simple_texture_t tex;
         std::string current_text = "";
         bool rendered_for_activated_state = false;
+        int title_text_align = int(title_text_align);
     } title_texture;
 
   public:
@@ -126,9 +130,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     }
 
     void render_title(const wf::render_target_t& fb, const wf::region_t& scissor,
-        const wf::geometry_t& geometry, int t_width)
+        const wf::geometry_t& geometry, int t_width, int border, int buttons_width)
     {
-        update_title(geometry.width, geometry.height, t_width, fb.scale);
+        update_title(geometry.width, geometry.height, t_width, border, buttons_width, fb.scale);
         OpenGL::render_texture(title_texture.tex.tex, fb, geometry,
             glm::vec4(1.0f), OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
 
@@ -139,7 +143,6 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
 
         OpenGL::clear_cached();
-        OpenGL::render_end();
     }
 
     void render_region(const wf::render_target_t& fb, wf::point_t origin, const wf::region_t& region)
@@ -168,12 +171,22 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             return;
         }
 
+        int buttons_width = 0;
+        for (auto item : renderables)
+        {
+            if (item->get_type() != wf::pixdecor::DECORATION_AREA_TITLE)
+            {
+                buttons_width += item->get_geometry().width + 2 * BUTTON_W_PAD;
+            }
+        }
+
         /* Draw title & buttons */
         for (auto item : renderables)
         {
             if (item->get_type() == wf::pixdecor::DECORATION_AREA_TITLE)
             {
-                render_title(fb, region, item->get_geometry() + offset, size.width - border * 2);
+                render_title(fb, region,
+                    item->get_geometry() + offset, size.width - border * 2, border, buttons_width);
             } else // button
             {
                 item->as_button().render(fb,

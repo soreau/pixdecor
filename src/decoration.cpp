@@ -45,6 +45,7 @@ int handle_theme_updated(int fd, uint32_t mask, void *data)
 class wayfire_pixdecor : public wf::plugin_interface_t
 {
     wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+    wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
     wf::option_wrapper_t<bool> titlebar{"pixdecor/titlebar"};
     wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
     wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
@@ -393,6 +394,13 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         effect_type.set_callback([=] {option_changed_cb(false, false);});
         overlay_engine.set_callback([=] {option_changed_cb(true, false);});
         effect_animate.set_callback([=] {option_changed_cb(false, false);});
+        title_text_align.set_callback([=]
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                view->damage();
+            }
+        });
         shadow_radius.set_callback([=]
         {
             option_changed_cb(false, (std::string(overlay_engine) == "rounded_corners"));

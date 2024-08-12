@@ -57,6 +57,23 @@
 				<_long>Color of the window titlebar text when it does not have focus.</_long>
 				<default>0.7 0.7 0.7 1.0</default>
 			</option>
+			<option name="title_text_align" type="int">
+				<_short>Titlebar Text Alignment</_short>
+				<_long>Sets the alignment of the titlebar text.</_long>
+				<default>1</default>
+				<desc>
+					<value>0</value>
+					<_name>Left</_name>
+				</desc>
+				<desc>
+					<value>1</value>
+					<_name>Center</_name>
+				</desc>
+				<desc>
+					<value>2</value>
+					<_name>Right</_name>
+				</desc>
+			</option>
 			<option name="overlay_engine" type="string">
 				<_short>Overlay Engine</_short>
 				<_long>Sets the overlay engine.</_long>
