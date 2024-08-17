@@ -390,7 +390,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             hook_set = true;
         }
 
-        titlebar.set_callback([=] {option_changed_cb(true, false);});
+        titlebar.set_callback([=] {option_changed_cb(false, true);});
         effect_type.set_callback([=] {option_changed_cb(false, false);});
         overlay_engine.set_callback([=] {option_changed_cb(true, false);});
         effect_animate.set_callback([=] {option_changed_cb(false, false);});
@@ -646,7 +646,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         auto& pending = toplevel->pending();
         pending.margins = deco->get_margins(pending);
 
-        if (!pending.fullscreen && !pending.tiled_edges && !view->is_mapped())
+        if (!pending.fullscreen && !pending.tiled_edges)
         {
             toplevel->pending().geometry = wf::expand_geometry_by_margins(
                 toplevel->pending().geometry, pending.margins);
