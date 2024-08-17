@@ -181,12 +181,14 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
 
         /* Draw title & buttons */
+        auto title_border = border + ((std::string(overlay_engine) == "rounded_corners" &&
+            (!maximized || maximized_shadows)) ? int(shadow_radius) * 2 : 0);
         for (auto item : renderables)
         {
             if (item->get_type() == wf::pixdecor::DECORATION_AREA_TITLE)
             {
                 render_title(fb, region,
-                    item->get_geometry() + offset, size.width - border * 2, border, buttons_width);
+                    item->get_geometry() + offset, size.width - border * 2, title_border, buttons_width);
             } else // button
             {
                 item->as_button().render(fb,
