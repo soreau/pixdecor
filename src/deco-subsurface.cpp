@@ -539,7 +539,6 @@ wf::simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
 
     on_view_fullscreen = [this] (auto)
     {
-        deco->update_decoration_size();
         if (!this->view->toplevel()->pending().fullscreen)
         {
             deco->resize(wf::dimensions(this->view->get_geometry()));
@@ -559,6 +558,11 @@ int wf::simple_decorator_t::get_titlebar_height()
     return deco->current_titlebar;
 }
 
+void wf::simple_decorator_t::update_decoration_size()
+{
+    deco->update_decoration_size();
+}
+
 void wf::simple_decorator_t::update_colors()
 {
     deco->theme.update_colors();
@@ -566,7 +570,6 @@ void wf::simple_decorator_t::update_colors()
 
 void wf::simple_decorator_t::effect_updated()
 {
-    deco->update_decoration_size();
     deco->theme.smoke.effect_updated();
 }
 

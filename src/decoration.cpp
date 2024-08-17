@@ -92,6 +92,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 if (auto deco = toplevel->get_data<wf::simple_decorator_t>())
                 {
                     toplevel->pending().margins = deco->get_margins(toplevel->pending());
+                    deco->update_decoration_size();
                     continue;
                 }
 
@@ -108,6 +109,10 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 if (should_decorate_view(view))
                 {
                     adjust_new_decorations(view);
+                    if (auto deco = toplevel->get_data<wf::simple_decorator_t>())
+                    {
+                        deco->update_decoration_size();
+                    }
                 }
             }
         }
