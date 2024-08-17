@@ -91,8 +91,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 // In that case, we should just set the correct margins
                 if (auto deco = toplevel->get_data<wf::simple_decorator_t>())
                 {
-                    toplevel->pending().margins = deco->get_margins(toplevel->pending());
                     deco->update_decoration_size();
+                    toplevel->pending().margins = deco->get_margins(toplevel->pending());
                     continue;
                 }
 
@@ -108,11 +108,12 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 wf::dassert(view != nullptr, "Mapping a toplevel means there must be a corresponding view!");
                 if (should_decorate_view(view))
                 {
-                    adjust_new_decorations(view);
                     if (auto deco = toplevel->get_data<wf::simple_decorator_t>())
                     {
                         deco->update_decoration_size();
                     }
+
+                    adjust_new_decorations(view);
                 }
             }
         }
