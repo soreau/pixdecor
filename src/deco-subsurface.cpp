@@ -335,12 +335,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             return;
         }
 
-        handle_action(layout.handle_press_event(ev.state == WLR_BUTTON_PRESSED));
+        handle_action(layout.handle_press_event(ev.state == WL_POINTER_BUTTON_STATE_PRESSED));
     }
 
     void handle_pointer_axis(const wlr_pointer_axis_event& ev) override
     {
-        if (ev.orientation == WLR_AXIS_ORIENTATION_VERTICAL)
+        if (ev.orientation == WL_POINTER_AXIS_VERTICAL_SCROLL)
         {
             handle_action(layout.handle_axis_event(ev.delta));
         }
