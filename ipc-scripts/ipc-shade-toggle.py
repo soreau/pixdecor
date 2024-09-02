@@ -2,16 +2,14 @@
 
 import os
 import sys
-from wayfire_socket import *
+from wayfire import WayfireSocket
+from wayfire.extra.wpe import WPE
 
 if len(sys.argv) < 2:
-    print(f"Usage: {sys.argv[0]} <app_id>")
+    print(f"Usage: {sys.argv[0]} <view-id>")
     exit(1)
 
-addr = os.getenv('WAYFIRE_SOCKET')
+sock = WayfireSocket()
+wpe = WPE(sock)
 
-commands_sock = WayfireSocket(addr)
-
-for view in commands_sock.list_views():
-    if view["app-id"] == sys.argv[1]:
-        commands_sock.shade_toggle(view["id"])
+wpe.shade_toggle(int(sys.argv[1]))
