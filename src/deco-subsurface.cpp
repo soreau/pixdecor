@@ -489,6 +489,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         if (auto view = _view.lock())
         {
+            view->damage();
             bool fullscreen = view->toplevel()->pending().fullscreen;
             if (fullscreen)
             {
@@ -510,6 +511,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             {
                 tr->set_titlebar_height(current_titlebar);
             }
+
+            view->damage();
         }
     }
 };
