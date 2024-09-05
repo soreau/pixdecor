@@ -264,7 +264,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         shade_axis_cb = [=] (wlr_pointer_axis_event *ev)
         {
             auto v = wf::get_core().get_cursor_focus_view();
-            if (ev->orientation == WLR_AXIS_ORIENTATION_VERTICAL)
+            if (ev->orientation == WL_POINTER_AXIS_VERTICAL_SCROLL)
             {
                 if (auto toplevel = wf::toplevel_cast(v))
                 {
