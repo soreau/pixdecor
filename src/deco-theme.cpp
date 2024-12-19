@@ -44,6 +44,10 @@ void decoration_theme_t::update_colors(void)
     bg_text = wf::color_t(bg_text_color);
 }
 
+/**
+ * @return A PangoFontDescription representing either a provided font from
+ *  the Title Font option or the system font, scaled by the text-scaling-factor GSetting.
+ */
 PangoFontDescription *create_font_description()
 {
     GSettings *gs = g_settings_new("org.gnome.desktop.interface");
@@ -102,6 +106,11 @@ PangoFontDescription *create_font_description()
     return font_desc;
 }
 
+/**
+ * @return A PangoFontDescription from create_font_description(),
+ *  originating from a global, internally managed instance, freeing the data upon exit.
+ *  It will also be updated with changes to the Title Font option.
+ */
 PangoFontDescription *get_font_description()
 {
     static std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> font_desc(
