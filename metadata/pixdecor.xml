@@ -37,6 +37,11 @@
 				<_long>Forces window decoration for windows matching the specified criteria.</_long>
 				<default>none</default>
 			</option>
+			<option name="title_font" type="string">
+				<_short>Title Font</_short>
+				<_long>Font to use for the titlebar. Uses the system font by default or if invalid.</_long>
+				<default></default>
+			</option>
 			<option name="fg_color" type="color">
 				<_short>Color when focused</_short>
 				<_long>Color of the window border when it has focus.</_long>

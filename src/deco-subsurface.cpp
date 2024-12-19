@@ -40,6 +40,7 @@ wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
 wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
 wf::option_wrapper_t<int> csd_titlebar_height{"pixdecor/csd_titlebar_height"};
 wf::option_wrapper_t<bool> enable_shade{"pixdecor/enable_shade"};
+wf::option_wrapper_t<std::string> title_font{"pixdecor/title_font"};
 wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
 
 
@@ -66,6 +67,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             if ((int(title_text_align) != title_texture.title_text_align) ||
                 (view->get_title() != title_texture.current_text) ||
                 (target_width != title_texture.tex.width) ||
+                (std::string(title_font) != title_texture.title_font_string) ||
                 (target_height != title_texture.tex.height) ||
                 (view->activated != title_texture.rendered_for_activated_state))
             {
@@ -73,8 +75,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                     target_width, target_height, t_width, border, buttons_width, view->activated);
                 cairo_surface_upload_to_texture(surface, title_texture.tex);
                 cairo_surface_destroy(surface);
-                title_texture.current_text     = view->get_title();
-                title_texture.title_text_align = int(title_text_align);
+                title_texture.title_font_string = title_font;
+                title_texture.current_text      = view->get_title();
+                title_texture.title_text_align  = int(title_text_align);
                 title_texture.rendered_for_activated_state = view->activated;
             }
         }
@@ -86,6 +89,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         std::string current_text = "";
         bool rendered_for_activated_state = false;
         int title_text_align = int(title_text_align);
+        std::string title_font_string = title_font;
     } title_texture;
 
   public:
@@ -467,6 +471,17 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         current_cursor_position = position;
     }
 
+    void recreate_frame()
+    {
+        update_decoration_size();
+        if (auto view = _view.lock())
+        {
+            auto size = wf::dimensions(view->get_pending_geometry());
+            layout.resize(size.width, size.height);
+            wf::get_core().tx_manager->schedule_object(view->toplevel());
+        }
+    }
+
     void resize(wf::dimensions_t dims)
     {
         if (auto view = _view.lock())
@@ -561,6 +576,11 @@ wf::simple_decorator_t::~simple_decorator_t()
 int wf::simple_decorator_t::get_titlebar_height()
 {
     return deco->current_titlebar;
+}
+
+void wf::simple_decorator_t::recreate_frame()
+{
+    deco->recreate_frame();
 }
 
 void wf::simple_decorator_t::update_decoration_size()
