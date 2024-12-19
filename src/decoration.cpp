@@ -45,6 +45,7 @@ int handle_theme_updated(int fd, uint32_t mask, void *data)
 class wayfire_pixdecor : public wf::plugin_interface_t
 {
     wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
+    wf::option_wrapper_t<std::string> title_font{"pixdecor/title_font"};
     wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
     wf::option_wrapper_t<bool> titlebar{"pixdecor/titlebar"};
     wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
@@ -407,6 +408,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 view->damage();
             }
         });
+        title_font.set_callback([=] {recreate_frames();});
         shadow_radius.set_callback([=]
         {
             option_changed_cb(false, (std::string(overlay_engine) == "rounded_corners"));
@@ -523,6 +525,25 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         inotify_rm_watch(inotify_fd, wd_cfg_file);
         inotify_rm_watch(inotify_fd, wd_cfg_dir);
         close(inotify_fd);
+    }
+
+    void recreate_frames()
+    {
+        for (auto& view : wf::get_core().get_all_views())
+        {
+            auto toplevel = wf::toplevel_cast(view);
+            if (!toplevel)
+            {
+                continue;
+            }
+            auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+            if (!deco)
+            {
+                continue;
+            }
+
+            deco->recreate_frame();
+        }
     }
 
     void option_changed_cb(bool resize_decorations, bool recreate_decorations)
