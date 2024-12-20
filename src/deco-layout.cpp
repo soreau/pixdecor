@@ -59,7 +59,6 @@ decoration_layout_t::decoration_layout_t(const decoration_theme_t& th,
     border_size(th.get_input_size()),
     button_width(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
     button_height(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
-    button_padding((titlebar_size - button_height) / 2),
     theme(th),
     damage_callback(callback)
 {}
@@ -117,6 +116,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
 
     int per_button = 2 * BUTTON_W_PAD + button_width;
     int border     = theme.get_border_size();
+    int button_padding = (theme.get_title_height() - button_height) / 2;
     wf::geometry_t button_geometry = {
         width - (maximized ? 0 : border),
         button_padding + border / 2 + (radius * 2),
@@ -136,7 +136,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
 
     return {
         button_geometry.x, maximized ? 0 : border + (radius * 2),
-        total_width, titlebar_size
+        total_width, theme.get_title_height()
     };
 }
 
@@ -153,7 +153,7 @@ void decoration_layout_t::resize(int width, int height)
 
     this->layout_areas.clear();
 
-    if (this->titlebar_size > 0)
+    if (this->theme.get_title_height() > 0)
     {
         auto button_geometry_expanded = create_buttons(width - (radius * 2), radius);
 
@@ -168,7 +168,7 @@ void decoration_layout_t::resize(int width, int height)
             /* Up to the button, but subtract the padding to the left of the
              * title and the padding between title and button */
             button_geometry_expanded.x - border,
-            titlebar_size + (maximized ? 0 : border / 2 + 1),
+            theme.get_title_height() + (maximized ? 0 : border / 2 + 1),
         };
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_TITLE, title_geometry));

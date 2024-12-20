@@ -163,7 +163,6 @@ class decoration_layout_t
     const int border_size;
     const int button_width;
     const int button_height;
-    const int button_padding;
     const decoration_theme_t& theme;
     bool maximized;
 
