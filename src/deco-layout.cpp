@@ -59,7 +59,6 @@ decoration_layout_t::decoration_layout_t(const decoration_theme_t& th,
     border_size(th.get_input_size()),
     button_width(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
     button_height(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
-    button_padding((titlebar_size - button_height) / 2),
     theme(th),
     damage_callback(callback)
 {}
@@ -117,6 +116,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
 
     int per_button = 2 * BUTTON_W_PAD + button_width;
     int border     = theme.get_border_size();
+    int button_padding = (theme.get_title_height() - button_height) / 2;
     wf::geometry_t button_geometry = {
         width - (maximized ? 0 : border),
         button_padding + border / 2 + (radius * 2),
