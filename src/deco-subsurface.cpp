@@ -180,7 +180,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         {
             if (item->get_type() != wf::pixdecor::DECORATION_AREA_TITLE)
             {
-                buttons_width += item->get_geometry().width + 2 * BUTTON_W_PAD;
+                buttons_width += item->get_geometry().width;
             }
         }
 

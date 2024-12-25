@@ -71,6 +71,7 @@ decoration_layout_t::~decoration_layout_t()
 wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
 {
     // read the string from settings; start at the colon and replace commas with spaces
+    wf::option_wrapper_t<int> button_spacing{"pixdecor/button_spacing"};
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
     gchar *b_layout     = g_settings_get_string(settings, "button-layout");
     gchar *ptr = b_layout + strlen(b_layout) - 1;
@@ -114,19 +115,25 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
         }
     }
 
-    int per_button = 2 * BUTTON_W_PAD + button_width;
+    int per_button = button_width;
     int border     = theme.get_border_size();
     int button_padding = (theme.get_title_height() - button_height) / 2;
     wf::geometry_t button_geometry = {
-        width - (maximized ? 0 : border),
+        width - (maximized ? 4 : border),
         button_padding + border / 2 + (radius * 2),
         button_width,
         button_height,
     };
 
+    bool first_button = true;
     for (auto type : wf::reverse(buttons))
     {
         button_geometry.x -= per_button;
+        if (first_button)
+        {
+            per_button += button_spacing;
+        }
+        first_button = false;
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             button_geometry, damage_callback, theme));
         this->layout_areas.back()->as_button().set_button_type(type);
@@ -135,7 +142,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
     int total_width = buttons.size() * per_button;
 
     return {
-        button_geometry.x, maximized ? 0 : border + (radius * 2),
+        button_geometry.x, maximized ? 4 : border + (radius * 2),
         total_width, theme.get_title_height()
     };
 }

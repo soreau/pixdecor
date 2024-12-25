@@ -19,9 +19,13 @@ wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
 wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
 wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
 wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
+wf::option_wrapper_t<std::string> button_minimize_image{"pixdecor/button_minimize_image"};
+wf::option_wrapper_t<std::string> button_maximize_image{"pixdecor/button_maximize_image"};
+wf::option_wrapper_t<std::string> button_close_image{"pixdecor/button_close_image"};
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
-wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
+wf::option_wrapper_t<wf::color_t> button_color{"pixdecor/button_color"};
+wf::option_wrapper_t<double> button_line_thickness{"pixdecor/button_line_thickness"};
 /** Create a new theme with the default parameters */
 decoration_theme_t::decoration_theme_t()
 {
@@ -262,9 +266,43 @@ cairo_surface_t*decoration_theme_t::render_text(std::string text,
 cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
     const button_state_t& state, bool active) const
 {
+    cairo_surface_t *button_surface = NULL;
+
+    switch (button)
+    {
+      case BUTTON_CLOSE:
+        if (!std::string(button_close_image).empty())
+        {
+            button_surface = cairo_image_surface_create_from_png(std::string(button_close_image).c_str());
+        }
+        break;
+
+      case BUTTON_TOGGLE_MAXIMIZE:
+        if (!std::string(button_maximize_image).empty())
+        {
+            button_surface = cairo_image_surface_create_from_png(std::string(button_maximize_image).c_str());
+        }
+        break;
+
+      case BUTTON_MINIMIZE:
+        if (!std::string(button_minimize_image).empty())
+        {
+            button_surface = cairo_image_surface_create_from_png(std::string(button_minimize_image).c_str());
+        }
+        break;
+      default:
+        break;
+    }
+
+    if (button_surface && cairo_surface_status(button_surface) == CAIRO_STATUS_SUCCESS)
+    {
+        return button_surface;
+    }
+
     auto w = state.width;
     auto h = state.height;
-    cairo_surface_t *button_surface = cairo_image_surface_create(
+
+    button_surface = cairo_image_surface_create(
         CAIRO_FORMAT_ARGB32, w, h);
 
     auto cr = cairo_create(button_surface);
@@ -279,12 +317,16 @@ cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
 
     /** Draw the button  */
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-    cairo_set_source_rgba(cr, 0, 0, 0, 1);
-    auto line_width = 3.0;
+    cairo_set_source_rgba(cr,
+        wf::color_t(button_color).r,
+        wf::color_t(button_color).g,
+        wf::color_t(button_color).b,
+        wf::color_t(button_color).a);
+    double line_width = button_line_thickness;
     switch (button)
     {
       case BUTTON_CLOSE:
-        cairo_set_line_width(cr, line_width * state.border);
+        cairo_set_line_width(cr, line_width * state.border * 100.0);
         cairo_move_to(cr, 1.0 * w / 4.0,
             1.0 * h / 4.0);
         cairo_line_to(cr, 3.0 * w / 4.0,
@@ -297,13 +339,13 @@ cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
         break;
 
       case BUTTON_TOGGLE_MAXIMIZE:
-        cairo_set_line_width(cr, line_width * state.border * 0.75);
+        cairo_set_line_width(cr, line_width * state.border * 100.0);
         cairo_rectangle(cr, w / 4.0, h / 4.0, w / 2.0, h / 2.0);
         cairo_stroke(cr);
         break;
 
       case BUTTON_MINIMIZE:
-        cairo_set_line_width(cr, line_width * state.border * 0.75);
+        cairo_set_line_width(cr, line_width * state.border * 100.0);
         cairo_move_to(cr, 1.0 * w / 4.0,
             3.0 * h / 4.0);
         cairo_line_to(cr, 3.0 * w / 4.0,
