@@ -82,6 +82,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
 {
     // read the string from settings; start at the colon and replace commas with spaces
     wf::option_wrapper_t<int> button_spacing{"pixdecor/button_spacing"};
+    wf::option_wrapper_t<int> button_x_offset{"pixdecor/button_x_offset"};
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
     gchar *b_layout     = g_settings_get_string(settings, "button-layout");
@@ -130,7 +131,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
     int per_button = 0;
     int border     = theme.get_border_size();
     wf::geometry_t button_geometry;
-    button_geometry.x = width - (maximized ? 4 : border);
+    button_geometry.x = (width - (maximized ? 4 : border)) + button_x_offset;
 
     for (auto type : wf::reverse(buttons))
     {
@@ -147,6 +148,8 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
         this->layout_areas.push_back(std::move(button_area));
         total_width += per_button;
     }
+
+    total_width -= button_x_offset;
 
     return {
         button_geometry.x, maximized ? 4 : border + (radius * 2),
