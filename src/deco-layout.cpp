@@ -28,8 +28,9 @@ decoration_area_t::decoration_area_t(wf::geometry_t g,
     std::function<void(wlr_box)> damage_callback,
     const decoration_theme_t& theme)
 {
-    this->type     = DECORATION_AREA_BUTTON;
-    this->geometry = g;
+    this->type            = DECORATION_AREA_BUTTON;
+    this->geometry        = g;
+    this->damage_callback = damage_callback;
 
     this->button = std::make_unique<button_t>(theme,
         std::bind(damage_callback, g));
@@ -38,6 +39,17 @@ decoration_area_t::decoration_area_t(wf::geometry_t g,
 wf::geometry_t decoration_area_t::get_geometry() const
 {
     return geometry;
+}
+
+void decoration_area_t::set_geometry(wf::geometry_t g)
+{
+    geometry = g;
+
+    if (this->type == DECORATION_AREA_BUTTON)
+    {
+        this->button = std::make_unique<button_t>(this->button->theme,
+            std::bind(this->damage_callback, g));
+    }
 }
 
 button_t& decoration_area_t::as_button()
@@ -57,8 +69,6 @@ decoration_layout_t::decoration_layout_t(const decoration_theme_t& th,
 
     titlebar_size(th.get_title_height()),
     border_size(th.get_input_size()),
-    button_width(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
-    button_height(th.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
     theme(th),
     damage_callback(callback)
 {}
@@ -72,6 +82,7 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
 {
     // read the string from settings; start at the colon and replace commas with spaces
     wf::option_wrapper_t<int> button_spacing{"pixdecor/button_spacing"};
+    wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
     gchar *b_layout     = g_settings_get_string(settings, "button-layout");
     gchar *ptr = b_layout + strlen(b_layout) - 1;
@@ -115,31 +126,27 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
         }
     }
 
-    int per_button = button_width;
+    int total_width = 0;
+    int per_button = 0;
     int border     = theme.get_border_size();
-    int button_padding = (theme.get_title_height() - button_height) / 2;
-    wf::geometry_t button_geometry = {
-        width - (maximized ? 4 : border),
-        button_padding + border / 2 + (radius * 2),
-        button_width,
-        button_height,
-    };
+    wf::geometry_t button_geometry;
+    button_geometry.x = width - (maximized ? 4 : border);
 
-    bool first_button = true;
     for (auto type : wf::reverse(buttons))
     {
+        auto button_area = std::make_unique<decoration_area_t>(button_geometry, damage_callback, theme);
+        auto surface_size = button_area->as_button().set_button_type(type);
+        button_geometry.width = surface_size.width;
+        button_geometry.height = surface_size.height;
+        int button_padding = (theme.get_title_height() - button_geometry.height) / 2 + button_y_offset;
+        button_geometry.y = button_padding + border / 2 + (radius * 2);
+        per_button = button_geometry.width + (buttons.back() == type ? 0 : button_spacing);
         button_geometry.x -= per_button;
-        if (first_button)
-        {
-            per_button += button_spacing;
-        }
-        first_button = false;
-        this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-            button_geometry, damage_callback, theme));
-        this->layout_areas.back()->as_button().set_button_type(type);
+        button_area->set_geometry(button_geometry);
+        button_area->as_button().set_button_type(type);
+        this->layout_areas.push_back(std::move(button_area));
+        total_width += per_button;
     }
-
-    int total_width = buttons.size() * per_button;
 
     return {
         button_geometry.x, maximized ? 4 : border + (radius * 2),

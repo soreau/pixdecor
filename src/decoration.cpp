@@ -57,6 +57,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<wf::color_t> button_color{"pixdecor/button_color"};
     wf::option_wrapper_t<double> button_line_thickness{"pixdecor/button_line_thickness"};
     wf::option_wrapper_t<int> button_spacing{"pixdecor/button_spacing"};
+    wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
     wf::option_wrapper_t<std::string> button_minimize_image{"pixdecor/button_minimize_image"};
     wf::option_wrapper_t<std::string> button_maximize_image{"pixdecor/button_maximize_image"};
     wf::option_wrapper_t<std::string> button_close_image{"pixdecor/button_close_image"};
@@ -410,6 +411,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         button_color.set_callback([=] {recreate_frames();});
         button_line_thickness.set_callback([=] {recreate_frames();});
         button_spacing.set_callback([=] {recreate_frames();});
+        button_y_offset.set_callback([=] {recreate_frames();});
         button_minimize_image.set_callback([=] {recreate_frames();});
         button_maximize_image.set_callback([=] {recreate_frames();});
         button_close_image.set_callback([=] {recreate_frames();});

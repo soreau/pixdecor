@@ -326,7 +326,7 @@ cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
     switch (button)
     {
       case BUTTON_CLOSE:
-        cairo_set_line_width(cr, line_width * state.border * 100.0);
+        cairo_set_line_width(cr, line_width * state.border);
         cairo_move_to(cr, 1.0 * w / 4.0,
             1.0 * h / 4.0);
         cairo_line_to(cr, 3.0 * w / 4.0,
@@ -339,13 +339,13 @@ cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
         break;
 
       case BUTTON_TOGGLE_MAXIMIZE:
-        cairo_set_line_width(cr, line_width * state.border * 100.0);
+        cairo_set_line_width(cr, line_width * state.border);
         cairo_rectangle(cr, w / 4.0, h / 4.0, w / 2.0, h / 2.0);
         cairo_stroke(cr);
         break;
 
       case BUTTON_MINIMIZE:
-        cairo_set_line_width(cr, line_width * state.border * 100.0);
+        cairo_set_line_width(cr, line_width * state.border);
         cairo_move_to(cr, 1.0 * w / 4.0,
             3.0 * h / 4.0);
         cairo_line_to(cr, 3.0 * w / 4.0,
