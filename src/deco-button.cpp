@@ -16,12 +16,14 @@ button_t::button_t(const decoration_theme_t& t, std::function<void()> damage) :
     theme(t), damage_callback(damage)
 {}
 
-void button_t::set_button_type(button_type_t type)
+wf::dimensions_t button_t::set_button_type(button_type_t type)
 {
     this->type = type;
     this->hover.animate(NORMAL, NORMAL);
-    update_texture();
+    auto size = update_texture();
     add_idle_damage();
+
+    return size;
 }
 
 button_type_t button_t::get_button_type() const
@@ -82,22 +84,25 @@ void button_t::render(const wf::render_target_t& fb, wf::geometry_t geometry, co
     }
 }
 
-void button_t::update_texture()
+wf::dimensions_t button_t::update_texture()
 {
     decoration_theme_t::button_state_t state = {
-        .width  = 1.0 * 1024,
-        .height = 1.0 * 1024,
+        .width  = 1.0 * (theme.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
+        .height = 1.0 * (theme.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
         .border = 1.0,
         .hover  = this->is_hovered,
     };
 
     auto surface = theme.get_button_surface(type, state, this->active);
+    wf::dimensions_t size{cairo_image_surface_get_width(surface), cairo_image_surface_get_height(surface)};
 
     OpenGL::render_begin();
     cairo_surface_upload_to_texture(surface, this->button_texture);
     OpenGL::render_end();
 
     cairo_surface_destroy(surface);
+
+    return size;
 }
 
 void button_t::add_idle_damage()

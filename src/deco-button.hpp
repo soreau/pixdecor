@@ -40,7 +40,7 @@ class button_t
      * Set the type of the button. This will affect the displayed icon and
      * potentially other appearance like colors.
      */
-    void set_button_type(button_type_t type);
+    wf::dimensions_t set_button_type(button_type_t type);
 
     /** @return The type of the button */
     button_type_t get_button_type() const;
@@ -68,8 +68,9 @@ class button_t
     void render(const wf::render_target_t& fb, wf::geometry_t geometry,
         const wf::region_t& scissor);
 
-  private:
     const decoration_theme_t& theme;
+    std::function<void()> damage_callback;
+  private:
 
     button_type_t type;
     wf::simple_texture_t button_texture;
@@ -83,7 +84,6 @@ class button_t
     /* The shade of button background to use. */
     wf::animation::simple_animation_t hover{wf::create_option(500)};
 
-    std::function<void()> damage_callback;
     wf::wl_idle_call idle_damage;
     /** Damage button the next time the main loop goes idle */
     void add_idle_damage();
@@ -91,7 +91,7 @@ class button_t
     /**
      * Redraw the button surface and store it as a texture
      */
-    void update_texture();
+    wf::dimensions_t update_texture();
 };
 }
 }

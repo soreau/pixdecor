@@ -62,6 +62,51 @@
 				<_long>Color of the window titlebar text when it does not have focus.</_long>
 				<default>0.7 0.7 0.7 1.0</default>
 			</option>
+			<option name="button_color" type="color">
+				<_short>Button Color</_short>
+				<_long>Color of the minimize, maximize and close buttons.</_long>
+				<default>0.0 0.0 0.0 1.0</default>
+			</option>
+			<option name="button_line_thickness" type="double">
+				<_short>Button Line Thickness</_short>
+				<_long>The thickness used to draw the minimize, maximize and close button lines.</_long>
+				<default>0.7</default>
+				<min>0.0</min>
+			</option>
+			<option name="button_spacing" type="int">
+				<_short>Button Spacing</_short>
+				<_long>The space between each button.</_long>
+				<default>5</default>
+				<min>0</min>
+			</option>
+			<option name="button_y_offset" type="int">
+				<_short>Button Y Offset</_short>
+				<_long>Use this option to move buttons up or down.</_long>
+				<default>0</default>
+			</option>
+			<option name="button_x_offset" type="int">
+				<_short>Button X Offset</_short>
+				<_long>Use this option to move the buttons to the left or right.</_long>
+				<default>0</default>
+			</option>
+			<option name="button_minimize_image" type="string">
+				<_short>Button Minimize Image</_short>
+				<_long>The png image to use for the minimize button.</_long>
+				<default></default>
+				<hint>file</hint>
+			</option>
+			<option name="button_maximize_image" type="string">
+				<_short>Button Maximize Image</_short>
+				<_long>The png image to use for the maximize button.</_long>
+				<default></default>
+				<hint>file</hint>
+			</option>
+			<option name="button_close_image" type="string">
+				<_short>Button Close Image</_short>
+				<_long>The png image to use for the close button.</_long>
+				<default></default>
+				<hint>file</hint>
+			</option>
 			<option name="title_text_align" type="int">
 				<_short>Titlebar Text Alignment</_short>
 				<_long>Sets the alignment of the titlebar text.</_long>

@@ -52,6 +52,7 @@ struct decoration_area_t
 
     /** @return The geometry of the decoration area, relative to the layout */
     wf::geometry_t get_geometry() const;
+    void set_geometry(wf::geometry_t g);
 
     /** @return The area's button, if the area is a button. Otherwise UB */
     button_t& as_button();
@@ -60,6 +61,7 @@ struct decoration_area_t
     decoration_area_type_t get_type() const;
 
   private:
+    std::function<void(wlr_box)> damage_callback;
     decoration_area_type_t type;
     wf::geometry_t geometry;
 
@@ -161,8 +163,6 @@ class decoration_layout_t
   private:
     const int titlebar_size;
     const int border_size;
-    const int button_width;
-    const int button_height;
     const decoration_theme_t& theme;
     bool maximized;
 
