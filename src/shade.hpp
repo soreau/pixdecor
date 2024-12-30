@@ -12,6 +12,8 @@
 #include <wayfire/scene-render.hpp>
 #include <wayfire/util/duration.hpp>
 
+#include "deco-subsurface.hpp"
+
 const std::string shade_transformer_name = "pixdecor_shade";
 
 namespace wf
@@ -28,14 +30,15 @@ class shade_animation_t : public duration_t
 };
 class pixdecor_shade : public wf::scene::view_2d_transformer_t
 {
+    nonstd::observer_ptr<wf::simple_decorator_t> deco = nullptr;
     wayfire_view view;
     wf::output_t *output;
     int titlebar_height;
     wf::option_wrapper_t<wf::animation_description_t> shade_duration{"pixdecor/shade_duration"};
-    shade_animation_t progression{shade_duration};
 
   public:
     bool last_direction;
+    shade_animation_t progression{shade_duration};
     class simple_node_render_instance_t : public wf::scene::transformer_render_instance_t<transformer_base_node_t>
     {
         wf::signal::connection_t<node_damage_signal> on_node_damaged =
@@ -85,10 +88,11 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 1.0);
             auto shade_region = region;
             int height = src_box.height;
+            auto titlebar = self->titlebar_height + self->get_shadow_margin();
             src_box.y += self->titlebar_height;
             src_box.height *= 1.0 -
                 (self->progression.shade *
-                    ((src_box.height - self->titlebar_height) / float(src_box.height)));
+                    ((src_box.height - titlebar) / float(src_box.height)));
             auto progress_height = src_box.height;
             shade_region &= wf::region_t{src_box};
             OpenGL::render_begin(target);
@@ -126,6 +130,10 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
         {
             output->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
         }
+        if (auto toplevel = wf::toplevel_cast(view))
+        {
+            this->deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+        }
     }
 
     void pop_transformer(wayfire_view view)
@@ -134,10 +142,38 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
         {
             view->get_transformed_node()->rem_transformer(shade_transformer_name);
         }
+        if (!deco && view->has_data(custom_data_name))
+        {
+            view->erase_data(custom_data_name);
+        }
     }
 
     wf::effect_hook_t pre_hook = [=] ()
     {
+        if (auto toplevel = wf::toplevel_cast(view))
+        {
+            if (deco)
+            {
+                /* SSD */
+                deco->get_margins(toplevel->toplevel()->pending());
+            } else
+            {
+                /* CSD */
+                auto bg = view->get_surface_root_node()->get_bounding_box();
+                auto vg = toplevel->get_geometry();
+                auto margins = wf::decoration_margins_t{vg.x - bg.x, vg.y - bg.y, bg.width - ((vg.x - bg.x) + vg.width), bg.height - ((vg.y - bg.y) + vg.height)};
+                if (view->has_data(custom_data_name))
+                {
+                    view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
+                        {0, 0, 0, int(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) * progression.shade)});
+                } else
+                {
+                    view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
+                    view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
+                        {0, 0, 0, int(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) * progression.shade)});
+                }
+            }
+        }
         view->damage();
         if (!this->progression.running() && !last_direction)
         {
@@ -199,6 +235,24 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
     void set_titlebar_height(int titlebar_height)
     {
         this->titlebar_height = titlebar_height;
+    }
+
+    int get_shadow_margin()
+    {
+        if (deco)
+        {
+            return deco->shadow_thickness;
+        } else
+        {
+            if (auto toplevel = wf::toplevel_cast(view))
+            {
+                auto bg = view->get_surface_root_node()->get_bounding_box();
+                auto vg = toplevel->get_geometry();
+                return bg.height - ((vg.y - bg.y) + vg.height);
+            }
+        }
+
+        return 0;
     }
 
     bool get_direction()

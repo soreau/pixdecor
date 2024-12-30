@@ -163,7 +163,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
 
         auto renderables = layout.get_renderable_areas();
-        auto offset = wf::point_t{origin.x, origin.y - (maximized ? -border / 2 : border / 4)};
+        auto offset = wf::point_t{origin.x, origin.y - ((maximized && (!maximized_shadows || !maximized_borders)) ? -border / 2 : border / 4)};
 
         OpenGL::render_begin(fb);
 
@@ -212,7 +212,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
 
         int border = theme.get_border_size();
-        int r = (std::string(overlay_engine) == "rounded_corners" && !maximized) ? int(shadow_radius) * 2 : 0;
+        int r = (std::string(overlay_engine) == "rounded_corners" && (!maximized || (maximized && maximized_shadows))) ? int(shadow_radius) * 2 : 0;
         r -= MIN_RESIZE_HANDLE_SIZE - std::min(border, MIN_RESIZE_HANDLE_SIZE);
         wf::pointf_t local = at - wf::pointf_t{get_offset()};
         if (auto view = _view.lock())
@@ -220,7 +220,11 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             wf::geometry_t g = view->get_geometry();
             g.x = g.y = 0;
             g   = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-r, -r, -r, -r});
-            if (wf::region_t{g}.contains_pointf(local))
+            wf::region_t deco_region{g};
+            g   = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-border, -border, -border, -theme.get_title_height() - border});
+            wf::region_t view_region{g};
+            deco_region ^= view_region;
+            if (deco_region.contains_pointf(local))
             {
                 return wf::scene::input_node_t{
                     .node = this,
@@ -506,6 +510,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         {
             view->damage();
             bool fullscreen = view->toplevel()->pending().fullscreen;
+            bool maximized  = view->toplevel()->pending().tiled_edges;
             if (fullscreen)
             {
                 current_thickness = 0;
@@ -513,10 +518,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 this->cached_region.clear();
             } else
             {
-                current_thickness = theme.get_border_size() +
-                    ((std::string(overlay_engine) == "rounded_corners") ? int(shadow_radius) * 2 : 0);
-                current_titlebar =
-                    theme.get_title_height() + current_thickness;
+                int shadow_thickness = std::string(overlay_engine) == "rounded_corners" &&
+                    (!maximized || (maximized && maximized_shadows)) ? int(shadow_radius) * 2 : 0;
+
+                current_thickness = theme.get_border_size() + shadow_thickness;
+                current_titlebar = theme.get_title_height() +
+                    ((maximized && !titlebar_opt && !maximized_borders && !maximized_shadows) ? 0 : current_thickness);
                 this->cached_region = layout.calculate_region();
             }
 
@@ -535,6 +542,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 wf::simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
 {
     this->view = view;
+    this->shadow_thickness = 0;
     deco = std::make_shared<simple_decoration_node_t>(view);
     deco->resize(wf::dimensions(view->get_pending_geometry()));
     wf::scene::add_back(view->get_surface_root_node(), deco);
@@ -542,6 +550,7 @@ wf::simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
     view->connect(&on_view_activated);
     view->connect(&on_view_geometry_changed);
     view->connect(&on_view_fullscreen);
+    view->connect(&on_view_tiled);
 
     on_view_activated = [this] (auto)
     {
@@ -551,10 +560,13 @@ wf::simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
     on_view_geometry_changed = [this] (auto)
     {
         deco->resize(wf::dimensions(this->view->get_geometry()));
-        if (!this->view->toplevel()->pending().tiled_edges)
-        {
-            wf::get_core().tx_manager->schedule_object(this->view->toplevel());
-        }
+        wf::get_core().tx_manager->schedule_object(this->view->toplevel());
+    };
+
+    on_view_tiled = [this] (auto)
+    {
+        deco->resize(wf::dimensions(this->view->get_geometry()));
+        wf::get_core().tx_manager->schedule_object(this->view->toplevel());
     };
 
     on_view_fullscreen = [this] (auto)
@@ -607,16 +619,16 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
 
     deco->theme.set_maximize(state.tiled_edges);
 
-    int thickness = deco->theme.get_border_size() +
-        ((std::string(overlay_engine) == "rounded_corners" &&
-            (!state.tiled_edges || maximized_shadows)) ? int(shadow_radius) * 2 : 0);
+    this->shadow_thickness = std::string(overlay_engine) == "rounded_corners" &&
+        (!state.tiled_edges || (state.tiled_edges && maximized_shadows)) ? int(shadow_radius) * 2 : 0;
+
+    int thickness = deco->theme.get_border_size() + this->shadow_thickness;
     int titlebar = deco->theme.get_title_height() +
         ((state.tiled_edges && !titlebar_opt && !maximized_borders && !maximized_shadows) ? 0 : thickness);
     if (state.tiled_edges && !maximized_borders)
     {
         if (maximized_shadows)
         {
-            thickness -= deco->theme.get_border_size();
             if (!titlebar_opt)
             {
                 titlebar = thickness;
@@ -627,14 +639,24 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
         }
     }
 
-    deco->current_thickness = thickness;
-    deco->current_titlebar  = titlebar;
-
+    double shade_progress = 0.0;
     if (auto tr =
             view->get_transformed_node()->get_transformer<wf::pixdecor::pixdecor_shade>(
                 shade_transformer_name))
     {
-        tr->set_titlebar_height(deco->current_titlebar);
+        tr->set_titlebar_height(titlebar);
+        shade_progress = tr->progression.shade;
+    }
+
+    if (view->has_data(custom_data_name))
+    {
+        view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
+            {shadow_thickness, shadow_thickness, shadow_thickness, shadow_thickness + int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
+    } else
+    {
+        view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
+        view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
+            {shadow_thickness, shadow_thickness, shadow_thickness, shadow_thickness + int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
     }
 
     return wf::decoration_margins_t{
