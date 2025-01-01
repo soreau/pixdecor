@@ -31,7 +31,6 @@ namespace wf
  */
 class simple_decorator_t : public wf::custom_data_t
 {
-    int shadow_margin;
     wayfire_toplevel_view view;
     std::shared_ptr<simple_decoration_node_t> deco;
 
