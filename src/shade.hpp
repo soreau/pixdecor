@@ -87,7 +87,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
             auto src_tex = wf::scene::transformer_render_instance_t<transformer_base_node_t>::get_texture(
                 1.0);
             auto shade_region = region;
-            int height = src_box.height;
+            int height    = src_box.height;
             auto titlebar = self->titlebar_height + self->get_shadow_margin();
             src_box.y += self->titlebar_height;
             src_box.height *= 1.0 -
@@ -130,6 +130,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
         {
             output->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
         }
+
         if (auto toplevel = wf::toplevel_cast(view))
         {
             this->deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
@@ -142,6 +143,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
         {
             view->get_transformed_node()->rem_transformer(shade_transformer_name);
         }
+
         if (!deco && view->has_data(custom_data_name))
         {
             view->erase_data(custom_data_name);
@@ -161,19 +163,26 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 /* CSD */
                 auto bg = view->get_surface_root_node()->get_bounding_box();
                 auto vg = toplevel->get_geometry();
-                auto margins = wf::decoration_margins_t{vg.x - bg.x, vg.y - bg.y, bg.width - ((vg.x - bg.x) + vg.width), bg.height - ((vg.y - bg.y) + vg.height)};
+                auto margins =
+                    wf::decoration_margins_t{vg.x - bg.x, vg.y - bg.y,
+                    bg.width - ((vg.x - bg.x) + vg.width), bg.height - ((vg.y - bg.y) + vg.height)};
                 if (view->has_data(custom_data_name))
                 {
                     view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-                        {0, 0, 0, int(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) * progression.shade)});
+                        {0, 0, 0,
+                            int(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) *
+                                progression.shade)});
                 } else
                 {
                     view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
                     view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-                        {0, 0, 0, int(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) * progression.shade)});
+                        {0, 0, 0,
+                            int(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) *
+                                progression.shade)});
                 }
             }
         }
+
         view->damage();
         if (!this->progression.running() && !last_direction)
         {

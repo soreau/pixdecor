@@ -15,10 +15,12 @@ class wf_shadow_margin_t : public wf::custom_data_t
     {
         return margins;
     }
+
     void set_margins(wf::decoration_margins_t margins)
     {
         this->margins = margins;
     }
+
   private:
     wf::decoration_margins_t margins = {0, 0, 0, 0};
 };

@@ -568,6 +568,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             {
                 continue;
             }
+
             recreate_frame(toplevel);
         }
     }

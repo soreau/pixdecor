@@ -62,7 +62,7 @@ PangoFontDescription *create_font_description()
     if (title_font_val.empty())
     {
         char *font = g_settings_get_string(gs, "font-name");
-        title_font_val = font;
+        title_font_val    = font;
         using_system_font = true;
         g_free(font);
     }
@@ -117,12 +117,14 @@ PangoFontDescription *create_font_description()
  */
 PangoFontDescription *get_font_description()
 {
-    static std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> font_desc(
+    static std::unique_ptr<PangoFontDescription, decltype(& pango_font_description_free)> font_desc(
         create_font_description(), &pango_font_description_free);
 
     static std::once_flag once_flag;
-    std::call_once(once_flag, [] {
-        title_font.set_callback([] {
+    std::call_once(once_flag, []
+    {
+        title_font.set_callback([]
+        {
             font_desc.reset(create_font_description());
         });
     });
@@ -144,7 +146,6 @@ int decoration_theme_t::get_font_height_px() const
 
     return font_height / PANGO_SCALE;
 }
-
 
 int decoration_theme_t::get_title_height() const
 {
@@ -275,6 +276,7 @@ cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
         {
             button_surface = cairo_image_surface_create_from_png(std::string(button_close_image).c_str());
         }
+
         break;
 
       case BUTTON_TOGGLE_MAXIMIZE:
@@ -282,6 +284,7 @@ cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
         {
             button_surface = cairo_image_surface_create_from_png(std::string(button_maximize_image).c_str());
         }
+
         break;
 
       case BUTTON_MINIMIZE:
@@ -289,12 +292,14 @@ cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
         {
             button_surface = cairo_image_surface_create_from_png(std::string(button_minimize_image).c_str());
         }
+
         break;
+
       default:
         break;
     }
 
-    if (button_surface && cairo_surface_status(button_surface) == CAIRO_STATUS_SUCCESS)
+    if (button_surface && (cairo_surface_status(button_surface) == CAIRO_STATUS_SUCCESS))
     {
         return button_surface;
     }

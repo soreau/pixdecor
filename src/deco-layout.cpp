@@ -28,8 +28,8 @@ decoration_area_t::decoration_area_t(wf::geometry_t g,
     std::function<void(wlr_box)> damage_callback,
     const decoration_theme_t& theme)
 {
-    this->type            = DECORATION_AREA_BUTTON;
-    this->geometry        = g;
+    this->type     = DECORATION_AREA_BUTTON;
+    this->geometry = g;
     this->damage_callback = damage_callback;
 
     this->button = std::make_unique<button_t>(theme,
@@ -128,16 +128,16 @@ wf::geometry_t decoration_layout_t::create_buttons(int width, int radius)
     }
 
     int total_width = 0;
-    int per_button = 0;
-    int border     = theme.get_border_size();
+    int per_button  = 0;
+    int border = theme.get_border_size();
     wf::geometry_t button_geometry;
     button_geometry.x = (width - (maximized ? 4 : border)) + button_x_offset;
 
     for (auto type : wf::reverse(buttons))
     {
-        auto button_area = std::make_unique<decoration_area_t>(button_geometry, damage_callback, theme);
+        auto button_area  = std::make_unique<decoration_area_t>(button_geometry, damage_callback, theme);
         auto surface_size = button_area->as_button().set_button_type(type);
-        button_geometry.width = surface_size.width;
+        button_geometry.width  = surface_size.width;
         button_geometry.height = surface_size.height;
         int button_padding = (theme.get_title_height() - button_geometry.height) / 2 + button_y_offset;
         button_geometry.y = button_padding + border / 2 + (radius * 2);

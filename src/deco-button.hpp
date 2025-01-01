@@ -70,6 +70,7 @@ class button_t
 
     const decoration_theme_t& theme;
     std::function<void()> damage_callback;
+
   private:
 
     button_type_t type;

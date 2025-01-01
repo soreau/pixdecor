@@ -76,8 +76,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 cairo_surface_upload_to_texture(surface, title_texture.tex);
                 cairo_surface_destroy(surface);
                 title_texture.title_font_string = title_font;
-                title_texture.current_text      = view->get_title();
-                title_texture.title_text_align  = int(title_text_align);
+                title_texture.current_text     = view->get_title();
+                title_texture.title_text_align = int(title_text_align);
                 title_texture.rendered_for_activated_state = view->activated;
             }
         }
@@ -163,7 +163,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
 
         auto renderables = layout.get_renderable_areas();
-        auto offset = wf::point_t{origin.x, origin.y - ((maximized && (!maximized_shadows || !maximized_borders)) ? -border / 2 : border / 4)};
+        auto offset =
+            wf::point_t{origin.x,
+            origin.y -
+            ((maximized && (!maximized_shadows || !maximized_borders)) ? -border / 2 : border / 4)};
 
         OpenGL::render_begin(fb);
 
@@ -212,7 +215,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
 
         int border = theme.get_border_size();
-        int r = (std::string(overlay_engine) == "rounded_corners" && (!maximized || (maximized && maximized_shadows))) ? int(shadow_radius) * 2 : 0;
+        int r =
+            (std::string(overlay_engine) == "rounded_corners" &&
+                (!maximized || (maximized && maximized_shadows))) ? int(shadow_radius) * 2 : 0;
         r -= MIN_RESIZE_HANDLE_SIZE - std::min(border, MIN_RESIZE_HANDLE_SIZE);
         wf::pointf_t local = at - wf::pointf_t{get_offset()};
         if (auto view = _view.lock())
@@ -221,7 +226,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             g.x = g.y = 0;
             g   = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-r, -r, -r, -r});
             wf::region_t deco_region{g};
-            g   = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-border, -border, -border, -theme.get_title_height() - border});
+            g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-border, -border, -border,
+                -theme.get_title_height() - border});
             wf::region_t view_region{g};
             deco_region ^= view_region;
             if (deco_region.contains_pointf(local))
@@ -522,8 +528,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                     (!maximized || (maximized && maximized_shadows)) ? int(shadow_radius) * 2 : 0;
 
                 current_thickness = theme.get_border_size() + shadow_thickness;
-                current_titlebar = theme.get_title_height() +
-                    ((maximized && !titlebar_opt && !maximized_borders && !maximized_shadows) ? 0 : current_thickness);
+                current_titlebar  = theme.get_title_height() +
+                    ((maximized && !titlebar_opt && !maximized_borders &&
+                        !maximized_shadows) ? 0 : current_thickness);
                 this->cached_region = layout.calculate_region();
             }
 
@@ -623,7 +630,7 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
         (!state.tiled_edges || (state.tiled_edges && maximized_shadows)) ? int(shadow_radius) * 2 : 0;
 
     int thickness = deco->theme.get_border_size() + this->shadow_thickness;
-    int titlebar = deco->theme.get_title_height() +
+    int titlebar  = deco->theme.get_title_height() +
         ((state.tiled_edges && !titlebar_opt && !maximized_borders && !maximized_shadows) ? 0 : thickness);
     if (state.tiled_edges && !maximized_borders)
     {
@@ -651,12 +658,16 @@ wf::decoration_margins_t wf::simple_decorator_t::get_margins(const wf::toplevel_
     if (view->has_data(custom_data_name))
     {
         view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-            {shadow_thickness, shadow_thickness, shadow_thickness, shadow_thickness + int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
+            {shadow_thickness, shadow_thickness, shadow_thickness,
+                shadow_thickness +
+                int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
     } else
     {
         view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
         view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-            {shadow_thickness, shadow_thickness, shadow_thickness, shadow_thickness + int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
+            {shadow_thickness, shadow_thickness, shadow_thickness,
+                shadow_thickness +
+                int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
     }
 
     return wf::decoration_margins_t{
