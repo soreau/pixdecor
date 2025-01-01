@@ -157,13 +157,13 @@ int decoration_theme_t::get_title_height() const
         height = MIN_BAR_HEIGHT;
     }
 
-    return titlebar ? height : 0;
+    return titlebar ? height + ((maximized && !maximized_borders) ? border_size : 0) : 0;
 }
 
 /** @return The available border for resizing */
 int decoration_theme_t::get_border_size() const
 {
-    return (!maximized_borders && maximized_shadows && maximized) ? 0 : border_size;
+    return (!maximized_borders && maximized) ? 0 : border_size;
 }
 
 /** @return The input area for resizing */

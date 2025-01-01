@@ -83,7 +83,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wl_event_source *evsrc;
     std::function<void(void)> update_event;
     wf::effect_hook_t pre_hook;
-    wf::output_t *output;
     bool hook_set = false;
 
     wf::axis_callback shade_axis_cb;
@@ -131,6 +130,12 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::signal::connection_t<wf::view_decoration_state_updated_signal> on_decoration_state_changed =
         [=] (wf::view_decoration_state_updated_signal *ev)
     {
+        auto toplevel = wf::toplevel_cast(ev->view);
+        if (toplevel)
+        {
+            remove_decoration(toplevel);
+        }
+
         update_view_decoration(ev->view);
     };
 
@@ -407,7 +412,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
         titlebar.set_callback([=] {option_changed_cb(false, true);});
         effect_type.set_callback([=] {option_changed_cb(false, false);});
-        overlay_engine.set_callback([=] {option_changed_cb(true, false);});
+        overlay_engine.set_callback([=] {option_changed_cb(true, false);recreate_frames();});
         effect_animate.set_callback([=] {option_changed_cb(false, false);});
         button_color.set_callback([=] {recreate_frames();});
         button_line_thickness.set_callback([=] {recreate_frames();});
@@ -543,6 +548,17 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         close(inotify_fd);
     }
 
+    void recreate_frame(wayfire_toplevel_view toplevel)
+    {
+        auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+        if (!deco)
+        {
+            return;
+        }
+
+        deco->recreate_frame();
+    }
+
     void recreate_frames()
     {
         for (auto& view : wf::get_core().get_all_views())
@@ -552,13 +568,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             {
                 continue;
             }
-            auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
-            if (!deco)
-            {
-                continue;
-            }
-
-            deco->recreate_frame();
+            recreate_frame(toplevel);
         }
     }
 
@@ -706,6 +716,12 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         }
 
         pending.margins = {0, 0, 0, 0};
+
+        std::string custom_data_name = "wf-decoration-shadow-margin";
+        if (view->has_data(custom_data_name))
+        {
+            view->erase_data(custom_data_name);
+        }
     }
 
     void update_view_decoration(wayfire_view view)
