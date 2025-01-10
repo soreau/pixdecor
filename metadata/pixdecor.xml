@@ -142,70 +142,104 @@
 				</desc>
 			</option>
 			<option name="effect_type" type="string">
-				<_short>Effect Type</_short>
-				<_long>Sets the effect type.</_long>
-				<default>none</default>
-				<desc>
-					<value>none</value>
-					<_name>None</_name>
-				</desc>
-				<desc>
-					<value>smoke</value>
-					<_name>Smoke</_name>
-				</desc>
-				<desc>
-					<value>ink</value>
-					<_name>Ink</_name>
-				</desc>
-				<desc>
-					<value>clouds</value>
-					<_name>Clouds</_name>
-				</desc>
-				<desc>
-					<value>halftone</value>
-					<_name>Halftone</_name>
-				</desc>
-				<desc>
-					<value>pattern</value>
-					<_name>Pattern</_name>
-				</desc>
-				<desc>
-					<value>lava</value>
-					<_name>Lava</_name>
-				</desc>
-				<desc>
-					<value>hex</value>
-					<_name>Hex</_name>
-				</desc>
-				<desc>
-					<value>zebra</value>
-					<_name>Zebra</_name>
-				</desc>
-				<desc>
-					<value>neural_network</value>
-					<_name>Neural network</_name>
-				</desc>
-				<desc>
-					<value>hexagon_maze</value>
-					<_name>Hexagon maze</_name>
-				</desc>
-				<desc>
-					<value>raymarched_truchet</value>
-					<_name>Raymarched truchet</_name>
-				</desc>
-				<desc>
-					<value>neon_pattern</value>
-					<_name>Neon pattern</_name>
-				</desc>
-				<desc>
-					<value>neon_rings</value>
-					<_name>Neon rings</_name>
-				</desc>
-				<desc>
-					<value>deco</value>
-					<_name>Deco</_name>
-				</desc>
-			</option>
+			<_short>Effect Type</_short>
+			<_long>Sets the effect type.</_long>
+			<default>none</default>
+			<desc>
+				<value>none</value>
+				<_name>None</_name>
+			</desc>
+			<desc>
+				<value>smoke</value>
+				<_name>Smoke</_name>
+			</desc>
+			<desc>
+				<value>ink</value>
+				<_name>Ink</_name>
+			</desc>
+			<desc>
+				<value>fumes</value>
+				<_name>Fumes</_name>
+			</desc>
+			<desc>
+				<value>fast_smoke</value>
+				<_name>Fast Smoke</_name>
+			</desc>
+			
+			<desc>
+				<value>clouds</value>
+				<_name>Clouds</_name>
+			</desc>
+			<desc>
+				<value>halftone</value>
+				<_name>Halftone</_name>
+			</desc>
+			<desc>
+				<value>pattern</value>
+				<_name>Pattern</_name>
+			</desc>
+			<desc>
+				<value>lava</value>
+				<_name>Lava</_name>
+			</desc>
+			<desc>
+				<value>hex</value>
+				<_name>Hex</_name>
+			</desc>
+			<desc>
+				<value>zebra</value>
+				<_name>Zebra</_name>
+			</desc>
+			<desc>
+				<value>neural_network</value>
+				<_name>Neural network</_name>
+			</desc>
+			<desc>
+				<value>hexagon_maze</value>
+				<_name>Hexagon maze</_name>
+			</desc>
+			<desc>
+				<value>raymarched_truchet</value>
+				<_name>Raymarched truchet</_name>
+			</desc>
+			<desc>
+				<value>neon_pattern</value>
+				<_name>Neon pattern</_name>
+			</desc>
+			<desc>
+				<value>neon_rings</value>
+				<_name>Neon rings</_name>
+			</desc>
+			<desc>
+				<value>deco</value>
+				<_name>Deco</_name>
+			</desc>
+			<desc>
+				<value>ice</value>
+				<_name>Ice</_name>
+			</desc>
+			<desc>
+				<value>fire</value>
+				<_name>Fire</_name>
+			</desc>
+			<desc>
+				<value>flame</value>
+				<_name>Flame</_name>
+			</desc>
+		</option>
+			<option name="compute_fragment_shader" type="string">
+			<_short>Shader Type</_short>
+			<_long>Sets the shader type.</_long>
+			<default>fragment_shader</default>
+			<desc>
+				<value>fragment_shader</value>
+				<_name>Fragment Shader</_name>
+			</desc>
+			<desc>
+				<value>compute_shader</value>
+				<_name>Compute Shader</_name>
+			</desc>
+		</option>
 			<option name="effect_color" type="color">
 				<_short>Effect Color</_short>
 				<_long>Color of the titlebar background effect.</_long>
@@ -233,6 +267,13 @@
 				<_long>Color of the drop shadows.</_long>
 				<default>0.0 0.0 0.0 0.25</default>
 			</option>
+				<option name="beveled_radius" type="int">
+			<_short>Beveled Radius</_short>
+			<_long>The radius of beveled effect.</_long>
+			<default>4</default>
+			<min>0</min>
+			<max>10</max>
+		</option>
 		</group>
 		<group>
 			<_short>Shade</_short>

@@ -192,7 +192,7 @@ void decoration_theme_t::set_maximize(bool state)
  * @param active Whether to use active or inactive colors
  */
 void decoration_theme_t::render_background(const wf::render_target_t& fb,
-    wf::geometry_t rectangle, const wf::region_t& scissor, bool active, wf::pointf_t p)
+    wf::geometry_t rectangle, const wf::region_t& scissor, bool active, wf::pointf_t p,int border_size, int title_height)
 {
     if ((std::string(effect_type) == "none") && (std::string(overlay_engine) == "none"))
     {
@@ -203,7 +203,7 @@ void decoration_theme_t::render_background(const wf::render_target_t& fb,
         }
     } else
     {
-        smoke.render_effect(fb, rectangle, scissor);
+         smoke.render_effect(fb, rectangle, scissor,border_size, title_height);
     }
 }
 
