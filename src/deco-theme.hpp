@@ -16,23 +16,31 @@ namespace pixdecor
  * A  class which manages the outlook of decorations.
  * It is responsible for determining the background colors, sizes, etc.
  */
-class decoration_theme_t
+class pixdecor_theme_t
 {
   public:
+    wf::option_wrapper_t<std::string> title_font{"pixdecor/title_font"};
+    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
+    wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
+    wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
+    wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
+    wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
     /** Create a new theme with the default parameters */
-    decoration_theme_t();
-    ~decoration_theme_t();
+    pixdecor_theme_t();
+    ~pixdecor_theme_t();
 
     /** @return The height of the system font in pixels */
-    int get_font_height_px() const;
+    int get_font_height_px();
     /** @return The available height for displaying the title */
-    int get_title_height() const;
+    int get_title_height();
     /** @return The available border for rendering */
     int get_border_size() const;
     /** @return The available border for resizing */
     int get_input_size() const;
     /** @return The decoration color */
     wf::color_t get_decor_color(bool active) const;
+    PangoFontDescription *create_font_description();
+    PangoFontDescription *get_font_description();
 
     void update_colors(void);
 
@@ -52,7 +60,7 @@ class decoration_theme_t
      * The caller is responsible for freeing the memory afterwards.
      */
     cairo_surface_t *render_text(std::string text, int width, int height, int t_width, int border,
-        int buttons_width, bool active) const;
+        int buttons_width, bool active);
 
     struct button_state_t
     {

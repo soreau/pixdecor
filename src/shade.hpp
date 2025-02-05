@@ -30,7 +30,7 @@ class shade_animation_t : public duration_t
 };
 class pixdecor_shade : public wf::scene::view_2d_transformer_t
 {
-    nonstd::observer_ptr<wf::simple_decorator_t> deco = nullptr;
+    nonstd::observer_ptr<simple_decorator_t> deco = nullptr;
     wayfire_view view;
     wf::output_t *output;
     int titlebar_height;
@@ -133,7 +133,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
 
         if (auto toplevel = wf::toplevel_cast(view))
         {
-            this->deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+            this->deco = toplevel->toplevel()->get_data<simple_decorator_t>();
         }
     }
 

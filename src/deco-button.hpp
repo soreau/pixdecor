@@ -15,7 +15,7 @@ namespace wf
 {
 namespace pixdecor
 {
-class decoration_theme_t;
+class pixdecor_theme_t;
 
 enum button_type_t
 {
@@ -33,7 +33,7 @@ class button_t
      * @param damage_callback   A callback to execute when the button needs a
      * repaint. Damage won't be reported while render() is being called.
      */
-    button_t(const decoration_theme_t& theme,
+    button_t(pixdecor_theme_t& theme,
         std::function<void()> damage_callback);
 
     /**
@@ -68,7 +68,7 @@ class button_t
     void render(const wf::render_target_t& fb, wf::geometry_t geometry,
         const wf::region_t& scissor);
 
-    const decoration_theme_t& theme;
+    pixdecor_theme_t& theme;
     std::function<void()> damage_callback;
 
   private:

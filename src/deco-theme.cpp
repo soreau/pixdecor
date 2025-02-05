@@ -10,11 +10,7 @@ namespace wf
 namespace pixdecor
 {
 wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
-wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
 wf::option_wrapper_t<bool> titlebar{"pixdecor/titlebar"};
-wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
-wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
-wf::option_wrapper_t<std::string> title_font{"pixdecor/title_font"};
 wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
 wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
 wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
@@ -22,12 +18,10 @@ wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
 wf::option_wrapper_t<std::string> button_minimize_image{"pixdecor/button_minimize_image"};
 wf::option_wrapper_t<std::string> button_maximize_image{"pixdecor/button_maximize_image"};
 wf::option_wrapper_t<std::string> button_close_image{"pixdecor/button_close_image"};
-wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
-wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
 wf::option_wrapper_t<wf::color_t> button_color{"pixdecor/button_color"};
 wf::option_wrapper_t<double> button_line_thickness{"pixdecor/button_line_thickness"};
 /** Create a new theme with the default parameters */
-decoration_theme_t::decoration_theme_t()
+pixdecor_theme_t::pixdecor_theme_t()
 {
     gs = g_settings_new("org.gnome.desktop.interface");
 
@@ -35,12 +29,12 @@ decoration_theme_t::decoration_theme_t()
     update_colors();
 }
 
-decoration_theme_t::~decoration_theme_t()
+pixdecor_theme_t::~pixdecor_theme_t()
 {
     g_object_unref(gs);
 }
 
-void decoration_theme_t::update_colors(void)
+void pixdecor_theme_t::update_colors(void)
 {
     fg = wf::color_t(fg_color);
     bg = wf::color_t(bg_color);
@@ -52,7 +46,7 @@ void decoration_theme_t::update_colors(void)
  * @return A PangoFontDescription representing either a provided font from
  *  the Title Font option or the system font, scaled by the text-scaling-factor GSetting.
  */
-PangoFontDescription *create_font_description()
+PangoFontDescription*pixdecor_theme_t::create_font_description()
 {
     GSettings *gs = g_settings_new("org.gnome.desktop.interface");
 
@@ -115,15 +109,15 @@ PangoFontDescription *create_font_description()
  *  originating from a global, internally managed instance, freeing the data upon exit.
  *  It will also be updated with changes to the Title Font option.
  */
-PangoFontDescription *get_font_description()
+PangoFontDescription*pixdecor_theme_t::get_font_description()
 {
     static std::unique_ptr<PangoFontDescription, decltype(& pango_font_description_free)> font_desc(
         create_font_description(), &pango_font_description_free);
 
     static std::once_flag once_flag;
-    std::call_once(once_flag, []
+    std::call_once(once_flag, [&]
     {
-        title_font.set_callback([]
+        title_font.set_callback([&]
         {
             font_desc.reset(create_font_description());
         });
@@ -133,7 +127,7 @@ PangoFontDescription *get_font_description()
 }
 
 /** @return The available height for displaying the title */
-int decoration_theme_t::get_font_height_px() const
+int pixdecor_theme_t::get_font_height_px()
 {
     PangoFontDescription *font_desc = get_font_description();
     int font_height = pango_font_description_get_size(font_desc);
@@ -147,7 +141,7 @@ int decoration_theme_t::get_font_height_px() const
     return font_height / PANGO_SCALE;
 }
 
-int decoration_theme_t::get_title_height() const
+int pixdecor_theme_t::get_title_height()
 {
     int height = get_font_height_px();
     height *= 3;
@@ -162,23 +156,23 @@ int decoration_theme_t::get_title_height() const
 }
 
 /** @return The available border for resizing */
-int decoration_theme_t::get_border_size() const
+int pixdecor_theme_t::get_border_size() const
 {
     return (!maximized_borders && maximized) ? 0 : border_size;
 }
 
 /** @return The input area for resizing */
-int decoration_theme_t::get_input_size() const
+int pixdecor_theme_t::get_input_size() const
 {
     return std::max(get_border_size(), MIN_RESIZE_HANDLE_SIZE);
 }
 
-wf::color_t decoration_theme_t::get_decor_color(bool active) const
+wf::color_t pixdecor_theme_t::get_decor_color(bool active) const
 {
     return active ? fg : bg;
 }
 
-void decoration_theme_t::set_maximize(bool state)
+void pixdecor_theme_t::set_maximize(bool state)
 {
     maximized = state;
 }
@@ -191,7 +185,7 @@ void decoration_theme_t::set_maximize(bool state)
  * @param scissor The GL scissor rectangle to use.
  * @param active Whether to use active or inactive colors
  */
-void decoration_theme_t::render_background(const wf::render_target_t& fb,
+void pixdecor_theme_t::render_background(const wf::render_target_t& fb,
     wf::geometry_t rectangle, const wf::region_t& scissor, bool active, wf::pointf_t p)
 {
     if ((std::string(effect_type) == "none") && (std::string(overlay_engine) == "none"))
@@ -211,8 +205,8 @@ void decoration_theme_t::render_background(const wf::render_target_t& fb,
  * Render the given text on a cairo_surface_t with the given size.
  * The caller is responsible for freeing the memory afterwards.
  */
-cairo_surface_t*decoration_theme_t::render_text(std::string text,
-    int width, int height, int t_width, int border, int buttons_width, bool active) const
+cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
+    int width, int height, int t_width, int border, int buttons_width, bool active)
 {
     const auto format = CAIRO_FORMAT_ARGB32;
     auto surface = cairo_image_surface_create(format, width, height);
@@ -264,7 +258,7 @@ cairo_surface_t*decoration_theme_t::render_text(std::string text,
     return surface;
 }
 
-cairo_surface_t*decoration_theme_t::get_button_surface(button_type_t button,
+cairo_surface_t*pixdecor_theme_t::get_button_surface(button_type_t button,
     const button_state_t& state, bool active) const
 {
     cairo_surface_t *button_surface = NULL;

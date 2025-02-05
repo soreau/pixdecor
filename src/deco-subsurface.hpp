@@ -25,9 +25,11 @@ class wf_shadow_margin_t : public wf::custom_data_t
     wf::decoration_margins_t margins = {0, 0, 0, 0};
 };
 
-class simple_decoration_node_t;
 namespace wf
 {
+namespace pixdecor
+{
+class simple_decoration_node_t;
 /**
  * A decorator object attached as custom data to a toplevel object.
  */
@@ -53,6 +55,7 @@ class simple_decorator_t : public wf::custom_data_t
     void update_animation();
     int shadow_thickness;
 };
+}
 }
 
 #endif /* end of include guard: DECO_SUBSURFACE_HPP */
