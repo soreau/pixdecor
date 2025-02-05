@@ -22,6 +22,10 @@
 #include <wayfire/plugins/ipc/ipc-activator.hpp>
 #include "shade.hpp"
 
+namespace wf
+{
+namespace pixdecor
+{
 int handle_theme_updated(int fd, uint32_t mask, void *data)
 {
     int bufsz = sizeof(inotify_event) + NAME_MAX + 1;
@@ -97,7 +101,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             {
                 // First check whether the toplevel already has decoration
                 // In that case, we should just set the correct margins
-                if (auto deco = toplevel->get_data<wf::simple_decorator_t>())
+                if (auto deco = toplevel->get_data<simple_decorator_t>())
                 {
                     deco->update_decoration_size();
                     toplevel->pending().margins = deco->get_margins(toplevel->pending());
@@ -116,7 +120,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 wf::dassert(view != nullptr, "Mapping a toplevel means there must be a corresponding view!");
                 if (should_decorate_view(view))
                 {
-                    if (auto deco = toplevel->get_data<wf::simple_decorator_t>())
+                    if (auto deco = toplevel->get_data<simple_decorator_t>())
                     {
                         deco->update_decoration_size();
                     }
@@ -189,17 +193,17 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         }
     }
 
-    std::shared_ptr<wf::pixdecor::pixdecor_shade> ensure_transformer(wayfire_view view, int titlebar_height)
+    std::shared_ptr<pixdecor_shade> ensure_transformer(wayfire_view view, int titlebar_height)
     {
         auto tmgr = view->get_transformed_node();
-        if (auto tr = tmgr->get_transformer<wf::pixdecor::pixdecor_shade>(shade_transformer_name))
+        if (auto tr = tmgr->get_transformer<pixdecor_shade>(shade_transformer_name))
         {
             return tr;
         }
 
-        auto node = std::make_shared<wf::pixdecor::pixdecor_shade>(view, titlebar_height);
+        auto node = std::make_shared<pixdecor_shade>(view, titlebar_height);
         tmgr->add_transformer(node, wf::TRANSFORMER_2D, shade_transformer_name);
-        auto tr = tmgr->get_transformer<wf::pixdecor::pixdecor_shade>(shade_transformer_name);
+        auto tr = tmgr->get_transformer<pixdecor_shade>(shade_transformer_name);
 
         return tr;
     }
@@ -222,7 +226,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         } else
         {
             if (auto tr =
-                    view->get_transformed_node()->get_transformer<wf::pixdecor::pixdecor_shade>(
+                    view->get_transformed_node()->get_transformer<pixdecor_shade>(
                         shade_transformer_name))
             {
                 tr->set_titlebar_height(titlebar_height);
@@ -259,9 +263,9 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             if (auto toplevel = wf::toplevel_cast(view))
             {
                 bool direction = true;
-                auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+                auto deco = toplevel->toplevel()->get_data<simple_decorator_t>();
                 if (auto tr =
-                        view->get_transformed_node()->get_transformer<wf::pixdecor::pixdecor_shade>(
+                        view->get_transformed_node()->get_transformer<pixdecor_shade>(
                             shade_transformer_name))
                 {
                     direction = !tr->get_direction();
@@ -282,7 +286,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             {
                 if (auto toplevel = wf::toplevel_cast(v))
                 {
-                    auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+                    auto deco = toplevel->toplevel()->get_data<simple_decorator_t>();
                     init_shade(v, ev->delta < 0 ? true : false,
                         deco ? deco->get_titlebar_height() : csd_titlebar_height);
                     return true;
@@ -312,13 +316,13 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             for (auto& view : wf::get_core().get_all_views())
             {
                 if (auto tr =
-                        view->get_transformed_node()->get_transformer<wf::pixdecor::pixdecor_shade>(
+                        view->get_transformed_node()->get_transformer<pixdecor_shade>(
                             shade_transformer_name))
                 {
                     auto toplevel = toplevel_cast(view);
                     if (toplevel)
                     {
-                        if (!toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                        if (!toplevel->toplevel()->get_data<simple_decorator_t>())
                         {
                             tr->set_titlebar_height(csd_titlebar_height);
                         }
@@ -337,7 +341,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             for (auto& view : wf::get_core().get_all_views())
             {
                 auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>())
                 {
                     continue;
                 }
@@ -390,12 +394,12 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             for (auto& view : wf::get_core().get_all_views())
             {
                 auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>())
                 {
                     continue;
                 }
 
-                auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+                auto deco = toplevel->toplevel()->get_data<simple_decorator_t>();
                 deco->update_animation();
             }
         };
@@ -439,7 +443,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             for (auto& view : wf::get_core().get_all_views())
             {
                 auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>())
                 {
                     continue;
                 }
@@ -452,7 +456,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             for (auto& view : wf::get_core().get_all_views())
             {
                 auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>())
                 {
                     continue;
                 }
@@ -466,7 +470,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             for (auto& view : wf::get_core().get_all_views())
             {
                 auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>() ||
+                if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>() ||
                     !toplevel->pending_tiled_edges())
                 {
                     continue;
@@ -483,7 +487,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             for (auto& view : wf::get_core().get_all_views())
             {
                 auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>() ||
+                if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>() ||
                     !toplevel->pending_tiled_edges())
                 {
                     continue;
@@ -538,6 +542,10 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
         on_output_added.disconnect();
         on_output_removed.disconnect();
+        on_decoration_state_changed.disconnect();
+        on_new_tx.disconnect();
+        on_app_id_changed.disconnect();
+        on_title_changed.disconnect();
 
         wf::get_core().bindings->rem_binding(&shade_axis_cb);
         remove_shade_transformers();
@@ -550,7 +558,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
     void recreate_frame(wayfire_toplevel_view toplevel)
     {
-        auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+        auto deco = toplevel->toplevel()->get_data<simple_decorator_t>();
         if (!deco)
         {
             return;
@@ -604,7 +612,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             for (auto& view : wf::get_core().get_all_views())
             {
                 auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+                if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>())
                 {
                     continue;
                 }
@@ -620,13 +628,13 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         for (auto& view : wf::get_core().get_all_views())
         {
             auto toplevel = wf::toplevel_cast(view);
-            if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+            if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>())
             {
                 continue;
             }
 
             view->damage();
-            toplevel->toplevel()->get_data<wf::simple_decorator_t>()->effect_updated();
+            toplevel->toplevel()->get_data<simple_decorator_t>()->effect_updated();
 
             auto& pending = toplevel->toplevel()->pending();
             if (!resize_decorations || (pending.tiled_edges != 0))
@@ -644,7 +652,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             } else
             {
                 pending.geometry = wf::shrink_geometry_by_margins(pending.geometry, pending.margins);
-                pending.margins  = toplevel->toplevel()->get_data<wf::simple_decorator_t>()->get_margins(
+                pending.margins  = toplevel->toplevel()->get_data<simple_decorator_t>()->get_margins(
                     toplevel->toplevel()->pending());
                 pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
             }
@@ -658,12 +666,12 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         for (auto& view : wf::get_core().get_all_views())
         {
             auto toplevel = wf::toplevel_cast(view);
-            if (!toplevel || !toplevel->toplevel()->get_data<wf::simple_decorator_t>())
+            if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>())
             {
                 continue;
             }
 
-            auto deco = toplevel->toplevel()->get_data<wf::simple_decorator_t>();
+            auto deco = toplevel->toplevel()->get_data<simple_decorator_t>();
             deco->update_colors();
             view->damage();
         }
@@ -691,12 +699,12 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     {
         auto toplevel = view->toplevel();
 
-        if (!toplevel->get_data<wf::simple_decorator_t>())
+        if (!toplevel->get_data<simple_decorator_t>())
         {
-            toplevel->store_data(std::make_unique<wf::simple_decorator_t>(view));
+            toplevel->store_data(std::make_unique<simple_decorator_t>(view));
         }
 
-        auto deco     = toplevel->get_data<wf::simple_decorator_t>();
+        auto deco     = toplevel->get_data<simple_decorator_t>();
         auto& pending = toplevel->pending();
         pending.margins = deco->get_margins(pending);
 
@@ -709,7 +717,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
     void remove_decoration(wayfire_toplevel_view view)
     {
-        view->toplevel()->erase_data<wf::simple_decorator_t>();
+        view->toplevel()->erase_data<simple_decorator_t>();
         auto& pending = view->toplevel()->pending();
         if (!pending.fullscreen && !pending.tiled_edges)
         {
@@ -734,10 +742,10 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 return;
             }
 
-            if (!toplevel->toplevel()->get_data<wf::simple_decorator_t>() && (always_decorate.matches(view) ||
-                                                                              (should_decorate_view(toplevel)
-                                                                               &&
-                                                                               !ignore_views.matches(view))))
+            if (!toplevel->toplevel()->get_data<simple_decorator_t>() && (always_decorate.matches(view) ||
+                                                                          (should_decorate_view(toplevel)
+                                                                           &&
+                                                                           !ignore_views.matches(view))))
             {
                 adjust_new_decorations(toplevel);
             } else if ((!always_decorate.matches(view) &&
@@ -750,5 +758,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         }
     }
 };
+}
+}
 
-DECLARE_WAYFIRE_PLUGIN(wayfire_pixdecor);
+DECLARE_WAYFIRE_PLUGIN(wf::pixdecor::wayfire_pixdecor);

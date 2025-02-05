@@ -12,7 +12,7 @@ namespace wf
 {
 namespace pixdecor
 {
-button_t::button_t(const decoration_theme_t& t, std::function<void()> damage) :
+button_t::button_t(pixdecor_theme_t& t, std::function<void()> damage) :
     theme(t), damage_callback(damage)
 {}
 
@@ -86,7 +86,7 @@ void button_t::render(const wf::render_target_t& fb, wf::geometry_t geometry, co
 
 wf::dimensions_t button_t::update_texture()
 {
-    decoration_theme_t::button_state_t state = {
+    pixdecor_theme_t::button_state_t state = {
         .width  = 1.0 * (theme.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
         .height = 1.0 * (theme.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
         .border = 1.0,
