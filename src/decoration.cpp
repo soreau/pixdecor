@@ -5,7 +5,6 @@
 #include <wayfire/workspace-set.hpp>
 #include <wayfire/output.hpp>
 #include <wayfire/signal-definitions.hpp>
-#include <wayfire/txn/transaction-manager.hpp>
 #include <wayfire/render-manager.hpp>
 
 #include "deco-subsurface.hpp"
@@ -88,6 +87,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     std::function<void(void)> update_event;
     wf::effect_hook_t pre_hook;
     bool hook_set = false;
+    bool initial_state = true;
 
     wf::axis_callback shade_axis_cb;
 
@@ -336,6 +336,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             update_view_decoration(view);
         }
 
+        initial_state = false;
+
         border_size.set_callback([=]
         {
             for (auto& view : wf::get_core().get_all_views())
@@ -348,7 +350,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
                 remove_decoration(toplevel);
                 adjust_new_decorations(toplevel);
-                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+                wf::pixdecor::schedule_transaction(toplevel->toplevel());
             }
         });
 
@@ -462,7 +464,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 }
 
                 view->damage();
-                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+                wf::pixdecor::schedule_transaction(toplevel->toplevel());
             }
         });
         maximized_borders.set_callback([=]
@@ -479,7 +481,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 view->damage();
                 remove_decoration(toplevel);
                 adjust_new_decorations(toplevel);
-                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+                wf::pixdecor::schedule_transaction(toplevel->toplevel());
             }
         });
         maximized_shadows.set_callback([=]
@@ -496,7 +498,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 view->damage();
                 remove_decoration(toplevel);
                 adjust_new_decorations(toplevel);
-                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+                wf::pixdecor::schedule_transaction(toplevel->toplevel());
             }
         });
 
@@ -528,7 +530,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             if (auto toplevel = wf::toplevel_cast(view))
             {
                 remove_decoration(toplevel);
-                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+                wf::pixdecor::schedule_transaction(toplevel->toplevel());
             }
         }
 
@@ -619,7 +621,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
                 remove_decoration(toplevel);
                 adjust_new_decorations(toplevel);
-                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+                wf::pixdecor::schedule_transaction(toplevel->toplevel());
             }
 
             return;
@@ -639,7 +641,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             auto& pending = toplevel->toplevel()->pending();
             if (!resize_decorations || (pending.tiled_edges != 0))
             {
-                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+                wf::pixdecor::schedule_transaction(toplevel->toplevel());
                 continue;
             }
 
@@ -657,7 +659,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
             }
 
-            wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
+            wf::pixdecor::schedule_transaction(toplevel->toplevel());
         }
     }
 
@@ -699,19 +701,22 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     {
         auto toplevel = view->toplevel();
 
+        bool was_decorated = false;
         if (!toplevel->get_data<simple_decorator_t>())
         {
             toplevel->store_data(std::make_unique<simple_decorator_t>(view));
+        } else
+        {
+            was_decorated = true;
         }
 
         auto deco     = toplevel->get_data<simple_decorator_t>();
         auto& pending = toplevel->pending();
         pending.margins = deco->get_margins(pending);
 
-        if (!pending.fullscreen && !pending.tiled_edges)
+        if (!pending.fullscreen && !pending.tiled_edges && (was_decorated || initial_state))
         {
-            toplevel->pending().geometry = wf::expand_geometry_by_margins(
-                toplevel->pending().geometry, pending.margins);
+            pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
         }
     }
 
@@ -733,28 +738,28 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         }
     }
 
+    bool is_toplevel_decorated(const std::shared_ptr<wf::toplevel_t>& toplevel)
+    {
+        return toplevel->has_data<wf::pixdecor::simple_decorator_t>();
+    }
+
     void update_view_decoration(wayfire_view view)
     {
         if (auto toplevel = wf::toplevel_cast(view))
         {
-            if (!toplevel)
+            const bool wants_decoration = should_decorate_view(toplevel);
+            if (wants_decoration != is_toplevel_decorated(toplevel->toplevel()))
             {
-                return;
-            }
+                if (wants_decoration)
+                {
+                    adjust_new_decorations(toplevel);
+                } else
+                {
+                    remove_decoration(toplevel);
+                }
 
-            if (!toplevel->toplevel()->get_data<simple_decorator_t>() && (always_decorate.matches(view) ||
-                                                                          (should_decorate_view(toplevel)
-                                                                           &&
-                                                                           !ignore_views.matches(view))))
-            {
-                adjust_new_decorations(toplevel);
-            } else if ((!always_decorate.matches(view) &&
-                        (!should_decorate_view(toplevel) || ignore_views.matches(view))))
-            {
-                remove_decoration(toplevel);
+                wf::pixdecor::schedule_transaction(toplevel->toplevel());
             }
-
-            wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
         }
     }
 };

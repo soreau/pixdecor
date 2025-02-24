@@ -23,7 +23,6 @@
 #include "deco-theme.hpp"
 #include <wayfire/window-manager.hpp>
 #include <wayfire/view-transform.hpp>
-#include <wayfire/txn/transaction-manager.hpp>
 #include <wayfire/scene-render.hpp>
 
 #include <wayfire/plugins/common/cairo-util.hpp>
@@ -47,6 +46,14 @@ wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
 wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
 wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
 wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
+
+void schedule_transaction(wf::txn::transaction_object_sptr object)
+{
+    if (!wf::get_core().tx_manager->is_object_pending(object))
+    {
+        wf::get_core().tx_manager->schedule_object(object);
+    }
+}
 
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
     public wf::touch_interaction_t
@@ -492,7 +499,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         {
             auto size = wf::dimensions(view->get_pending_geometry());
             layout.resize(size.width, size.height);
-            wf::get_core().tx_manager->schedule_object(view->toplevel());
+            wf::pixdecor::schedule_transaction(view->toplevel());
         }
     }
 
@@ -571,13 +578,11 @@ simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
     on_view_geometry_changed = [this] (auto)
     {
         deco->resize(wf::dimensions(this->view->get_geometry()));
-        wf::get_core().tx_manager->schedule_object(this->view->toplevel());
     };
 
     on_view_tiled = [this] (auto)
     {
         deco->resize(wf::dimensions(this->view->get_geometry()));
-        wf::get_core().tx_manager->schedule_object(this->view->toplevel());
     };
 
     on_view_fullscreen = [this] (auto)
@@ -585,7 +590,6 @@ simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
         if (!this->view->toplevel()->pending().fullscreen)
         {
             deco->resize(wf::dimensions(this->view->get_geometry()));
-            wf::get_core().tx_manager->schedule_object(this->view->toplevel());
         }
     };
 }
@@ -659,20 +663,15 @@ wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_stat
         shade_progress = tr->progression.shade;
     }
 
-    if (view->has_data(custom_data_name))
-    {
-        view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-            {shadow_thickness, shadow_thickness, shadow_thickness,
-                shadow_thickness +
-                int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
-    } else
+    if (!view->has_data(custom_data_name))
     {
         view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
-        view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-            {shadow_thickness, shadow_thickness, shadow_thickness,
-                shadow_thickness +
-                int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
     }
+
+    view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
+        {shadow_thickness, shadow_thickness, shadow_thickness,
+            shadow_thickness +
+            int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
 
     return wf::decoration_margins_t{
         .left   = thickness,
