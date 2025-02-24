@@ -8,7 +8,6 @@
 #include <wayfire/toplevel-view.hpp>
 #include <wayfire/window-manager.hpp>
 #include <wayfire/view-transform.hpp>
-#include <wayfire/txn/transaction-manager.hpp>
 #include <wayfire/scene-render.hpp>
 #include <wayfire/util/duration.hpp>
 
