@@ -578,13 +578,11 @@ simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
     on_view_geometry_changed = [this] (auto)
     {
         deco->resize(wf::dimensions(this->view->get_geometry()));
-        wf::pixdecor::schedule_transaction(this->view->toplevel());
     };
 
     on_view_tiled = [this] (auto)
     {
         deco->resize(wf::dimensions(this->view->get_geometry()));
-        wf::pixdecor::schedule_transaction(this->view->toplevel());
     };
 
     on_view_fullscreen = [this] (auto)
@@ -592,7 +590,6 @@ simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
         if (!this->view->toplevel()->pending().fullscreen)
         {
             deco->resize(wf::dimensions(this->view->get_geometry()));
-            wf::pixdecor::schedule_transaction(this->view->toplevel());
         }
     };
 }
