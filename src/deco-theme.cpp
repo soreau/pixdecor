@@ -185,19 +185,22 @@ void pixdecor_theme_t::set_maximize(bool state)
  * @param scissor The GL scissor rectangle to use.
  * @param active Whether to use active or inactive colors
  */
-void pixdecor_theme_t::render_background(const wf::render_target_t& fb,
-    wf::geometry_t rectangle, const wf::region_t& scissor, bool active, wf::pointf_t p)
+void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& data,
+    wf::geometry_t rectangle, bool active, wf::pointf_t p)
 {
     if ((std::string(effect_type) == "none") && (std::string(overlay_engine) == "none"))
     {
-        for (auto& box : scissor)
+        data.pass->custom_gles_subpass(data.target,[&]
         {
-            fb.logic_scissor(wlr_box_from_pixman_box(box));
-            OpenGL::render_rectangle(rectangle, get_decor_color(active), fb.get_orthographic_projection());
-        }
+            for (auto& box : data.damage)
+            {
+                wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+                OpenGL::render_rectangle(rectangle, get_decor_color(active), wf::gles::render_target_orthographic_projection(data.target));
+            }
+        });
     } else
     {
-        smoke.render_effect(fb, rectangle, scissor);
+        smoke.render_effect(data, rectangle);
     }
 }
 

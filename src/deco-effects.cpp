@@ -29,6 +29,7 @@
 
 
 #include <wayfire/debug.hpp>
+#include <wayfire/render.hpp>
 
 #include "deco-effects.hpp"
 #include "smoke-shaders.hpp"
@@ -2148,68 +2149,68 @@ void smoke_t::destroy_programs()
 void smoke_t::create_programs()
 {
     destroy_programs();
-    OpenGL::render_begin();
-    if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+    wf::gles::run_in_context([&]
     {
-        setup_shader(&motion_program, motion_source);
-        setup_shader(&diffuse1_program, stitch_smoke_shader(diffuse1_source));
-        setup_shader(&diffuse2_program, stitch_smoke_shader(diffuse2_source));
-        setup_shader(&project1_program, stitch_smoke_shader(project1_source));
-        setup_shader(&project2_program, stitch_smoke_shader(project2_source));
-        setup_shader(&project3_program, stitch_smoke_shader(project3_source));
-        setup_shader(&project4_program, stitch_smoke_shader(project4_source));
-        setup_shader(&project5_program, stitch_smoke_shader(project5_source));
-        setup_shader(&project6_program, stitch_smoke_shader(project6_source));
-        setup_shader(&advect1_program, stitch_smoke_shader(advect1_source));
-        setup_shader(&advect2_program, stitch_smoke_shader(advect2_source));
-        setup_shader(&render_program, std::string(render_source) + effect_run_for_region_main);
-    } else if (std::string(effect_type) == "clouds")
-    {
-        setup_shader(&render_program, render_source_clouds);
-    } else if (std::string(effect_type) == "halftone")
-    {
-        setup_shader(&render_program, render_source_halftone);
-    } else if (std::string(effect_type) == "pattern")
-    {
-        setup_shader(&render_program, render_source_pattern);
-    } else if (std::string(effect_type) == "lava")
-    {
-        setup_shader(&render_program, render_source_lava);
-    } else if (std::string(effect_type) == "hex")
-    {
-        setup_shader(&render_program, render_source_hex);
-    } else if (std::string(effect_type) == "zebra")
-    {
-        setup_shader(&render_program, render_source_zebra);
-    } else if (std::string(effect_type) == "neural_network")
-    {
-        setup_shader(&render_program, render_source_neural_network);
-    } else if (std::string(effect_type) == "hexagon_maze")
-    {
-        setup_shader(&render_program, render_source_hexagon_maze);
-    } else if (std::string(effect_type) == "raymarched_truchet")
-    {
-        setup_shader(&render_program, render_source_raymarched_truchet);
-    } else if (std::string(effect_type) == "neon_pattern")
-    {
-        setup_shader(&render_program, render_source_neon_pattern);
-    } else if (std::string(effect_type) == "neon_rings")
-    {
-        setup_shader(&render_program, render_source_neon_rings);
-    } else if (std::string(effect_type) == "deco")
-    {
-        setup_shader(&render_program, render_source_deco);
-    }
+        if ((std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink"))
+        {
+            setup_shader(&motion_program, motion_source);
+            setup_shader(&diffuse1_program, stitch_smoke_shader(diffuse1_source));
+            setup_shader(&diffuse2_program, stitch_smoke_shader(diffuse2_source));
+            setup_shader(&project1_program, stitch_smoke_shader(project1_source));
+            setup_shader(&project2_program, stitch_smoke_shader(project2_source));
+            setup_shader(&project3_program, stitch_smoke_shader(project3_source));
+            setup_shader(&project4_program, stitch_smoke_shader(project4_source));
+            setup_shader(&project5_program, stitch_smoke_shader(project5_source));
+            setup_shader(&project6_program, stitch_smoke_shader(project6_source));
+            setup_shader(&advect1_program, stitch_smoke_shader(advect1_source));
+            setup_shader(&advect2_program, stitch_smoke_shader(advect2_source));
+            setup_shader(&render_program, std::string(render_source) + effect_run_for_region_main);
+        } else if (std::string(effect_type) == "clouds")
+        {
+            setup_shader(&render_program, render_source_clouds);
+        } else if (std::string(effect_type) == "halftone")
+        {
+            setup_shader(&render_program, render_source_halftone);
+        } else if (std::string(effect_type) == "pattern")
+        {
+            setup_shader(&render_program, render_source_pattern);
+        } else if (std::string(effect_type) == "lava")
+        {
+            setup_shader(&render_program, render_source_lava);
+        } else if (std::string(effect_type) == "hex")
+        {
+            setup_shader(&render_program, render_source_hex);
+        } else if (std::string(effect_type) == "zebra")
+        {
+            setup_shader(&render_program, render_source_zebra);
+        } else if (std::string(effect_type) == "neural_network")
+        {
+            setup_shader(&render_program, render_source_neural_network);
+        } else if (std::string(effect_type) == "hexagon_maze")
+        {
+            setup_shader(&render_program, render_source_hexagon_maze);
+        } else if (std::string(effect_type) == "raymarched_truchet")
+        {
+            setup_shader(&render_program, render_source_raymarched_truchet);
+        } else if (std::string(effect_type) == "neon_pattern")
+        {
+            setup_shader(&render_program, render_source_neon_pattern);
+        } else if (std::string(effect_type) == "neon_rings")
+        {
+            setup_shader(&render_program, render_source_neon_rings);
+        } else if (std::string(effect_type) == "deco")
+        {
+            setup_shader(&render_program, render_source_deco);
+        }
 
-    if (std::string(overlay_engine) == "rounded_corners")
-    {
-        setup_shader(&render_overlay_program, rounded_corner_overlay);
-    } else if (std::string(overlay_engine) == "beveled_glass")
-    {
-        setup_shader(&render_overlay_program, beveled_glass_overlay);
-    }
-
-    OpenGL::render_end();
+        if (std::string(overlay_engine) == "rounded_corners")
+        {
+            setup_shader(&render_overlay_program, rounded_corner_overlay);
+        } else if (std::string(overlay_engine) == "beveled_glass")
+        {
+            setup_shader(&render_overlay_program, beveled_glass_overlay);
+        }
+    });
 }
 
 smoke_t::smoke_t()
@@ -2410,7 +2411,7 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
     GL_CALL(glDeleteFramebuffers(1, &fb));
 }
 
-void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
+void smoke_t::step_effect(const wf::scene::render_instruction_t& data, wf::geometry_t rectangle,
     bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
     int title_height, int border_size, int shadow_radius)
 {
@@ -2423,187 +2424,190 @@ void smoke_t::step_effect(const wf::render_target_t& fb, wf::geometry_t rectangl
     int radius = shadow_radius;
     int diffuse_iterations = 2;
 
-    OpenGL::render_begin(fb);
-    if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
+    wf::gles::run_in_context([&]
     {
-        saved_width  = rectangle.width;
-        saved_height = rectangle.height;
-
-        recreate_textures(rectangle);
-    }
-
-    GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
-    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-    GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
-
-    const wf::geometry_t nonshadow_rect = wf::geometry_t{
-        radius* 2,
-        radius* 2,
-        rectangle.width - 4 * radius,
-        rectangle.height - 4 * radius
-    };
-
-    wf::geometry_t inner_part = {
-        border_size + radius * 2,
-        title_height + border_size + radius * 2,
-        rectangle.width - border_size * 2 - radius * 4,
-        rectangle.height - border_size * 2 - title_height - radius * 4,
-    };
-
-    wf::region_t border_region = nonshadow_rect;
-    border_region ^= inner_part;
-    border_region.expand_edges(1);
-    border_region &= nonshadow_rect;
-
-    if (smoke)
-    {
-        wf::point_t point{int(p.x), int(p.y)};
-        if ((p.x == FLT_MIN) || (p.y == FLT_MIN))
+        wf::gles::bind_render_buffer(data.target);
+        if ((rectangle.width != saved_width) || (rectangle.height != saved_height))
         {
-            point.x = point.y = INT_MIN;
+            saved_width  = rectangle.width;
+            saved_height = rectangle.height;
+
+            recreate_textures(rectangle);
         }
 
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
-        GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
-        GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
-        GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
-        GL_CALL(glBindImageTexture(4, b1u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
-        GL_CALL(glBindImageTexture(5, b1v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-        GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
-        GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
-        GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
-
-        if ((point.x >= radius) && (point.y >= radius))
-        {
-            GL_CALL(glUseProgram(motion_program));
-            // upload stuff
-            GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
-            GL_CALL(glUniform1i(2, border_size + radius * 2));
-            GL_CALL(glUniform1i(3, point.x));
-            GL_CALL(glUniform1i(4, point.y));
-            GL_CALL(glUniform1i(5, rectangle.width));
-            GL_CALL(glUniform1i(6, rectangle.height));
-            GL_CALL(glUniform1i(7, random()));
-            GL_CALL(glUniform1i(8, random()));
-            GL_CALL(glUniform1i(9, radius * 2));
-            GL_CALL(glDispatchCompute(1, 1, 1));
-            GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-        }
-
-        for (int k = 0; k < diffuse_iterations; k++)
-        {
-            run_shader_region(diffuse1_program, border_region, wf::dimensions(rectangle));
-        }
-
-        run_shader_region(project1_program, border_region, wf::dimensions(rectangle));
-        for (int k = 0; k < diffuse_iterations; k++)
-        {
-            run_shader_region(project2_program, border_region, wf::dimensions(rectangle));
-        }
-
-        run_shader_region(project3_program, border_region, wf::dimensions(rectangle));
-        run_shader_region(advect1_program, border_region, wf::dimensions(rectangle));
-        run_shader_region(project4_program, border_region, wf::dimensions(rectangle));
-        for (int k = 0; k < diffuse_iterations; k++)
-        {
-            run_shader_region(project5_program, border_region, wf::dimensions(rectangle));
-        }
-
-        run_shader_region(project6_program, border_region, wf::dimensions(rectangle));
-        for (int k = 0; k < diffuse_iterations; k++)
-        {
-            run_shader_region(diffuse2_program, border_region, wf::dimensions(rectangle));
-        }
-
-        run_shader_region(advect2_program, border_region, wf::dimensions(rectangle));
-    }
-
-    if (std::string(effect_type) != "none")
-    {
-        GL_CALL(glUseProgram(render_program));
-
-        GLfloat effect_color_f[4] =
-        {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
-            GLfloat(effect_color.a)};
-        GLfloat decor_color_f[4] =
-        {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
-        if (smoke)
-        {
-            GL_CALL(glUniform1i(4, ink));
-            GL_CALL(glUniform4fv(8, 1, effect_color_f));
-            GL_CALL(glUniform4fv(9, 1, decor_color_f));
-            dispatch_region(border_region);
-        } else
-        {
-            GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
-            GL_CALL(glUniform1i(2, border_size + radius * 2));
-            GL_CALL(glUniform1i(5, rectangle.width));
-            GL_CALL(glUniform1i(6, rectangle.height));
-            GL_CALL(glUniform1i(7, radius * 2));
-            GL_CALL(glUniform1f(9, effect_animate ? ((wf::get_current_time() / 30) & 0xFF) : 0.0));
-            GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
-            GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-        }
-    } else if (!smoke && (std::string(overlay_engine) != "none"))
-    {
-        GLuint fb;
-        GL_CALL(glGenFramebuffers(1, &fb));
-        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
         GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
-        GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-            GL_TEXTURE_2D, texture, 0));
-        OpenGL::clear(decor_color, GL_COLOR_BUFFER_BIT);
-        GL_CALL(glDeleteFramebuffers(1, &fb));
-    }
+        GL_CALL(glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
 
-    if ((std::string(overlay_engine) == "rounded_corners") ||
-        (std::string(overlay_engine) == "beveled_glass"))
-    {
-        GL_CALL(glUseProgram(render_overlay_program));
-        GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
-        GL_CALL(glUniform1i(2, border_size + radius * 2));
-        GL_CALL(glUniform1i(5, rectangle.width));
-        GL_CALL(glUniform1i(6, rectangle.height));
-        GL_CALL(glUniform1i(7, rounded_corner_radius));
-        if (std::string(overlay_engine) == "rounded_corners")
+        const wf::geometry_t nonshadow_rect = wf::geometry_t{
+            radius* 2,
+            radius* 2,
+            rectangle.width - 4 * radius,
+            rectangle.height - 4 * radius
+        };
+
+        wf::geometry_t inner_part = {
+            border_size + radius * 2,
+            title_height + border_size + radius * 2,
+            rectangle.width - border_size * 2 - radius * 4,
+            rectangle.height - border_size * 2 - title_height - radius * 4,
+        };
+
+        wf::region_t border_region = nonshadow_rect;
+        border_region ^= inner_part;
+        border_region.expand_edges(1);
+        border_region &= nonshadow_rect;
+
+        if (smoke)
         {
-            GLfloat shadow_color_f[4] =
-            {GLfloat(wf::color_t(shadow_color).r), GLfloat(wf::color_t(shadow_color).g),
-                GLfloat(wf::color_t(shadow_color).b), GLfloat(wf::color_t(shadow_color).a)};
-            GL_CALL(glUniform1i(8, radius));
-            GL_CALL(glUniform4fv(9, 1, shadow_color_f));
+            wf::point_t point{int(p.x), int(p.y)};
+            if ((p.x == FLT_MIN) || (p.y == FLT_MIN))
+            {
+                point.x = point.y = INT_MIN;
+            }
+
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 1));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0u));
+            GL_CALL(glBindImageTexture(1, b0u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 2));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0v));
+            GL_CALL(glBindImageTexture(2, b0v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 3));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b0d));
+            GL_CALL(glBindImageTexture(3, b0d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 4));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b1u));
+            GL_CALL(glBindImageTexture(4, b1u, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 5));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b1v));
+            GL_CALL(glBindImageTexture(5, b1v, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 6));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, b1d));
+            GL_CALL(glBindImageTexture(6, b1d, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F));
+
+            if ((point.x >= radius) && (point.y >= radius))
+            {
+                GL_CALL(glUseProgram(motion_program));
+                // upload stuff
+                GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+                GL_CALL(glUniform1i(2, border_size + radius * 2));
+                GL_CALL(glUniform1i(3, point.x));
+                GL_CALL(glUniform1i(4, point.y));
+                GL_CALL(glUniform1i(5, rectangle.width));
+                GL_CALL(glUniform1i(6, rectangle.height));
+                GL_CALL(glUniform1i(7, random()));
+                GL_CALL(glUniform1i(8, random()));
+                GL_CALL(glUniform1i(9, radius * 2));
+                GL_CALL(glDispatchCompute(1, 1, 1));
+                GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+            }
+
+            for (int k = 0; k < diffuse_iterations; k++)
+            {
+                run_shader_region(diffuse1_program, border_region, wf::dimensions(rectangle));
+            }
+
+            run_shader_region(project1_program, border_region, wf::dimensions(rectangle));
+            for (int k = 0; k < diffuse_iterations; k++)
+            {
+                run_shader_region(project2_program, border_region, wf::dimensions(rectangle));
+            }
+
+            run_shader_region(project3_program, border_region, wf::dimensions(rectangle));
+            run_shader_region(advect1_program, border_region, wf::dimensions(rectangle));
+            run_shader_region(project4_program, border_region, wf::dimensions(rectangle));
+            for (int k = 0; k < diffuse_iterations; k++)
+            {
+                run_shader_region(project5_program, border_region, wf::dimensions(rectangle));
+            }
+
+            run_shader_region(project6_program, border_region, wf::dimensions(rectangle));
+            for (int k = 0; k < diffuse_iterations; k++)
+            {
+                run_shader_region(diffuse2_program, border_region, wf::dimensions(rectangle));
+            }
+
+            run_shader_region(advect2_program, border_region, wf::dimensions(rectangle));
         }
 
-        GL_CALL(glDispatchCompute(round_up_div(rectangle.width, 16), round_up_div(rectangle.height, 16), 1));
-        GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
-    }
+        if (std::string(effect_type) != "none")
+        {
+            GL_CALL(glUseProgram(render_program));
 
-    GL_CALL(glUseProgram(0));
-    OpenGL::render_end();
+            GLfloat effect_color_f[4] =
+            {GLfloat(effect_color.r), GLfloat(effect_color.g), GLfloat(effect_color.b),
+                GLfloat(effect_color.a)};
+            GLfloat decor_color_f[4] =
+            {GLfloat(decor_color.r), GLfloat(decor_color.g), GLfloat(decor_color.b), GLfloat(decor_color.a)};
+            if (smoke)
+            {
+                GL_CALL(glUniform1i(4, ink));
+                GL_CALL(glUniform4fv(8, 1, effect_color_f));
+                GL_CALL(glUniform4fv(9, 1, decor_color_f));
+                dispatch_region(border_region);
+            } else
+            {
+                GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+                GL_CALL(glUniform1i(2, border_size + radius * 2));
+                GL_CALL(glUniform1i(5, rectangle.width));
+                GL_CALL(glUniform1i(6, rectangle.height));
+                GL_CALL(glUniform1i(7, radius * 2));
+                GL_CALL(glUniform1f(9, effect_animate ? ((wf::get_current_time() / 30) & 0xFF) : 0.0));
+                GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
+                GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+            }
+        } else if (!smoke && (std::string(overlay_engine) != "none"))
+        {
+            GLuint fb;
+            GL_CALL(glGenFramebuffers(1, &fb));
+            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
+            GL_CALL(glActiveTexture(GL_TEXTURE0 + 0));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, texture));
+            GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                GL_TEXTURE_2D, texture, 0));
+            OpenGL::clear(decor_color, GL_COLOR_BUFFER_BIT);
+            GL_CALL(glDeleteFramebuffers(1, &fb));
+        }
+        if ((std::string(overlay_engine) == "rounded_corners") ||
+            (std::string(overlay_engine) == "beveled_glass"))
+        {
+            GL_CALL(glUseProgram(render_overlay_program));
+            GL_CALL(glUniform1i(1, title_height + border_size + radius * 2));
+            GL_CALL(glUniform1i(2, border_size + radius * 2));
+            GL_CALL(glUniform1i(5, rectangle.width));
+            GL_CALL(glUniform1i(6, rectangle.height));
+            GL_CALL(glUniform1i(7, rounded_corner_radius));
+            if (std::string(overlay_engine) == "rounded_corners")
+            {
+                GLfloat shadow_color_f[4] =
+                {GLfloat(wf::color_t(shadow_color).r), GLfloat(wf::color_t(shadow_color).g),
+                    GLfloat(wf::color_t(shadow_color).b), GLfloat(wf::color_t(shadow_color).a)};
+                GL_CALL(glUniform1i(8, radius));
+                GL_CALL(glUniform4fv(9, 1, shadow_color_f));
+            }
+
+            GL_CALL(glDispatchCompute(round_up_div(rectangle.width, 16), round_up_div(rectangle.height, 16), 1));
+            GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
+        }
+
+        GL_CALL(glUseProgram(0));
+    });
 }
 
-void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
-    const wf::region_t& scissor)
+void smoke_t::render_effect(const wf::scene::render_instruction_t& data, wf::geometry_t rectangle)
 {
-    OpenGL::render_transformed_texture(wf::texture_t{texture}, rectangle,
-        fb.get_orthographic_projection(), glm::vec4{1},
+    OpenGL::render_transformed_texture(wf::gles_texture_t{texture}, rectangle,
+        wf::gles::render_target_orthographic_projection(data.target), glm::vec4{1},
         OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
 
-    for (auto& box : scissor)
+    data.pass->custom_gles_subpass(data.target,[&]
     {
-        fb.logic_scissor(wlr_box_from_pixman_box(box));
-        OpenGL::draw_cached();
-    }
+        for (auto& box : data.damage)
+        {
+            wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+            OpenGL::draw_cached();
+        }
+    });
 
     OpenGL::clear_cached();
 }
@@ -2611,9 +2615,10 @@ void smoke_t::render_effect(const wf::render_target_t& fb, wf::geometry_t rectan
 void smoke_t::effect_updated()
 {
     create_programs();
-    OpenGL::render_begin();
-    recreate_textures(wf::geometry_t{0, 0, saved_width, saved_height});
-    OpenGL::render_end();
+    wf::gles::run_in_context([&]
+    {
+        recreate_textures(wf::geometry_t{0, 0, saved_width, saved_height});
+    });
 }
 } // namespace pixdecor
 }
