@@ -5,6 +5,7 @@
 #include "wayfire/toplevel.hpp"
 #include <wayfire/signal-definitions.hpp>
 #include <wayfire/toplevel-view.hpp>
+#include <wayfire/scene-render.hpp>
 
 static std::string custom_data_name = "wf-decoration-shadow-margin";
 

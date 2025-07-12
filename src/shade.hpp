@@ -7,7 +7,6 @@
 #include <wayfire/signal-definitions.hpp>
 #include <wayfire/toplevel-view.hpp>
 #include <wayfire/window-manager.hpp>
-#include <wayfire/view-transform.hpp>
 #include <wayfire/txn/transaction-manager.hpp>
 #include <wayfire/scene-render.hpp>
 #include <wayfire/util/duration.hpp>
@@ -78,15 +77,14 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                     });
         }
 
-        void render(const wf::render_target_t& target,
-            const wf::region_t& region)
+        void render(const wf::scene::render_instruction_t& data)
         {
             auto src_box = self->get_children_bounding_box();
             gl_geometry src_geometry = {(float)src_box.x, (float)src_box.y,
                 (float)src_box.x + src_box.width, (float)src_box.y + src_box.height};
             auto src_tex = wf::scene::transformer_render_instance_t<transformer_base_node_t>::get_texture(
                 1.0);
-            auto shade_region = region;
+            auto shade_region = data.damage;
             int height    = src_box.height;
             auto titlebar = self->titlebar_height + self->get_shadow_margin();
             src_box.y += self->titlebar_height;
@@ -95,28 +93,39 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                     ((src_box.height - titlebar) / float(src_box.height)));
             auto progress_height = src_box.height;
             shade_region &= wf::region_t{src_box};
-            OpenGL::render_begin(target);
-            for (const auto& box : shade_region)
+            wf::gles::run_in_context([&]
             {
-                target.logic_scissor(wlr_box_from_pixman_box(box));
-                OpenGL::render_transformed_texture(src_tex,
-                {src_geometry.x1, src_geometry.y1 - (height - progress_height), src_geometry.x2,
-                    src_geometry.y2 - (height - progress_height)}, {},
-                    target.get_orthographic_projection(), glm::vec4(1.0), 0);
-            }
+                wf::gles::bind_render_buffer(data.target);
+                data.pass->custom_gles_subpass(data.target,[&]
+                {
+                    for (const auto& box : shade_region)
+                    {
+                        wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+                        OpenGL::render_transformed_texture(wf::gles_texture_t{src_tex},
+                        {src_geometry.x1, src_geometry.y1 - (height - progress_height), src_geometry.x2,
+                            src_geometry.y2 - (height - progress_height)}, {},
+                            wf::gles::render_target_orthographic_projection(data.target), glm::vec4(1.0), 0);
+                    }
+                });
 
-            shade_region = region;
-            src_box = self->get_children_bounding_box();
-            src_box.height = self->titlebar_height;
-            shade_region  &= wf::region_t{src_box};
-            for (const auto& box : shade_region)
-            {
-                target.logic_scissor(wlr_box_from_pixman_box(box));
-                OpenGL::render_transformed_texture(src_tex, src_geometry, {},
-                    target.get_orthographic_projection(), glm::vec4(1.0), 0);
-            }
+                shade_region = data.damage;
+                src_box = self->get_children_bounding_box();
+                src_box.height = self->titlebar_height;
+                shade_region  &= wf::region_t{src_box};
+                //for (const auto& box : shade_region)
+                //{
+                //    target.logic_scissor(wlr_box_from_pixman_box(box));
+                data.pass->custom_gles_subpass(data.target,[&]
+                {
+                    for (const auto& box : shade_region)
+                    {
+                        wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+                        OpenGL::render_transformed_texture(wf::gles_texture_t{src_tex}, src_geometry, {},
+                            wf::gles::render_target_orthographic_projection(data.target), glm::vec4(1.0), 0);
+                    }
+                });
 
-            OpenGL::render_end();
+            });
         }
     };
 

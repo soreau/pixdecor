@@ -4,6 +4,7 @@
 #include <wayfire/opengl.hpp>
 #include <map>
 #include <GLES3/gl32.h>
+#include <wayfire/scene-render.hpp>
 
 namespace wf
 {
@@ -35,10 +36,10 @@ class smoke_t
     void run_shader_region(GLuint program, const wf::region_t & region, const wf::dimensions_t & size);
     void dispatch_region(const wf::region_t& region);
 
-    void step_effect(const wf::render_target_t& fb, wf::geometry_t rectangle,
+    void step_effect(const wf::scene::render_instruction_t& data, wf::geometry_t rectangle,
         bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
         int title_height, int border_size, int shadow_radius);
-    void render_effect(const wf::render_target_t& fb, wf::geometry_t rectangle, const wf::region_t& scissor);
+    void render_effect(const wf::scene::render_instruction_t& data, wf::geometry_t rectangle);
     void recreate_textures(wf::geometry_t rectangle);
     void create_programs();
     void destroy_programs();

@@ -52,8 +52,8 @@ class pixdecor_theme_t
      * @param scissor The GL scissor rectangle to use.
      * @param active Whether to use active or inactive colors
      */
-    void render_background(const wf::render_target_t& fb,
-        wf::geometry_t rectangle, const wf::region_t& scissor, bool active, wf::pointf_t p);
+    void render_background(const wf::scene::render_instruction_t& data,
+        wf::geometry_t rectangle, bool active, wf::pointf_t p);
 
     /**
      * Render the given text on a cairo_surface_t with the given size.

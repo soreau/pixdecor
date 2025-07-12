@@ -66,15 +66,18 @@ void button_t::set_pressed(bool is_pressed)
     add_idle_damage();
 }
 
-void button_t::render(const wf::render_target_t& fb, wf::geometry_t geometry, const wf::region_t& scissor)
+void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_t geometry)
 {
-    OpenGL::render_texture(button_texture.tex, fb, geometry, {1, 1, 1, this->hover},
-        OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
-    for (auto& box : scissor)
+    OpenGL::render_texture(wf::gles_texture_t{button_texture.get_texture()}, data.target, geometry, {1, 1, 1, this->hover},
+        OpenGL::RENDER_FLAG_CACHED);
+    data.pass->custom_gles_subpass(data.target,[&]
     {
-        fb.logic_scissor(wlr_box_from_pixman_box(box));
-        OpenGL::draw_cached();
-    }
+        for (auto& box : data.damage)
+        {
+            wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+            OpenGL::draw_cached();
+        }
+    });
 
     OpenGL::clear_cached();
 
@@ -96,9 +99,10 @@ wf::dimensions_t button_t::update_texture()
     auto surface = theme.get_button_surface(type, state, this->active);
     wf::dimensions_t size{cairo_image_surface_get_width(surface), cairo_image_surface_get_height(surface)};
 
-    OpenGL::render_begin();
-    cairo_surface_upload_to_texture(surface, this->button_texture);
-    OpenGL::render_end();
+    wf::gles::run_in_context([&]
+    {
+        this->button_texture = owned_texture_t{surface};
+    });
 
     cairo_surface_destroy(surface);
 

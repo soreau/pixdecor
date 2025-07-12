@@ -5,7 +5,8 @@
 #include <wayfire/opengl.hpp>
 #include <wayfire/render-manager.hpp>
 #include <wayfire/util/duration.hpp>
-#include <wayfire/plugins/common/simple-texture.hpp>
+#include <wayfire/scene-render.hpp>
+#include <wayfire/plugins/common/cairo-util.hpp>
 
 #include <cairo.h>
 #include <pango/pango.h>
@@ -65,8 +66,7 @@ class button_t
      * @param geometry The geometry of the button, in logical coordinates
      * @param scissor The scissor rectangle to render.
      */
-    void render(const wf::render_target_t& fb, wf::geometry_t geometry,
-        const wf::region_t& scissor);
+    void render(const wf::scene::render_instruction_t& data, wf::geometry_t geometry);
 
     pixdecor_theme_t& theme;
     std::function<void()> damage_callback;
@@ -74,7 +74,7 @@ class button_t
   private:
 
     button_type_t type;
-    wf::simple_texture_t button_texture;
+    wf::owned_texture_t button_texture;
     bool active = false;
     wf::geometry_t geometry;
 
