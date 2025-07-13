@@ -184,7 +184,7 @@ void pixdecor_layout_t::resize(int width, int height)
             maximized ? 0 : border / 2 + (radius * 2),
             /* Up to the button, but subtract the padding to the left of the
              * title and the padding between title and button */
-            button_geometry_expanded.x - border,
+            std::max(1, button_geometry_expanded.x - border),
             theme.get_title_height() + (maximized ? 0 : border / 2 + 1),
         };
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
