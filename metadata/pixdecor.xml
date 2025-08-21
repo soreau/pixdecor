@@ -112,27 +112,9 @@
 				<default></default>
 				<hint>file</hint>
 			</option>
-			<option name="button_minimize_hover_image" type="string">
-				<_short>Button Minimize Hover Image</_short>
-				<_long>The png image to use for the minimize button. (hover)</_long>
-				<default></default>
-				<hint>file</hint>
-			</option>
-			<option name="button_maximize_hover_image" type="string">
-				<_short>Button Maximize Hover Image</_short>
-				<_long>The png image to use for the maximize button. (hover)</_long>
-				<default></default>
-				<hint>file</hint>
-			</option>
-			<option name="button_close_hover_image" type="string">
-				<_short>Button Close Hover Image</_short>
-				<_long>The png image to use for the close button. (hover)</_long>
-				<default></default>
-				<hint>file</hint>
-			</option>
 			<option name="title_text_align" type="int">
 				<_short>Titlebar Text Alignment</_short>
-				<_long>Sets the alignment of the titlebar text. (hover)</_long>
+				<_long>Sets the alignment of the titlebar text.</_long>
 				<default>1</default>
 				<desc>
 					<value>0</value>
