@@ -25,6 +25,10 @@ class pixdecor_theme_t
     wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
     wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
     wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
+    wf::option_wrapper_t<std::string> button_minimize_hover_image{"pixdecor/button_minimize_hover_image"};
+    wf::option_wrapper_t<std::string> button_maximize_hover_image{"pixdecor/button_maximize_hover_image"};
+    wf::option_wrapper_t<std::string> button_restore_hover_image{"pixdecor/button_restore_hover_image"};
+    wf::option_wrapper_t<std::string> button_close_hover_image{"pixdecor/button_close_hover_image"};
     /** Create a new theme with the default parameters */
     pixdecor_theme_t();
     ~pixdecor_theme_t();
@@ -85,7 +89,7 @@ class pixdecor_theme_t
      * @param state The button state.
      */
     cairo_surface_t *get_button_surface(button_type_t button,
-        const button_state_t& state, bool active) const;
+        const button_state_t& state, bool active, bool is_hovered) const;
 
     void set_maximize(bool state);
 

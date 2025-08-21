@@ -12,6 +12,7 @@ namespace wf
 {
 namespace pixdecor
 {
+
 button_t::button_t(pixdecor_theme_t& t, std::function<void()> damage) :
     theme(t), damage_callback(damage)
 {}
@@ -38,9 +39,14 @@ void button_t::set_hover(bool is_hovered)
     {
         if (is_hovered)
         {
-            this->hover.animate(HOVERED);
+            if (std::string(theme.button_minimize_hover_image).empty() || std::string(theme.button_maximize_hover_image).empty() || std::string(theme.button_close_hover_image).empty()) {
+                this->hover.animate(HOVERED);
+            } else {
+                this->update_texture();
+            }
         } else
         {
+            this->update_texture();
             this->hover.animate(NORMAL);
         }
     }
@@ -60,7 +66,11 @@ void button_t::set_pressed(bool is_pressed)
         this->hover.animate(PRESSED);
     } else
     {
-        this->hover.animate(is_hovered ? HOVERED : NORMAL);
+            if (std::string(theme.button_minimize_hover_image).empty() || std::string(theme.button_maximize_hover_image).empty() || std::string(theme.button_close_hover_image).empty()) {
+                this->hover.animate(HOVERED);
+            } else {
+                this->update_texture();
+            }
     }
 
     add_idle_damage();
@@ -78,7 +88,7 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
             OpenGL::draw_cached();
         }
     });
-
+        
     OpenGL::clear_cached();
 
     if (this->hover.running())
@@ -96,7 +106,7 @@ wf::dimensions_t button_t::update_texture()
         .hover  = this->is_hovered,
     };
 
-    auto surface = theme.get_button_surface(type, state, this->active);
+    auto surface = theme.get_button_surface(type, state, this->active, this->is_hovered);
     wf::dimensions_t size{cairo_image_surface_get_width(surface), cairo_image_surface_get_height(surface)};
 
     wf::gles::run_in_context([&]

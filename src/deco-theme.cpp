@@ -262,32 +262,56 @@ cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
 }
 
 cairo_surface_t*pixdecor_theme_t::get_button_surface(button_type_t button,
-    const button_state_t& state, bool active) const
+    const button_state_t& state, bool active, bool is_hovered) const
 {
     cairo_surface_t *button_surface = NULL;
 
     switch (button)
     {
       case BUTTON_CLOSE:
-        if (!std::string(button_close_image).empty())
-        {
-            button_surface = cairo_image_surface_create_from_png(std::string(button_close_image).c_str());
+        if (!is_hovered) {
+            if (!std::string(button_close_image).empty())
+            {
+                button_surface = cairo_image_surface_create_from_png(std::string(button_close_image).c_str());
+            }
+        } else {
+            if (!std::string(button_close_hover_image).empty())
+            {
+                button_surface = cairo_image_surface_create_from_png(std::string(button_close_hover_image).c_str());
+            }
         }
 
         break;
 
       case BUTTON_TOGGLE_MAXIMIZE:
-        if (!std::string(button_maximize_image).empty())
-        {
-            button_surface = cairo_image_surface_create_from_png(std::string(button_maximize_image).c_str());
+        if (!is_hovered) {
+            if (!std::string(button_maximize_image).empty())
+            {
+                button_surface = cairo_image_surface_create_from_png(std::string(button_maximize_image).c_str());
+            }
+        } else {
+            if (maximized && !std::string(button_restore_hover_image).empty()) {
+                button_surface = cairo_image_surface_create_from_png(std::string(button_restore_hover_image).c_str());
+            }
+            else if (!std::string(button_maximize_hover_image).empty())
+            {
+                button_surface = cairo_image_surface_create_from_png(std::string(button_maximize_hover_image).c_str());
+            }
         }
 
         break;
 
       case BUTTON_MINIMIZE:
-        if (!std::string(button_minimize_image).empty())
-        {
-            button_surface = cairo_image_surface_create_from_png(std::string(button_minimize_image).c_str());
+        if (!is_hovered) {
+            if (!std::string(button_minimize_image).empty())
+            {
+                button_surface = cairo_image_surface_create_from_png(std::string(button_minimize_image).c_str());
+            }
+        } else {
+            if (!std::string(button_minimize_hover_image).empty())
+            {
+                button_surface = cairo_image_surface_create_from_png(std::string(button_minimize_hover_image).c_str());
+            }
         }
 
         break;
