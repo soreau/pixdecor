@@ -84,8 +84,6 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     wf::option_wrapper_t<int> button_spacing{"pixdecor/left_button_spacing"};
     wf::option_wrapper_t<int> button_x_offset{"pixdecor/left_button_x_offset"};
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
-    wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
-    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
     gchar *b_layout     = g_settings_get_string(settings, "button-layout");
     gchar *ptr = b_layout;
