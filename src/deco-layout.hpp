@@ -181,7 +181,8 @@ class pixdecor_layout_t
     bool double_click_at_release = false;
 
     /** Create buttons in the layout, and return their total geometry */
-    wf::geometry_t create_buttons(int width, int height);
+    wf::geometry_t create_left_buttons(int width, int height);
+    wf::geometry_t create_right_buttons(int width, int height);
 
     /** Calculate resize edges based on @current_input */
     uint32_t calculate_resize_edges() const;
