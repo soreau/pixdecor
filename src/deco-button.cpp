@@ -12,7 +12,6 @@ namespace wf
 {
 namespace pixdecor
 {
-
 button_t::button_t(pixdecor_theme_t& t, std::function<void()> damage) :
     theme(t), damage_callback(damage)
 {}
@@ -72,7 +71,6 @@ void button_t::set_pressed(bool is_pressed)
                 this->update_texture();
             }
     }
-
     add_idle_damage();
 }
 
