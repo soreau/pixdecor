@@ -13,7 +13,7 @@
 				<min>0</min>
 			</option>
 			<option name="titlebar" type="string">
-				<_short>Window placement mode</_short>
+				<_short>When to render the titlebar"</_short>
 				<_long>When to render a titlebar with title text and buttons.</_long>
 				<default>always</default>
 				<desc>
