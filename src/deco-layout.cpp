@@ -80,7 +80,7 @@ pixdecor_layout_t::~pixdecor_layout_t()
 
 wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
 {
-    // read the string from settings; start at the colon and replace commas with spaces
+    // read the string from settings; start at the beginning and replace commas with spaces
     wf::option_wrapper_t<int> button_spacing{"pixdecor/left_button_spacing"};
     wf::option_wrapper_t<int> button_x_offset{"pixdecor/left_button_x_offset"};
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
