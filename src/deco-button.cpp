@@ -86,7 +86,6 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
             OpenGL::draw_cached();
         }
     });
-        
     OpenGL::clear_cached();
 
     if (this->hover.running())
