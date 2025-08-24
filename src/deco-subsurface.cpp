@@ -37,13 +37,12 @@ namespace pixdecor
 {
 wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
 wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
-wf::option_wrapper_t<bool> titlebar_opt{"pixdecor/titlebar"};
+wf::option_wrapper_t<std::string> titlebar_opt{"pixdecor/titlebar"};
 wf::option_wrapper_t<int> csd_titlebar_height{"pixdecor/csd_titlebar_height"};
 wf::option_wrapper_t<bool> enable_shade{"pixdecor/enable_shade"};
 wf::option_wrapper_t<std::string> title_font{"pixdecor/title_font"};
 wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
 wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
-wf::option_wrapper_t<bool> maximized_titlebar{"pixdecor/maximized_titlebar"};
 wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
 wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
 wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
@@ -181,7 +180,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
             theme.render_background(data, geometry, activated, current_cursor_position);
 
-            if (!titlebar_opt)
+            if (std::string(titlebar_opt) == "never")
             {
                 return;
             }
@@ -523,7 +522,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             view->damage();
             bool fullscreen = view->toplevel()->pending().fullscreen;
             bool maximized  = view->toplevel()->pending().tiled_edges;
-            if (fullscreen || (!maximized_titlebar && maximized  == wf::TILED_EDGES_ALL))
+            if (fullscreen || (std::string(titlebar_opt) == "not_maximized" && maximized  == wf::TILED_EDGES_ALL))
             {
                 current_thickness = 0;
                 current_titlebar  = 0;
@@ -535,7 +534,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
                 current_thickness = theme.get_border_size() + shadow_thickness;
                 current_titlebar  = theme.get_title_height() +
-                    ((maximized && !titlebar_opt && !maximized_borders &&
+                    ((maximized && std::string(titlebar_opt) == "never" && !maximized_borders &&
                         !maximized_shadows) ? 0 : current_thickness);
                 this->cached_region = layout.calculate_region();
             }
@@ -625,7 +624,7 @@ void simple_decorator_t::effect_updated()
 
 wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_state_t& state)
 {
-    if (state.fullscreen || (!maximized_titlebar && state.tiled_edges == wf::TILED_EDGES_ALL))
+    if (state.fullscreen || (std::string(titlebar_opt) == "not_maximized" && state.tiled_edges == wf::TILED_EDGES_ALL))
     {
         return {0, 0, 0, 0};
     }
@@ -637,12 +636,12 @@ wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_stat
 
     int thickness = deco->theme.get_border_size() + this->shadow_thickness;
     int titlebar  = deco->theme.get_title_height() +
-        ((state.tiled_edges && !titlebar_opt && !maximized_borders && !maximized_shadows) ? 0 : thickness);
+        ((state.tiled_edges && std::string(titlebar_opt) == "never" && !maximized_borders && !maximized_shadows) ? 0 : thickness);
     if (state.tiled_edges && !maximized_borders)
     {
         if (maximized_shadows)
         {
-            if (!titlebar_opt)
+            if (std::string(titlebar_opt) == "never")
             {
                 titlebar = thickness;
             }

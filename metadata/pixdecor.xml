@@ -12,15 +12,22 @@
 				<default>5</default>
 				<min>0</min>
 			</option>
-			<option name="titlebar" type="bool">
-				<_short>Titlebar</_short>
-				<_long>Whether or not to render titlebar with title text and buttons.</_long>
-				<default>true</default>
-			</option>
-			<option name="maximized_titlebar" type="bool">
-				<_short>Draw titlebar on maximized windows</_short>
-				<_long>Whether or not to render titlebar with title text and buttons on maximized windows.</_long>
-				<default>true</default>
+			<option name="titlebar" type="string">
+				<_short>Window placement mode</_short>
+				<_long>When to render a titlebar with title text and buttons.</_long>
+				<default>always</default>
+				<desc>
+					<value>always</value>
+					<_name>Always</_name>
+				</desc>
+				<desc>
+					<value>not_maximized</value>
+					<_name>When Not Maximized</_name>
+				</desc>
+				<desc>
+					<value>never</value>
+					<_name>Never</_name>
+				</desc>
 			</option>
 			<option name="maximized_borders" type="bool">
 				<_short>Draw borders on maximized windows</_short>
