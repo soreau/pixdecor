@@ -162,6 +162,87 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
 wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
 {
     // read the string from settings; start at the colon and replace commas with spaces
+{
+    // read the string from settings; start at the beginning and replace commas with spaces
+    wf::option_wrapper_t<int> button_spacing{"pixdecor/left_button_spacing"};
+    wf::option_wrapper_t<int> button_x_offset{"pixdecor/left_button_x_offset"};
+    wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
+    GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
+    gchar *b_layout     = g_settings_get_string(settings, "button-layout");
+    gchar *ptr = b_layout;
+    int len = 0;
+    while (ptr <= b_layout + strlen(b_layout) - 1)
+    {
+        if (*ptr == ',')
+        {
+            *ptr = ' ';
+        }
+
+        if (*ptr == ':')
+        {
+            break;
+        }
+
+        ptr++;
+        len++;
+    }
+
+    std::string layout = std::string(b_layout).substr(0, len);
+    g_free(b_layout);
+    g_object_unref(settings);
+
+    std::stringstream stream((std::string)layout);
+    std::vector<button_type_t> buttons;
+    std::string button_name;
+    while (stream >> button_name)
+    {
+        if (button_name == "minimize")
+        {
+            buttons.push_back(BUTTON_MINIMIZE);
+        }
+
+        if (button_name == "maximize")
+        {
+            buttons.push_back(BUTTON_TOGGLE_MAXIMIZE);
+        }
+
+        if (button_name == "close")
+        {
+            buttons.push_back(BUTTON_CLOSE);
+        }
+    }
+
+    int total_width = 0;
+    int per_button  = 0;
+    int border = theme.get_border_size();
+    wf::geometry_t button_geometry;
+    button_geometry.x = radius * 2 + (maximized ? 4 : border) + button_x_offset;
+
+    for (auto type : buttons)
+    {
+        auto button_area  = std::make_unique<decoration_area_t>(button_geometry, damage_callback, theme);
+        auto surface_size = button_area->as_button().set_button_type(type);
+        button_geometry.width  = surface_size.width;
+        button_geometry.height = surface_size.height;
+        int button_padding = (theme.get_title_height() - button_geometry.height) / 2 + button_y_offset;
+        button_geometry.y = button_padding + border / 2 + (radius * 2);
+        per_button = button_geometry.width + (buttons.back() == type ? 0 : button_spacing);
+        button_area->set_geometry(button_geometry);
+        button_area->as_button().set_button_type(type);
+        this->layout_areas.push_back(std::move(button_area));
+        button_geometry.x += per_button;
+        total_width += per_button;
+    }
+
+    return {
+        buttons.empty() ? 0 : (maximized ? 4 : border), maximized ? 4 : border + (radius * 2),
+        total_width, theme.get_title_height()
+    };
+}
+
+wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
+{
+    // read the string from settings; start at the colon and replace commas with spaces
     wf::option_wrapper_t<int> button_spacing{"pixdecor/right_button_spacing"};
     wf::option_wrapper_t<int> button_x_offset{"pixdecor/right_button_x_offset"};
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
