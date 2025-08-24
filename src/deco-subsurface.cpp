@@ -507,7 +507,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             view->damage();
             size = dims;
             layout.resize(size.width, size.height);
-            if (!view->toplevel()->current().fullscreen || (!maximized_titlebar && view->toplevel()->current().tiled_edges))
+            if (!view->toplevel()->current().fullscreen)
             {
                 this->cached_region = layout.calculate_region();
             }
@@ -523,13 +523,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             view->damage();
             bool fullscreen = view->toplevel()->pending().fullscreen;
             bool maximized  = view->toplevel()->pending().tiled_edges;
-            if (fullscreen || (!maximized_titlebar && maximized))
+            if (fullscreen || (!maximized_titlebar && maximized  == wf::TILED_EDGES_ALL))
             {
                 current_thickness = 0;
                 current_titlebar  = 0;
                 this->cached_region.clear();
-            }
-            else
+            } else
             {
                 int shadow_thickness = std::string(overlay_engine) == "rounded_corners" &&
                     (!maximized || (maximized && maximized_shadows)) ? int(shadow_radius) * 2 : 0;
@@ -626,7 +625,7 @@ void simple_decorator_t::effect_updated()
 
 wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_state_t& state)
 {
-    if (state.fullscreen || (!maximized_titlebar && state.tiled_edges))
+    if (state.fullscreen || (!maximized_titlebar && state.tiled_edges == wf::TILED_EDGES_ALL))
     {
         return {0, 0, 0, 0};
     }
