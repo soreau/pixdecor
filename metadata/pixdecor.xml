@@ -229,6 +229,12 @@
 				<_long>Use this option to move buttons up or down.</_long>
 				<default>0</default>
 			</option>
+			<option name="button_hover_duration" type="int">
+				<_short>Button Hover Animation Duration</_short>
+				<_long>The time the hover animation will last, in milliseconds.</_long>
+				<default>500</default>
+				<min>0</min>
+			</option>
 			<option name="button_minimize_image" type="string">
 				<_short>Button Minimize Image</_short>
 				<_long>The png image to use for the minimize button.</_long>

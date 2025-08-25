@@ -79,6 +79,7 @@ class button_t
 
   private:
 
+    wf::option_wrapper_t<int> button_hover_duration{"pixdecor/button_hover_duration"};
     button_type_t type;
     wf::owned_texture_t button_texture;
     wf::owned_texture_t button_texture_hovered;
@@ -90,7 +91,7 @@ class button_t
     /* Whether the button is currently being held */
     bool is_pressed = false;
     /* The shade of button background to use. */
-    wf::animation::simple_animation_t hover{wf::create_option(500)};
+    wf::animation::simple_animation_t hover{button_hover_duration};
 
     wf::wl_idle_call idle_damage;
     /** Damage button the next time the main loop goes idle */
