@@ -70,8 +70,6 @@ class pixdecor_theme_t
         double height;
         /** Button outline size */
         double border;
-        /* Hovering... */
-        bool hover;
     };
 
     /** background effects */
@@ -84,8 +82,8 @@ class pixdecor_theme_t
      * @param button The button type.
      * @param state The button state.
      */
-    cairo_surface_t *get_button_surface(button_type_t button,
-        const button_state_t& state, bool active) const;
+    std::unique_ptr<button_surfaces_t> get_button_surface(button_type_t button,
+        const button_state_t& state) const;
 
     void set_maximize(bool state);
 

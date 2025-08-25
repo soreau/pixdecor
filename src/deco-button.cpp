@@ -5,8 +5,7 @@
 #include <stdlib.h>
 
 #define NORMAL   1.0
-#define PRESSED  0.5
-#define HOVERED  0.25
+#define HOVERED  0.0
 
 namespace wf
 {
@@ -57,7 +56,7 @@ void button_t::set_pressed(bool is_pressed)
     this->is_pressed = is_pressed;
     if (is_pressed)
     {
-        this->hover.animate(PRESSED);
+        this->hover.animate(NORMAL);
     } else
     {
         this->hover.animate(is_hovered ? HOVERED : NORMAL);
@@ -68,6 +67,11 @@ void button_t::set_pressed(bool is_pressed)
 
 void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_t geometry)
 {
+    if (this->hover.running())
+    {
+        add_idle_damage();
+    }
+
     OpenGL::render_texture(wf::gles_texture_t{button_texture.get_texture()}, data.target, geometry, {1, 1, 1, this->hover},
         OpenGL::RENDER_FLAG_CACHED);
     data.pass->custom_gles_subpass(data.target,[&]
@@ -78,13 +82,19 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
             OpenGL::draw_cached();
         }
     });
-
     OpenGL::clear_cached();
 
-    if (this->hover.running())
+    OpenGL::render_texture(wf::gles_texture_t{button_texture_hovered.get_texture()}, data.target, geometry, {1, 1, 1, 1.0 - this->hover},
+        OpenGL::RENDER_FLAG_CACHED);
+    data.pass->custom_gles_subpass(data.target,[&]
     {
-        add_idle_damage();
-    }
+        for (auto& box : data.damage)
+        {
+            wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+            OpenGL::draw_cached();
+        }
+    });
+    OpenGL::clear_cached();
 }
 
 wf::dimensions_t button_t::update_texture()
@@ -93,20 +103,23 @@ wf::dimensions_t button_t::update_texture()
         .width  = 1.0 * (theme.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
         .height = 1.0 * (theme.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
         .border = 1.0,
-        .hover  = this->is_hovered,
     };
 
-    auto surface = theme.get_button_surface(type, state, this->active);
-    wf::dimensions_t size{cairo_image_surface_get_width(surface), cairo_image_surface_get_height(surface)};
+    auto surfaces = theme.get_button_surface(type, state);
+    wf::dimensions_t size_normal{cairo_image_surface_get_width(surfaces->normal), cairo_image_surface_get_height(surfaces->normal)};
+    //wf::dimensions_t size_hovered{cairo_image_surface_get_width(surfaces->hovered), cairo_image_surface_get_height(surfaces->hovered)};
 
     wf::gles::run_in_context([&]
     {
-        this->button_texture = owned_texture_t{surface};
+        this->button_texture = owned_texture_t{surfaces->normal};
+        this->button_texture_hovered = owned_texture_t{surfaces->hovered};
     });
 
-    cairo_surface_destroy(surface);
+    cairo_surface_destroy(surfaces->normal);
+    cairo_surface_destroy(surfaces->hovered);
+    surfaces.reset();
 
-    return size;
+    return size_normal;
 }
 
 void button_t::add_idle_damage()

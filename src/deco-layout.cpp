@@ -413,14 +413,11 @@ pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_motion(
     auto previous_area = find_area_at(current_input);
     auto current_area  = find_area_at({x, y});
 
-    if (previous_area == current_area)
-    {
-        if (is_grabbed && current_area &&
+    if (previous_area == current_area && is_grabbed && current_area &&
             (current_area->get_type() & DECORATION_AREA_MOVE_BIT))
-        {
-            is_grabbed = false;
-            return {DECORATION_ACTION_MOVE, 0};
-        }
+    {
+        is_grabbed = false;
+        return {DECORATION_ACTION_MOVE, 0};
     } else
     {
         unset_hover(current_input);
