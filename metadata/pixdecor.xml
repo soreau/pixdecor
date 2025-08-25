@@ -21,8 +21,12 @@
 					<_name>Always</_name>
 				</desc>
 				<desc>
-					<value>not_maximized</value>
-					<_name>When Not Maximized</_name>
+					<value>windowed</value>
+					<_name>Only When Windowed</_name>
+				</desc>
+				<desc>
+					<value>maximized</value>
+					<_name>Only When Maximized</_name>
 				</desc>
 				<desc>
 					<value>never</value>

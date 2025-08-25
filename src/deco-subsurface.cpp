@@ -522,7 +522,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             view->damage();
             bool fullscreen = view->toplevel()->pending().fullscreen;
             bool maximized  = view->toplevel()->pending().tiled_edges;
-            if (fullscreen || (std::string(titlebar_opt) == "not_maximized" && maximized  == wf::TILED_EDGES_ALL))
+            if (fullscreen || (std::string(titlebar_opt) == "windowed" && maximized  == wf::TILED_EDGES_ALL) || (std::string(titlebar_opt) == "maximized" && maximized  != wf::TILED_EDGES_ALL))
             {
                 current_thickness = 0;
                 current_titlebar  = 0;
@@ -624,7 +624,7 @@ void simple_decorator_t::effect_updated()
 
 wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_state_t& state)
 {
-    if (state.fullscreen || (std::string(titlebar_opt) == "not_maximized" && state.tiled_edges == wf::TILED_EDGES_ALL))
+    if (state.fullscreen || (std::string(titlebar_opt) == "windowed" && state.tiled_edges == wf::TILED_EDGES_ALL) || (std::string(titlebar_opt) == "maximized" && state.tiled_edges != wf::TILED_EDGES_ALL))
     {
         return {0, 0, 0, 0};
     }
