@@ -37,7 +37,7 @@ namespace pixdecor
 {
 wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
 wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
-wf::option_wrapper_t<bool> titlebar_opt{"pixdecor/titlebar"};
+wf::option_wrapper_t<std::string> titlebar_opt{"pixdecor/titlebar"};
 wf::option_wrapper_t<int> csd_titlebar_height{"pixdecor/csd_titlebar_height"};
 wf::option_wrapper_t<bool> enable_shade{"pixdecor/enable_shade"};
 wf::option_wrapper_t<std::string> title_font{"pixdecor/title_font"};
@@ -180,7 +180,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
             theme.render_background(data, geometry, activated, current_cursor_position);
 
-            if (!titlebar_opt)
+            if ((std::string(titlebar_opt) == "never" ||
+                (std::string(titlebar_opt) == "maximized" && !maximized) ||
+                (std::string(titlebar_opt) == "windowed" && maximized)) &&
+                (std::string(titlebar_opt) != "always"))
             {
                 return;
             }
@@ -534,7 +537,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
                 current_thickness = theme.get_border_size() + shadow_thickness;
                 current_titlebar  = theme.get_title_height() +
-                    ((maximized && !titlebar_opt && !maximized_borders &&
+                    ((maximized && ((std::string(titlebar_opt) == "never" ||
+                (std::string(titlebar_opt) == "maximized" && !maximized) ||
+                (std::string(titlebar_opt) == "windowed" && maximized)) &&
+                (std::string(titlebar_opt) != "always")) && !maximized_borders &&
                         !maximized_shadows) ? 0 : current_thickness);
                 this->cached_region = layout.calculate_region();
             }
@@ -629,19 +635,26 @@ wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_stat
         return {0, 0, 0, 0};
     }
 
-    deco->theme.set_maximize(state.tiled_edges);
+    bool maximized = state.tiled_edges;
+    deco->theme.set_maximize(maximized);
 
     this->shadow_thickness = std::string(overlay_engine) == "rounded_corners" &&
         (!state.tiled_edges || (state.tiled_edges && maximized_shadows)) ? int(shadow_radius) * 2 : 0;
 
     int thickness = deco->theme.get_border_size() + this->shadow_thickness;
     int titlebar  = deco->theme.get_title_height() +
-        ((state.tiled_edges && !titlebar_opt && !maximized_borders && !maximized_shadows) ? 0 : thickness);
+        ((state.tiled_edges && ((std::string(titlebar_opt) == "never" ||
+                (std::string(titlebar_opt) == "maximized" && !maximized) ||
+                (std::string(titlebar_opt) == "windowed" && maximized)) &&
+                (std::string(titlebar_opt) != "always")) && !maximized_borders && !maximized_shadows) ? 0 : thickness);
     if (state.tiled_edges && !maximized_borders)
     {
         if (maximized_shadows)
         {
-            if (!titlebar_opt)
+            if ((std::string(titlebar_opt) == "never" ||
+                (std::string(titlebar_opt) == "maximized" && !maximized) ||
+                (std::string(titlebar_opt) == "windowed" && maximized)) &&
+                (std::string(titlebar_opt) != "always"))
             {
                 titlebar = thickness;
             }
