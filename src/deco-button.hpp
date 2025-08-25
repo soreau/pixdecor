@@ -25,6 +25,12 @@ enum button_type_t
     BUTTON_MINIMIZE,
 };
 
+struct button_surfaces_t
+{
+    cairo_surface_t *normal;
+    cairo_surface_t *hovered;
+};
+
 class button_t
 {
   public:
@@ -75,6 +81,7 @@ class button_t
 
     button_type_t type;
     wf::owned_texture_t button_texture;
+    wf::owned_texture_t button_texture_hovered;
     bool active = false;
     wf::geometry_t geometry;
 

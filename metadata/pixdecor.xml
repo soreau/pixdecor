@@ -247,6 +247,24 @@
 				<default></default>
 				<hint>file</hint>
 			</option>
+			<option name="button_minimize_hover_image" type="string">
+				<_short>Button Minimize Hover Image</_short>
+				<_long>The png image to use when hovering the minimize button.</_long>
+				<default></default>
+				<hint>file</hint>
+			</option>
+			<option name="button_maximize_hover_image" type="string">
+				<_short>Button Maximize Hover Image</_short>
+				<_long>The png image to use when hovering the maximize button.</_long>
+				<default></default>
+				<hint>file</hint>
+			</option>
+			<option name="button_close_hover_image" type="string">
+				<_short>Button Close Hover Image</_short>
+				<_long>The png image to use when hovering the close button.</_long>
+				<default></default>
+				<hint>file</hint>
+			</option>
 		</group>
 		<group>
 			<_short>Shade</_short>
