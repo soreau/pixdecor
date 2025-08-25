@@ -241,6 +241,12 @@
 				<default></default>
 				<hint>file</hint>
 			</option>
+			<option name="button_restore_image" type="string">
+				<_short>Button Restore Image</_short>
+				<_long>The png image to use for the restore button.</_long>
+				<default></default>
+				<hint>file</hint>
+			</option>
 			<option name="button_close_image" type="string">
 				<_short>Button Close Image</_short>
 				<_long>The png image to use for the close button.</_long>
@@ -256,6 +262,12 @@
 			<option name="button_maximize_hover_image" type="string">
 				<_short>Button Maximize Hover Image</_short>
 				<_long>The png image to use when hovering the maximize button.</_long>
+				<default></default>
+				<hint>file</hint>
+			</option>
+			<option name="button_restore_hover_image" type="string">
+				<_short>Button Restore Hover Image</_short>
+				<_long>The png image to use when hovering the restore button.</_long>
 				<default></default>
 				<hint>file</hint>
 			</option>

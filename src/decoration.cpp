@@ -67,9 +67,11 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
     wf::option_wrapper_t<std::string> button_minimize_image{"pixdecor/button_minimize_image"};
     wf::option_wrapper_t<std::string> button_maximize_image{"pixdecor/button_maximize_image"};
+    wf::option_wrapper_t<std::string> button_restore_image{"pixdecor/button_restore_image"};
     wf::option_wrapper_t<std::string> button_close_image{"pixdecor/button_close_image"};
     wf::option_wrapper_t<std::string> button_minimize_hover_image{"pixdecor/button_minimize_hover_image"};
     wf::option_wrapper_t<std::string> button_maximize_hover_image{"pixdecor/button_maximize_hover_image"};
+    wf::option_wrapper_t<std::string> button_restore_hover_image{"pixdecor/button_restore_hover_image"};
     wf::option_wrapper_t<std::string> button_close_hover_image{"pixdecor/button_close_hover_image"};
     wf::option_wrapper_t<std::string> ignore_views_string{"pixdecor/ignore_views"};
     wf::option_wrapper_t<std::string> always_decorate_string{"pixdecor/always_decorate"};
@@ -432,9 +434,11 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         button_y_offset.set_callback([=] {recreate_frames();});
         button_minimize_image.set_callback([=] {recreate_frames();});
         button_maximize_image.set_callback([=] {recreate_frames();});
+        button_restore_image.set_callback([=] {recreate_frames();});
         button_close_image.set_callback([=] {recreate_frames();});
         button_minimize_hover_image.set_callback([=] {recreate_frames();});
         button_maximize_hover_image.set_callback([=] {recreate_frames();});
+        button_restore_hover_image.set_callback([=] {recreate_frames();});
         button_close_hover_image.set_callback([=] {recreate_frames();});
         title_text_align.set_callback([=]
         {
