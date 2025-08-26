@@ -12,10 +12,26 @@
 				<default>5</default>
 				<min>0</min>
 			</option>
-			<option name="titlebar" type="bool">
-				<_short>Titlebar</_short>
-				<_long>Whether or not to render titlebar with title text and buttons.</_long>
-				<default>true</default>
+			<option name="titlebar" type="string">
+				<_short>When to render the titlebar</_short>
+				<_long>When to render a titlebar with title text and buttons.</_long>
+				<default>always</default>
+				<desc>
+					<value>always</value>
+					<_name>Always</_name>
+				</desc>
+				<desc>
+					<value>windowed</value>
+					<_name>Only When Windowed</_name>
+				</desc>
+				<desc>
+					<value>maximized</value>
+					<_name>Only When Maximized</_name>
+				</desc>
+				<desc>
+					<value>never</value>
+					<_name>Never</_name>
+				</desc>
 			</option>
 			<option name="maximized_borders" type="bool">
 				<_short>Draw borders on maximized windows</_short>

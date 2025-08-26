@@ -10,7 +10,7 @@ namespace wf
 namespace pixdecor
 {
 wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
-wf::option_wrapper_t<bool> titlebar{"pixdecor/titlebar"};
+wf::option_wrapper_t<std::string> titlebar{"pixdecor/titlebar"};
 wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
 wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
 wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
@@ -157,7 +157,10 @@ int pixdecor_theme_t::get_title_height()
         height = MIN_BAR_HEIGHT;
     }
 
-    return titlebar ? height + ((maximized && !maximized_borders) ? border_size : 0) : 0;
+    return ((std::string(titlebar) == "always" ||
+            (std::string(titlebar) == "windowed" && !maximized) ||
+            (std::string(titlebar) == "maximized" && maximized)) &&
+            (std::string(titlebar) != "never")) ? height + ((maximized && !maximized_borders) ? border_size : 0) : 0;
 }
 
 /** @return The available border for resizing */

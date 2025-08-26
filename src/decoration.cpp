@@ -51,7 +51,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
     wf::option_wrapper_t<std::string> title_font{"pixdecor/title_font"};
     wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
-    wf::option_wrapper_t<bool> titlebar{"pixdecor/titlebar"};
+    wf::option_wrapper_t<std::string> titlebar{"pixdecor/titlebar"};
     wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
     wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
     wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
@@ -421,7 +421,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             hook_set = true;
         }
 
-        titlebar.set_callback([=] {option_changed_cb(false, true);});
+        titlebar.set_callback([=] {recreate_frames();});
         effect_type.set_callback([=] {option_changed_cb(false, false);});
         overlay_engine.set_callback([=] {option_changed_cb(true, false);recreate_frames();});
         effect_animate.set_callback([=] {option_changed_cb(false, false);});
