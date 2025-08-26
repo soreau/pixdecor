@@ -143,7 +143,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         OpenGL::render_texture(wf::gles_texture_t{title_texture.tex.get_texture()}, data.target, geometry,
             glm::vec4(1.0f), OpenGL::RENDER_FLAG_CACHED);
 
-        data.pass->custom_gles_subpass(data.target,[&]
+        data.pass->custom_gles_subpass(data.target, [&]
         {
             for (auto& box : data.damage)
             {
@@ -180,9 +180,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
             theme.render_background(data, geometry, activated, current_cursor_position);
 
-            if ((std::string(titlebar_opt) == "never" ||
-                (std::string(titlebar_opt) == "maximized" && !maximized) ||
-                (std::string(titlebar_opt) == "windowed" && maximized)) &&
+            if (((std::string(titlebar_opt) == "never") ||
+                 ((std::string(titlebar_opt) == "maximized") && !maximized) ||
+                 ((std::string(titlebar_opt) == "windowed") && maximized)) &&
                 (std::string(titlebar_opt) != "always"))
             {
                 return;
@@ -538,9 +538,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 current_thickness = theme.get_border_size() + shadow_thickness;
                 current_titlebar  = theme.get_title_height() +
                     ((maximized && ((std::string(titlebar_opt) == "never" ||
-                (std::string(titlebar_opt) == "maximized" && !maximized) ||
-                (std::string(titlebar_opt) == "windowed" && maximized)) &&
-                (std::string(titlebar_opt) != "always")) && !maximized_borders &&
+                        (std::string(titlebar_opt) == "maximized" && !maximized) ||
+                        (std::string(titlebar_opt) == "windowed" && maximized)) &&
+                        (std::string(titlebar_opt) != "always")) && !maximized_borders &&
                         !maximized_shadows) ? 0 : current_thickness);
                 this->cached_region = layout.calculate_region();
             }
@@ -644,16 +644,17 @@ wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_stat
     int thickness = deco->theme.get_border_size() + this->shadow_thickness;
     int titlebar  = deco->theme.get_title_height() +
         ((state.tiled_edges && ((std::string(titlebar_opt) == "never" ||
-                (std::string(titlebar_opt) == "maximized" && !maximized) ||
-                (std::string(titlebar_opt) == "windowed" && maximized)) &&
-                (std::string(titlebar_opt) != "always")) && !maximized_borders && !maximized_shadows) ? 0 : thickness);
+            (std::string(titlebar_opt) == "maximized" && !maximized) ||
+            (std::string(titlebar_opt) == "windowed" && maximized)) &&
+            (std::string(titlebar_opt) != "always")) && !maximized_borders &&
+            !maximized_shadows) ? 0 : thickness);
     if (state.tiled_edges && !maximized_borders)
     {
         if (maximized_shadows)
         {
-            if ((std::string(titlebar_opt) == "never" ||
-                (std::string(titlebar_opt) == "maximized" && !maximized) ||
-                (std::string(titlebar_opt) == "windowed" && maximized)) &&
+            if (((std::string(titlebar_opt) == "never") ||
+                 ((std::string(titlebar_opt) == "maximized") && !maximized) ||
+                 ((std::string(titlebar_opt) == "windowed") && maximized)) &&
                 (std::string(titlebar_opt) != "always"))
             {
                 titlebar = thickness;

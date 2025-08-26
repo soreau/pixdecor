@@ -72,9 +72,10 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
         add_idle_damage();
     }
 
-    OpenGL::render_texture(wf::gles_texture_t{button_texture.get_texture()}, data.target, geometry, {1, 1, 1, this->hover},
+    OpenGL::render_texture(
+        wf::gles_texture_t{button_texture.get_texture()}, data.target, geometry, {1, 1, 1, this->hover},
         OpenGL::RENDER_FLAG_CACHED);
-    data.pass->custom_gles_subpass(data.target,[&]
+    data.pass->custom_gles_subpass(data.target, [&]
     {
         for (auto& box : data.damage)
         {
@@ -84,9 +85,10 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
     });
     OpenGL::clear_cached();
 
-    OpenGL::render_texture(wf::gles_texture_t{button_texture_hovered.get_texture()}, data.target, geometry, {1, 1, 1, 1.0 - this->hover},
+    OpenGL::render_texture(
+        wf::gles_texture_t{button_texture_hovered.get_texture()}, data.target, geometry, {1, 1, 1, 1.0 - this->hover},
         OpenGL::RENDER_FLAG_CACHED);
-    data.pass->custom_gles_subpass(data.target,[&]
+    data.pass->custom_gles_subpass(data.target, [&]
     {
         for (auto& box : data.damage)
         {
@@ -106,8 +108,10 @@ wf::dimensions_t button_t::update_texture()
     };
 
     auto surfaces = theme.get_button_surface(type, state);
-    wf::dimensions_t size_normal{cairo_image_surface_get_width(surfaces->normal), cairo_image_surface_get_height(surfaces->normal)};
-    //wf::dimensions_t size_hovered{cairo_image_surface_get_width(surfaces->hovered), cairo_image_surface_get_height(surfaces->hovered)};
+    wf::dimensions_t size_normal{cairo_image_surface_get_width(surfaces->normal),
+        cairo_image_surface_get_height(surfaces->normal)};
+    // wf::dimensions_t size_hovered{cairo_image_surface_get_width(surfaces->hovered),
+    // cairo_image_surface_get_height(surfaces->hovered)};
 
     wf::gles::run_in_context([&]
     {
