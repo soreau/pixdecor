@@ -84,6 +84,7 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     wf::option_wrapper_t<int> button_spacing{"pixdecor/left_button_spacing"};
     wf::option_wrapper_t<int> button_x_offset{"pixdecor/left_button_x_offset"};
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
+    wf::option_wrapper_t<double> button_size{"pixdecor/button_size"};
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
     gchar *b_layout     = g_settings_get_string(settings, "button-layout");
     gchar *ptr = b_layout;
@@ -139,8 +140,8 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     {
         auto button_area  = std::make_unique<decoration_area_t>(button_geometry, damage_callback, theme);
         auto surface_size = button_area->as_button().set_button_type(type);
-        button_geometry.width  = surface_size.width;
-        button_geometry.height = surface_size.height;
+        button_geometry.width  = surface_size.width * button_size;
+        button_geometry.height = surface_size.height * button_size;
         int button_padding = (theme.get_title_height() - button_geometry.height) / 2 + button_y_offset;
         button_geometry.y = button_padding + border / 2 + (radius * 2);
         per_button = button_geometry.width + (buttons.back() == type ? 0 : button_spacing);
