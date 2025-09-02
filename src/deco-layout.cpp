@@ -87,7 +87,7 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
     gchar *b_layout     = g_settings_get_string(settings, "button-layout");
     gchar *ptr = b_layout;
-    int len = 0;
+    int len    = 0;
     while (ptr <= b_layout + strlen(b_layout) - 1)
     {
         if (*ptr == ',')
@@ -251,7 +251,7 @@ void pixdecor_layout_t::resize(int width, int height)
 
     if (this->theme.get_title_height() > 0)
     {
-        auto button_left_geometry_expanded = create_left_buttons((radius * 2), radius);
+        auto button_left_geometry_expanded  = create_left_buttons((radius * 2), radius);
         auto button_right_geometry_expanded = create_right_buttons(width - (radius * 2), radius);
 
         /* Padding around the buttons, allows move */
@@ -413,8 +413,8 @@ pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_motion(
     auto previous_area = find_area_at(current_input);
     auto current_area  = find_area_at({x, y});
 
-    if (previous_area == current_area && is_grabbed && current_area &&
-            (current_area->get_type() & DECORATION_AREA_MOVE_BIT))
+    if ((previous_area == current_area) && is_grabbed && current_area &&
+        (current_area->get_type() & DECORATION_AREA_MOVE_BIT))
     {
         is_grabbed = false;
         return {DECORATION_ACTION_MOVE, 0};
