@@ -212,6 +212,11 @@
 				<_long>Color of the minimize, maximize and close buttons.</_long>
 				<default>0.0 0.0 0.0 1.0</default>
 			</option>
+			<option name="button_size" type="double">
+				<_short>Button Size</_short>
+				<_long>Changes the button size</_long>
+				<default>1.0</default>
+			</option>
 			<option name="button_line_thickness" type="double">
 				<_short>Button Line Thickness</_short>
 				<_long>The thickness used to draw the minimize, maximize and close button lines.</_long>
