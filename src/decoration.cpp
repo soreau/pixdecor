@@ -14,9 +14,7 @@
 #include "wayfire/signal-provider.hpp"
 #include "wayfire/toplevel-view.hpp"
 #include "wayfire/toplevel.hpp"
-#include <sys/inotify.h>
 #include <unistd.h>
-#include <gio/gio.h>
 #include <dlfcn.h>
 #include <wayfire/bindings-repository.hpp>
 #include <wayfire/plugins/ipc/ipc-activator.hpp>
@@ -26,26 +24,6 @@ namespace wf
 {
 namespace pixdecor
 {
-int handle_theme_updated(int fd, uint32_t mask, void *data)
-{
-    int bufsz = sizeof(inotify_event) + NAME_MAX + 1;
-    char buf[bufsz];
-
-    if ((mask & WL_EVENT_READABLE) == 0)
-    {
-        return 0;
-    }
-
-    if (read(fd, buf, bufsz) < 0)
-    {
-        return 0;
-    }
-
-    (*((std::function<void(void)>*)data))();
-
-    return 0;
-}
-
 class wayfire_pixdecor : public wf::plugin_interface_t
 {
     wf::option_wrapper_t<int> border_size{"pixdecor/border_size"};
@@ -88,10 +66,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<bool> enable_shade{"pixdecor/enable_shade"};
     wf::ipc_activator_t pixdecor_toggle_shade{"pixdecor/shade_toggle"};
     wf::wl_idle_call idle_update_views;
-    int inotify_fd;
-    int wd_cfg_file;
-    int wd_cfg_dir;
-    wl_event_source *evsrc;
     std::function<void(void)> update_event;
     wf::effect_hook_t pre_hook;
     bool hook_set = false;
@@ -514,19 +488,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             }
         });
 
-        // set up the watch on the xsettings file
-        inotify_fd = inotify_init1(IN_CLOEXEC);
-        evsrc = wl_event_loop_add_fd(wf::get_core().ev_loop, inotify_fd, WL_EVENT_READABLE,
-            handle_theme_updated, &this->update_event);
-
-        // enable watches on xsettings file
-        char *conf_dir  = g_build_filename(g_get_user_config_dir(), "xsettingsd/", NULL);
-        char *conf_file = g_build_filename(conf_dir, "xsettingsd.conf", NULL);
-        wd_cfg_dir  = inotify_add_watch(inotify_fd, conf_dir, IN_CREATE);
-        wd_cfg_file = inotify_add_watch(inotify_fd, conf_file, IN_CLOSE_WRITE);
-        g_free(conf_file);
-        g_free(conf_dir);
-
         update_event = [=] (void)
         {
             update_colors();
@@ -563,11 +524,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
         wf::get_core().bindings->rem_binding(&shade_axis_cb);
         remove_shade_transformers();
-
-        wl_event_source_remove(evsrc);
-        inotify_rm_watch(inotify_fd, wd_cfg_file);
-        inotify_rm_watch(inotify_fd, wd_cfg_dir);
-        close(inotify_fd);
     }
 
     void recreate_frame(wayfire_toplevel_view toplevel)

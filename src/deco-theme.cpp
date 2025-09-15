@@ -28,16 +28,12 @@ wf::option_wrapper_t<double> button_line_thickness{"pixdecor/button_line_thickne
 /** Create a new theme with the default parameters */
 pixdecor_theme_t::pixdecor_theme_t()
 {
-    gs = g_settings_new("org.gnome.desktop.interface");
-
     // read initial colours
     update_colors();
 }
 
 pixdecor_theme_t::~pixdecor_theme_t()
-{
-    g_object_unref(gs);
-}
+{}
 
 void pixdecor_theme_t::update_colors(void)
 {
@@ -47,88 +43,14 @@ void pixdecor_theme_t::update_colors(void)
     bg_text = wf::color_t(bg_text_color);
 }
 
-/**
- * @return A PangoFontDescription representing either a provided font from
- *  the Title Font option or the system font, scaled by the text-scaling-factor GSetting.
- */
 PangoFontDescription*pixdecor_theme_t::create_font_description()
 {
-    GSettings *gs = g_settings_new("org.gnome.desktop.interface");
-
-    std::string title_font_val(title_font);
-    bool using_system_font{};
-
-    if (title_font_val.empty())
-    {
-        char *font = g_settings_get_string(gs, "font-name");
-        title_font_val    = font;
-        using_system_font = true;
-        g_free(font);
-    }
-
-    PangoFontDescription *font_desc = pango_font_description_from_string(title_font_val.c_str());
-    int font_size = pango_font_description_get_size(font_desc);
-    bool font_size_absolute;
-
-    // font size will be 0 if nothing is specified - grab from system font if this is the case
-    // if the font is the system font, then just pray it works
-    if (!font_size && !using_system_font)
-    {
-        char *font = g_settings_get_string(gs, "font-name");
-        PangoFontDescription *sys_font_desc = pango_font_description_from_string(font);
-
-        font_size = pango_font_description_get_size(sys_font_desc);
-        font_size_absolute = pango_font_description_get_size_is_absolute(sys_font_desc);
-
-        pango_font_description_free(sys_font_desc);
-        g_free(font);
-    } else
-    {
-        font_size_absolute = pango_font_description_get_size_is_absolute(font_desc);
-    }
-
-    // scale the font size if we got it by text-scaling-factor
-    if (font_size)
-    {
-        double scaling_factor = g_settings_get_double(gs, "text-scaling-factor");
-        if (!scaling_factor) // should default to 1.0, but better safe than sorry
-        {
-            scaling_factor = 1.0;
-        }
-
-        if (font_size_absolute)
-        {
-            pango_font_description_set_absolute_size(font_desc, font_size * scaling_factor);
-        } else
-        {
-            pango_font_description_set_size(font_desc, font_size * scaling_factor);
-        }
-    }
-
-    g_object_unref(gs);
-    return font_desc;
+    return pango_font_description_from_string(std::string(title_font).c_str());
 }
 
-/**
- * @return A PangoFontDescription from create_font_description(),
- *  originating from a global, internally managed instance, freeing the data upon exit.
- *  It will also be updated with changes to the Title Font option.
- */
 PangoFontDescription*pixdecor_theme_t::get_font_description()
 {
-    static std::unique_ptr<PangoFontDescription, decltype(& pango_font_description_free)> font_desc(
-        create_font_description(), &pango_font_description_free);
-
-    static std::once_flag once_flag;
-    std::call_once(once_flag, [&]
-    {
-        title_font.set_callback([&]
-        {
-            font_desc.reset(create_font_description());
-        });
-    });
-
-    return font_desc.get();
+    return create_font_description();
 }
 
 /** @return The available height for displaying the title */

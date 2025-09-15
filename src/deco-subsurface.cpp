@@ -542,6 +542,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                         (std::string(titlebar_opt) == "windowed" && maximized)) &&
                         (std::string(titlebar_opt) != "always")) && !maximized_borders &&
                         !maximized_shadows) ? 0 : current_thickness);
+                LOGI("current_titlebar: ", current_titlebar);
                 this->cached_region = layout.calculate_region();
             }
 
