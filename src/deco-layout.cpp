@@ -85,7 +85,8 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     wf::option_wrapper_t<int> button_x_offset{"pixdecor/left_button_x_offset"};
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
     wf::option_wrapper_t<std::string> button_layout{"pixdecor/button_layout"};
-    char *b_layout = (char*)std::string(button_layout).c_str();
+    auto layout_str = std::string(button_layout);
+    char *b_layout  = layout_str.data();
     char *ptr = b_layout;
     int len   = 0;
     while (ptr <= b_layout + strlen(b_layout) - 1)
@@ -162,8 +163,9 @@ wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
     wf::option_wrapper_t<int> button_x_offset{"pixdecor/right_button_x_offset"};
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
     wf::option_wrapper_t<std::string> button_layout{"pixdecor/button_layout"};
-    char *b_layout = (char*)std::string(button_layout).c_str();
-    char *ptr = b_layout;
+    auto layout_str = std::string(button_layout);
+    char *b_layout  = layout_str.data();
+    char *ptr = b_layout + strlen(b_layout) - 1;
     while (ptr >= b_layout)
     {
         if (*ptr == ',')
