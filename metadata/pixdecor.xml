@@ -55,7 +55,7 @@
 			</option>
 			<option name="title_font" type="string">
 				<_short>Title Font</_short>
-				<_long>Font to use for the titlebar. Uses the system font by default or if invalid.</_long>
+				<_long>Font to use for the titlebar. The font size determines the titlebar height.</_long>
 				<default>sans 12</default>
 			</option>
 			<option name="fg_color" type="color">
