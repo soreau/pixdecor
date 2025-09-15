@@ -13,7 +13,7 @@ jobs:
       with:
         repository: WayfireWM/wayfire
         path: wayfire
-    - run: cd wayfire && git submodule submodule update --init --recursive && meson build --prefix=/usr && ninja -v -Cbuild && ninja -v -Cbuild install && cd ..
+    - run: cd wayfire && git submodule update --init --recursive && meson build --prefix=/usr && ninja -v -Cbuild && ninja -v -Cbuild install && cd ..
     - name: Pixdecor
       uses: actions/checkout@v2
       with:
