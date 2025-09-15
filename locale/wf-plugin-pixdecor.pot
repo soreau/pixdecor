@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-09-15 13:06+0300\n"
+"POT-Creation-Date: 2025-09-15 14:25+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,6 +42,26 @@ msgstr ""
 #. (itstool) path: option/_long
 #: metadata/pixdecor.xml:17
 msgid "When to render a titlebar with title text and buttons."
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:21
+msgid "Always"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:25
+msgid "Only When Windowed"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:29
+msgid "Only When Maximized"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:33
+msgid "Never"
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -144,6 +164,21 @@ msgstr ""
 msgid "Sets the alignment of the titlebar text."
 msgstr ""
 
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:87
+msgid "Left"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:91
+msgid "Center"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:95
+msgid "Right"
+msgstr ""
+
 #. (itstool) path: option/_short
 #: metadata/pixdecor.xml:99
 msgid "Overlay Engine"
@@ -154,6 +189,22 @@ msgstr ""
 msgid "Sets the overlay engine."
 msgstr ""
 
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:104
+#: metadata/pixdecor.xml:121
+msgid "None"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:108
+msgid "Rounded Corners"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:112
+msgid "Beveled Glass"
+msgstr ""
+
 #. (itstool) path: option/_short
 #: metadata/pixdecor.xml:116
 msgid "Effect Type"
@@ -162,6 +213,76 @@ msgstr ""
 #. (itstool) path: option/_long
 #: metadata/pixdecor.xml:117
 msgid "Sets the effect type."
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:125
+msgid "Smoke"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:129
+msgid "Ink"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:133
+msgid "Clouds"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:137
+msgid "Halftone"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:141
+msgid "Pattern"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:145
+msgid "Lava"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:149
+msgid "Hex"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:153
+msgid "Zebra"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:157
+msgid "Neural network"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:161
+msgid "Hexagon maze"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:165
+msgid "Raymarched truchet"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:169
+msgid "Neon pattern"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:173
+msgid "Neon rings"
+msgstr ""
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:177
+msgid "Deco"
 msgstr ""
 
 #. (itstool) path: option/_short

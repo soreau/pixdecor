@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-09-15 13:06+0300\n"
-"PO-Revision-Date: 2025-09-15 13:40+0300\n"
+"POT-Creation-Date: 2025-09-15 14:25+0300\n"
+"PO-Revision-Date: 2025-09-15 14:29+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ro_RO\n"
@@ -47,6 +47,26 @@ msgstr "Când să se deseneze bara de titlu"
 #: metadata/pixdecor.xml:17
 msgid "When to render a titlebar with title text and buttons."
 msgstr "Când să se deseneze o bară de titlu cu textul titlului și butoanele."
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:21
+msgid "Always"
+msgstr "Întotdeauna"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:25
+msgid "Only When Windowed"
+msgstr "Doar când este nemaximizată"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:29
+msgid "Only When Maximized"
+msgstr "Doar când este maximizată"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:33
+msgid "Never"
+msgstr "Niciodată"
 
 #. (itstool) path: option/_short
 #: metadata/pixdecor.xml:37
@@ -157,6 +177,21 @@ msgstr "Alinierea textului titlului"
 msgid "Sets the alignment of the titlebar text."
 msgstr "Stabilește alinierea textului barei de titlu."
 
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:87
+msgid "Left"
+msgstr "Stânga"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:91
+msgid "Center"
+msgstr "Centru"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:95
+msgid "Right"
+msgstr "Dreapta"
+
 #. (itstool) path: option/_short
 #: metadata/pixdecor.xml:99
 msgid "Overlay Engine"
@@ -167,6 +202,21 @@ msgstr "Motor de suprapunere"
 msgid "Sets the overlay engine."
 msgstr "Alege motorul de suprapunere."
 
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:104 metadata/pixdecor.xml:121
+msgid "None"
+msgstr "Niciuna"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:108
+msgid "Rounded Corners"
+msgstr "Colțuri rotunjite"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:112
+msgid "Beveled Glass"
+msgstr "Sticlă teșită"
+
 #. (itstool) path: option/_short
 #: metadata/pixdecor.xml:116
 msgid "Effect Type"
@@ -176,6 +226,76 @@ msgstr "Tipul efectului"
 #: metadata/pixdecor.xml:117
 msgid "Sets the effect type."
 msgstr "Stabilește tipul efectului."
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:125
+msgid "Smoke"
+msgstr "Fum"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:129
+msgid "Ink"
+msgstr "Cerneală"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:133
+msgid "Clouds"
+msgstr "Nori"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:137
+msgid "Halftone"
+msgstr "Semitonuri"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:141
+msgid "Pattern"
+msgstr "Model"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:145
+msgid "Lava"
+msgstr "Lavă"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:149
+msgid "Hex"
+msgstr "Hexagonal"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:153
+msgid "Zebra"
+msgstr "Zebră"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:157
+msgid "Neural network"
+msgstr "Rețea neuronală"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:161
+msgid "Hexagon maze"
+msgstr "Labirint hexagonal"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:165
+msgid "Raymarched truchet"
+msgstr "Truchetă cu simularea luminii"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:169
+msgid "Neon pattern"
+msgstr "Model neon"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:173
+msgid "Neon rings"
+msgstr "Inele neon"
+
+#. (itstool) path: desc/_name
+#: metadata/pixdecor.xml:177
+msgid "Deco"
+msgstr "Decorativ"
 
 #. (itstool) path: option/_short
 #: metadata/pixdecor.xml:181
