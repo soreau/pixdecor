@@ -1,5 +1,4 @@
 #pragma once
-#include <gio/gio.h>
 #include <wayfire/render-manager.hpp>
 #include "deco-button.hpp"
 #include "deco-effects.hpp"
@@ -89,7 +88,6 @@ class pixdecor_theme_t
 
   private:
 
-    GSettings *gs;
     wf::color_t fg;
     wf::color_t bg;
     wf::color_t fg_text;

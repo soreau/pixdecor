@@ -84,10 +84,10 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     wf::option_wrapper_t<int> button_spacing{"pixdecor/left_button_spacing"};
     wf::option_wrapper_t<int> button_x_offset{"pixdecor/left_button_x_offset"};
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
-    GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
-    gchar *b_layout     = g_settings_get_string(settings, "button-layout");
-    gchar *ptr = b_layout;
-    int len    = 0;
+    wf::option_wrapper_t<std::string> button_layout{"pixdecor/button_layout"};
+    char *b_layout = (char*)std::string(button_layout).c_str();
+    char *ptr = b_layout;
+    int len   = 0;
     while (ptr <= b_layout + strlen(b_layout) - 1)
     {
         if (*ptr == ',')
@@ -105,8 +105,6 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     }
 
     std::string layout = std::string(b_layout).substr(0, len);
-    g_free(b_layout);
-    g_object_unref(settings);
 
     std::stringstream stream((std::string)layout);
     std::vector<button_type_t> buttons;
@@ -163,9 +161,9 @@ wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
     wf::option_wrapper_t<int> button_spacing{"pixdecor/right_button_spacing"};
     wf::option_wrapper_t<int> button_x_offset{"pixdecor/right_button_x_offset"};
     wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
-    GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
-    gchar *b_layout     = g_settings_get_string(settings, "button-layout");
-    gchar *ptr = b_layout + strlen(b_layout) - 1;
+    wf::option_wrapper_t<std::string> button_layout{"pixdecor/button_layout"};
+    char *b_layout = (char*)std::string(button_layout).c_str();
+    char *ptr = b_layout;
     while (ptr >= b_layout)
     {
         if (*ptr == ',')
@@ -182,8 +180,6 @@ wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
     }
 
     std::string layout = (*ptr == ':') ? ptr + 1 : std::string(b_layout);
-    g_free(b_layout);
-    g_object_unref(settings);
 
     std::stringstream stream((std::string)layout);
     std::vector<button_type_t> buttons;
