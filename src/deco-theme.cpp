@@ -45,16 +45,18 @@ void pixdecor_theme_t::update_colors(void)
     bg_text = wf::color_t(bg_text_color);
 }
 
-std::unique_ptr<PangoFontDescription *> pixdecor_theme_t::get_font_description()
+std::unique_ptr<PangoFontDescription*> pixdecor_theme_t::get_font_description()
 {
-    font_description = std::make_unique<PangoFontDescription *>(pango_font_description_from_string(std::string(title_font).c_str()));
+    font_description =
+        std::make_unique<PangoFontDescription*>(pango_font_description_from_string(std::string(title_font)
+            .c_str()));
     return std::move(font_description);
 }
 
 /** @return The available height for displaying the title */
 int pixdecor_theme_t::get_font_height_px()
 {
-    auto font_desc = get_font_description();
+    auto font_desc  = get_font_description();
     int font_height = pango_font_description_get_size(*font_desc.get());
 
     if (!pango_font_description_get_size_is_absolute(*font_desc.get()))
