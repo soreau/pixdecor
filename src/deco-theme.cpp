@@ -33,7 +33,9 @@ pixdecor_theme_t::pixdecor_theme_t()
 }
 
 pixdecor_theme_t::~pixdecor_theme_t()
-{}
+{
+    font_description.reset();
+}
 
 void pixdecor_theme_t::update_colors(void)
 {
@@ -43,23 +45,19 @@ void pixdecor_theme_t::update_colors(void)
     bg_text = wf::color_t(bg_text_color);
 }
 
-PangoFontDescription*pixdecor_theme_t::create_font_description()
+std::unique_ptr<PangoFontDescription *> pixdecor_theme_t::get_font_description()
 {
-    return pango_font_description_from_string(std::string(title_font).c_str());
-}
-
-PangoFontDescription*pixdecor_theme_t::get_font_description()
-{
-    return create_font_description();
+    font_description = std::make_unique<PangoFontDescription *>(pango_font_description_from_string(std::string(title_font).c_str()));
+    return std::move(font_description);
 }
 
 /** @return The available height for displaying the title */
 int pixdecor_theme_t::get_font_height_px()
 {
-    PangoFontDescription *font_desc = get_font_description();
-    int font_height = pango_font_description_get_size(font_desc);
+    auto font_desc = get_font_description();
+    int font_height = pango_font_description_get_size(*font_desc.get());
 
-    if (!pango_font_description_get_size_is_absolute(font_desc))
+    if (!pango_font_description_get_size_is_absolute(*font_desc.get()))
     {
         font_height *= 4;
         font_height /= 3;
@@ -153,12 +151,11 @@ cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
 
     auto cr = cairo_create(surface);
 
-    PangoFontDescription *font_desc;
     PangoLayout *layout;
     int x, w, h;
 
     // render text
-    font_desc = get_font_description();
+    auto font_desc = *get_font_description().get();
 
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, font_desc);
