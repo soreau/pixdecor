@@ -21,6 +21,3 @@ wayfire = dependency('wayfire', version: '>=0.9.0')
 subdir('src')
 subdir('metadata')
 subdir('locale')
-
-share_dir = join_paths(get_option('prefix'), 'share')
-wayfire_locale_dir = join_paths(share_dir, 'locale')
