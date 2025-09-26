@@ -48,7 +48,7 @@ class pixdecor_theme_t
      * @param fb The target framebuffer, must have been bound already.
      * @param rectangle The rectangle to redraw.
      * @param scissor The GL scissor rectangle to use.
-     * @param active Whether to use active or inactive colorse
+     * @param active Whether to use active or inactive colors
      */
     void render_background(const wf::scene::render_instruction_t& data,
         wf::geometry_t rectangle, bool active, wf::pointf_t p);
