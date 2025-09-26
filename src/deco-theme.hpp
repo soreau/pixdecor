@@ -38,7 +38,7 @@ class pixdecor_theme_t
     int get_input_size() const;
     /** @return The decoration color */
     wf::color_t get_decor_color(bool active) const;
-    std::unique_ptr<PangoFontDescription*> get_font_description();
+    std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> get_font_description();
 
     void update_colors(void);
 
@@ -48,7 +48,7 @@ class pixdecor_theme_t
      * @param fb The target framebuffer, must have been bound already.
      * @param rectangle The rectangle to redraw.
      * @param scissor The GL scissor rectangle to use.
-     * @param active Whether to use active or inactive colors
+     * @param active Whether to use active or inactive colorse
      */
     void render_background(const wf::scene::render_instruction_t& data,
         wf::geometry_t rectangle, bool active, wf::pointf_t p);
@@ -92,7 +92,7 @@ class pixdecor_theme_t
     wf::color_t fg_text;
     wf::color_t bg_text;
     bool maximized;
-    std::unique_ptr<PangoFontDescription*> font_description;
+    std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> font_description;
 };
 }
 }

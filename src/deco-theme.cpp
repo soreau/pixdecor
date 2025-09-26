@@ -26,7 +26,7 @@ wf::option_wrapper_t<std::string> button_close_hover_image{"pixdecor/button_clos
 wf::option_wrapper_t<wf::color_t> button_color{"pixdecor/button_color"};
 wf::option_wrapper_t<double> button_line_thickness{"pixdecor/button_line_thickness"};
 /** Create a new theme with the default parameters */
-pixdecor_theme_t::pixdecor_theme_t()
+pixdecor_theme_t::pixdecor_theme_t() : font_description(nullptr, pango_font_description_free)
 {
     // read initial colours
     update_colors();
@@ -34,7 +34,7 @@ pixdecor_theme_t::pixdecor_theme_t()
 
 pixdecor_theme_t::~pixdecor_theme_t()
 {
-    font_description.reset();
+    //font_description.reset();
 }
 
 void pixdecor_theme_t::update_colors(void)
@@ -45,11 +45,10 @@ void pixdecor_theme_t::update_colors(void)
     bg_text = wf::color_t(bg_text_color);
 }
 
-std::unique_ptr<PangoFontDescription*> pixdecor_theme_t::get_font_description()
+std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> 
+pixdecor_theme_t::get_font_description()
 {
-    font_description =
-        std::make_unique<PangoFontDescription*>(pango_font_description_from_string(std::string(title_font)
-            .c_str()));
+    font_description.reset(pango_font_description_from_string(title_font.value().c_str()));
     return std::move(font_description);
 }
 
@@ -57,9 +56,9 @@ std::unique_ptr<PangoFontDescription*> pixdecor_theme_t::get_font_description()
 int pixdecor_theme_t::get_font_height_px()
 {
     auto font_desc  = get_font_description();
-    int font_height = pango_font_description_get_size(*font_desc.get());
+    int font_height = pango_font_description_get_size(font_desc.get());
 
-    if (!pango_font_description_get_size_is_absolute(*font_desc.get()))
+    if (!pango_font_description_get_size_is_absolute(font_desc.get()))
     {
         font_height *= 4;
         font_height /= 3;
@@ -157,10 +156,10 @@ cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
     int x, w, h;
 
     // render text
-    auto font_desc = *get_font_description().get();
+    auto font_desc = get_font_description();
 
     layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, font_desc);
+    pango_layout_set_font_description(layout, font_desc.get());
     pango_layout_set_text(layout, text.c_str(), text.size());
     cairo_set_source_rgba(cr, active ? fg_text.r : bg_text.r, active ? fg_text.g : bg_text.g,
         active ? fg_text.b : bg_text.b, 1);
