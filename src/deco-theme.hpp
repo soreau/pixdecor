@@ -38,7 +38,7 @@ class pixdecor_theme_t
     int get_input_size() const;
     /** @return The decoration color */
     wf::color_t get_decor_color(bool active) const;
-    std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> get_font_description();
+    std::unique_ptr<PangoFontDescription, decltype(& pango_font_description_free)> get_font_description();
 
     void update_colors(void);
 

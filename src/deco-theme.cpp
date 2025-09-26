@@ -33,9 +33,7 @@ pixdecor_theme_t::pixdecor_theme_t() : font_description(nullptr, pango_font_desc
 }
 
 pixdecor_theme_t::~pixdecor_theme_t()
-{
-    //font_description.reset();
-}
+{}
 
 void pixdecor_theme_t::update_colors(void)
 {
@@ -45,8 +43,8 @@ void pixdecor_theme_t::update_colors(void)
     bg_text = wf::color_t(bg_text_color);
 }
 
-std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> 
-pixdecor_theme_t::get_font_description()
+std::unique_ptr<PangoFontDescription,
+    decltype(& pango_font_description_free)> pixdecor_theme_t::get_font_description()
 {
     font_description.reset(pango_font_description_from_string(title_font.value().c_str()));
     return std::move(font_description);
