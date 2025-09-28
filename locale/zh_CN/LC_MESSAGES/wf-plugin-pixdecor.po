@@ -1,0 +1,469 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2025-09-28 10:29-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+#. (itstool) path: plugin/_short
+
+msgid "Pix Decoration"
+msgstr "像素装饰"
+
+#. (itstool) path: plugin/_long
+msgid ""
+"A highly configurable and optionally fancy decorator plugin for wayfire."
+msgstr "一个高度可配置且可选的华丽Wayfire装饰器插件。"
+
+#. (itstool) path: group/_short
+msgid "General"
+msgstr "常规"
+
+#. (itstool) path: option/_short
+msgid "Border size"
+msgstr "边框大小"
+
+#. (itstool) path: option/_long
+msgid "Sets the border size in pixels."
+msgstr "设置以像素为单位的边框大小。"
+
+#. (itstool) path: option/_short
+msgid "When to render the titlebar"
+msgstr "何时渲染标题栏"
+
+#. (itstool) path: option/_long
+msgid "When to render a titlebar with title text and buttons."
+msgstr "何时渲染带标题文本和按钮的标题栏。"
+
+#. (itstool) path: desc/_name
+msgid "Always"
+msgstr "始终"
+
+#. (itstool) path: desc/_name
+msgid "Only When Windowed"
+msgstr "仅在窗口化时"
+
+#. (itstool) path: desc/_name
+msgid "Only When Maximized"
+msgstr "仅在最大化时"
+
+#. (itstool) path: desc/_name
+msgid "Never"
+msgstr "从不"
+
+#. (itstool) path: option/_short
+msgid "Draw borders on maximized windows"
+msgstr "在最大化窗口上绘制边框"
+
+#. (itstool) path: option/_long
+msgid ""
+"Whether or not to render side and bottom decorations on maximized windows."
+msgstr "是否在最大化窗口上渲染侧面和底部装饰。"
+
+#. (itstool) path: option/_short
+msgid "Draw shadows on maximized windows"
+msgstr "在最大化窗口上绘制阴影"
+
+#. (itstool) path: option/_long
+msgid "Whether or not to allocate space for shadows on maximized windows."
+msgstr "是否在最大化窗口上为阴影分配空间。"
+
+#. (itstool) path: option/_short
+msgid "Decoration disabled for specified window types"
+msgstr "为指定的窗口类型禁用装饰"
+
+#. (itstool) path: option/_long
+msgid "Disables window decoration for windows matching the specified criteria."
+msgstr "为符合指定条件的窗口禁用窗口装饰。"
+
+#. (itstool) path: option/_short
+msgid "Decoration applied for specified window types"
+msgstr "为指定的窗口类型应用装饰"
+
+#. (itstool) path: option/_long
+msgid "Forces window decoration for windows matching the specified criteria."
+msgstr "强制为符合指定条件的窗口进行窗口装饰。"
+
+#. (itstool) path: option/_short
+msgid "Title Font"
+msgstr "标题字体"
+
+#. (itstool) path: option/_long
+msgid ""
+"Font to use for the titlebar. The font size determines the titlebar height."
+msgstr "用于标题栏的字体。字体大小决定标题栏高度。"
+
+#. (itstool) path: option/_short
+msgid "Color when focused"
+msgstr "聚焦时的颜色"
+
+#. (itstool) path: option/_long
+msgid "Color of the window border when it has focus."
+msgstr "窗口聚焦时的边框颜色。"
+
+#. (itstool) path: option/_short
+msgid "Color when not focused"
+msgstr "未聚焦时的颜色"
+
+#. (itstool) path: option/_long
+msgid "Color of the window border when it does not have focus."
+msgstr "窗口未聚焦时的边框颜色。"
+
+#. (itstool) path: option/_short
+msgid "Text color when focused"
+msgstr "聚焦时的文本颜色"
+
+#. (itstool) path: option/_long
+msgid "Color of the window titlebar text when it has focus."
+msgstr "窗口聚焦时的标题栏文本颜色。"
+
+#. (itstool) path: option/_short
+msgid "Text color when not focused"
+msgstr "未聚焦时的文本颜色"
+
+#. (itstool) path: option/_long
+msgid "Color of the window titlebar text when it does not have focus."
+msgstr "窗口未聚焦时的标题栏文本颜色。"
+
+#. (itstool) path: option/_short
+msgid "Titlebar Text Alignment"
+msgstr "标题栏文本对齐方式"
+
+#. (itstool) path: option/_long
+msgid "Sets the alignment of the titlebar text."
+msgstr "设置标题栏文本的对齐方式。"
+
+#. (itstool) path: desc/_name
+msgid "Left"
+msgstr "左对齐"
+
+#. (itstool) path: desc/_name
+msgid "Center"
+msgstr "居中"
+
+#. (itstool) path: desc/_name
+msgid "Right"
+msgstr "右对齐"
+
+#. (itstool) path: option/_short
+msgid "Overlay Engine"
+msgstr "覆盖引擎"
+
+#. (itstool) path: option/_long
+msgid "Sets the overlay engine."
+msgstr "设置覆盖引擎。"
+
+#. (itstool) path: desc/_name
+msgid "None"
+msgstr "无"
+
+#. (itstool) path: desc/_name
+msgid "Rounded Corners"
+msgstr "圆角"
+
+#. (itstool) path: desc/_name
+msgid "Beveled Glass"
+msgstr "斜角玻璃"
+
+#. (itstool) path: option/_short
+msgid "Effect Type"
+msgstr "效果类型"
+
+#. (itstool) path: option/_long
+msgid "Sets the effect type."
+msgstr "设置效果类型。"
+
+#. (itstool) path: desc/_name
+msgid "Smoke"
+msgstr "烟雾"
+
+#. (itstool) path: desc/_name
+msgid "Ink"
+msgstr "墨水"
+
+#. (itstool) path: desc/_name
+msgid "Clouds"
+msgstr "云"
+
+#. (itstool) path: desc/_name
+msgid "Halftone"
+msgstr "半色调"
+
+#. (itstool) path: desc/_name
+msgid "Pattern"
+msgstr "图案"
+
+#. (itstool) path: desc/_name
+msgid "Lava"
+msgstr "岩浆"
+
+#. (itstool) path: desc/_name
+msgid "Hex"
+msgstr "六边形"
+
+#. (itstool) path: desc/_name
+msgid "Zebra"
+msgstr "斑马"
+
+#. (itstool) path: desc/_name
+msgid "Neural network"
+msgstr "神经网络"
+
+#. (itstool) path: desc/_name
+msgid "Hexagon maze"
+msgstr "六边形迷宫"
+
+#. (itstool) path: desc/_name
+msgid "Raymarched truchet"
+msgstr "光线追踪Truchet"
+
+#. (itstool) path: desc/_name
+msgid "Neon pattern"
+msgstr "霓虹图案"
+
+#. (itstool) path: desc/_name
+msgid "Neon rings"
+msgstr "霓虹环"
+
+#. (itstool) path: desc/_name
+msgid "Deco"
+msgstr "装饰艺术"
+
+#. (itstool) path: option/_short
+msgid "Effect Color"
+msgstr "效果颜色"
+
+#. (itstool) path: option/_long
+msgid "Color of the titlebar background effect."
+msgstr "标题栏背景效果的颜色。"
+
+#. (itstool) path: option/_short
+msgid "Animate Effects"
+msgstr "动画效果"
+
+#. (itstool) path: option/_long
+msgid ""
+"WARNING: Enabling this option can use lots of system resources. Enables "
+"animating and constant repainting of window decorations."
+msgstr "警告：启用此选项可能会占用大量系统资源。启用窗口装饰的动画和持续重绘。"
+
+#. (itstool) path: option/_short
+msgid "Rounded Corner Radius"
+msgstr "圆角半径"
+
+#. (itstool) path: option/_long
+msgid "The radius for corners."
+msgstr "角的半径。"
+
+#. (itstool) path: option/_short
+msgid "Shadow Radius"
+msgstr "阴影半径"
+
+#. (itstool) path: option/_long
+msgid "The radius for shadows."
+msgstr "阴影的半径。"
+
+#. (itstool) path: option/_short
+msgid "Shadow Color"
+msgstr "阴影颜色"
+
+#. (itstool) path: option/_long
+msgid "Color of the drop shadows."
+msgstr "投影的颜色。"
+
+#. (itstool) path: group/_short
+msgid "Buttons"
+msgstr "按钮"
+
+#. (itstool) path: option/_short
+msgid "Button Layout"
+msgstr "按钮布局"
+
+#. (itstool) path: option/_long
+msgid ""
+"The layout of the 'minimize', 'maximize' and 'close' buttons. Use a comma to "
+"separate button strings and a colon to denote the seperation between left "
+"and right buttons."
+msgstr "“最小化”、“最大化”和“关闭”按钮的布局。使用逗号分隔按钮字符串，使用冒号分隔左右两侧的按钮。"
+
+#. (itstool) path: option/_short
+msgid "Button Color"
+msgstr "按钮颜色"
+
+#. (itstool) path: option/_long
+msgid "Color of the minimize, maximize and close buttons."
+msgstr "最小化、最大化和关闭按钮的颜色。"
+
+#. (itstool) path: option/_short
+msgid "Button Line Thickness"
+msgstr "按钮线条粗细"
+
+#. (itstool) path: option/_long
+msgid "The thickness used to draw the minimize, maximize and close button lines."
+msgstr "用于绘制最小化、最大化和关闭按钮线条的粗细。"
+
+#. (itstool) path: option/_short
+msgid "Left Button Spacing"
+msgstr "左按钮间距"
+
+#. (itstool) path: option/_long
+msgid "The space between each button on the left."
+msgstr "左侧每个按钮之间的间距。"
+
+#. (itstool) path: option/_short
+msgid "Right Button Spacing"
+msgstr "右按钮间距"
+
+#. (itstool) path: option/_long
+msgid "The space between each button on the right."
+msgstr "右侧每个按钮之间的间距。"
+
+#. (itstool) path: option/_short
+msgid "Left Button X Offset"
+msgstr "左按钮X偏移量"
+
+#. (itstool) path: option/_long
+msgid "Use this option to move the buttons on the left to the left or right."
+msgstr "使用此选项可将左侧按钮向左或向右移动。"
+
+#. (itstool) path: option/_short
+msgid "Right Button X Offset"
+msgstr "右按钮X偏移量"
+
+#. (itstool) path: option/_long
+msgid "Use this option to move the buttons on the right to the left or right."
+msgstr "使用此选项可将右侧按钮向左或向右移动。"
+
+#. (itstool) path: option/_short
+msgid "Button Y Offset"
+msgstr "按钮Y偏移量"
+
+#. (itstool) path: option/_long
+msgid "Use this option to move buttons up or down."
+msgstr "使用此选项可将按钮向上或向下移动。"
+
+#. (itstool) path: option/_short
+msgid "Button Hover Animation Duration"
+msgstr "按钮悬停动画持续时间"
+
+#. (itstool) path: option/_long
+msgid "The time the hover animation will last, in milliseconds."
+msgstr "悬停动画的持续时间，以毫秒为单位。"
+
+#. (itstool) path: option/_short
+msgid "Button Minimize Image"
+msgstr "按钮最小化图片"
+
+#. (itstool) path: option/_long
+msgid "The png image to use for the minimize button."
+msgstr "用于最小化按钮的png图片。"
+
+#. (itstool) path: option/_short
+msgid "Button Maximize Image"
+msgstr "按钮最大化图片"
+
+#. (itstool) path: option/_long
+msgid "The png image to use for the maximize button."
+msgstr "用于最大化按钮的png图片。"
+
+#. (itstool) path: option/_short
+msgid "Button Restore Image"
+msgstr "按钮恢复图片"
+
+#. (itstool) path: option/_long
+msgid "The png image to use for the restore button."
+msgstr "用于恢复按钮的png图片。"
+
+#. (itstool) path: option/_short
+msgid "Button Close Image"
+msgstr "按钮关闭图片"
+
+#. (itstool) path: option/_long
+msgid "The png image to use for the close button."
+msgstr "用于关闭按钮的png图片。"
+
+#. (itstool) path: option/_short
+msgid "Button Minimize Hover Image"
+msgstr "按钮最小化悬停图片"
+
+#. (itstool) path: option/_long
+msgid "The png image to use when hovering the minimize button."
+msgstr "悬停在最小化按钮上时使用的png图片。"
+
+#. (itstool) path: option/_short
+msgid "Button Maximize Hover Image"
+msgstr "按钮最大化悬停图片"
+
+#. (itstool) path: option/_long
+msgid "The png image to use when hovering the maximize button."
+msgstr "悬停在最大化按钮上时使用的png图片。"
+
+#. (itstool) path: option/_short
+msgid "Button Restore Hover Image"
+msgstr "按钮恢复悬停图片"
+
+#. (itstool) path: option/_long
+msgid "The png image to use when hovering the restore button."
+msgstr "悬停在恢复按钮上时使用的png图片。"
+
+#. (itstool) path: option/_short
+msgid "Button Close Hover Image"
+msgstr "按钮关闭悬停图片"
+
+#. (itstool) path: option/_long
+msgid "The png image to use when hovering the close button."
+msgstr "悬停在关闭按钮上时使用的png图片。"
+#. (itstool) path: group/_short
+
+msgid "Shade"
+msgstr "卷影"
+
+#. (itstool) path: option/_short
+msgid "Enable Shade Effect"
+msgstr "启用卷影效果"
+
+#. (itstool) path: option/_long
+msgid ""
+"Use the axis binding or scroll on the titlebar of pixdecor windows to shade "
+"windows into their respective titlebars."
+msgstr "使用轴绑定或在像素装饰窗口的标题栏上滚动，以将窗口卷影到其各自的标题栏中。"
+
+#. (itstool) path: option/_short
+msgid "Shade Duration"
+msgstr "卷影持续时间"
+
+#. (itstool) path: option/_long
+msgid "The duration of the shade animation in milliseconds."
+msgstr "卷影动画的持续时间，以毫秒为单位。"
+
+#. (itstool) path: option/_short
+msgid "Shade Modifier"
+msgstr "卷影修饰键"
+
+#. (itstool) path: option/_long
+msgid ""
+"When the shade modifier key is held down, you can scroll down and up to "
+"shade and unshade the window."
+msgstr "按住卷影修饰键时，可以向下和向上滚动以卷影和展开窗口。"
+
+#. (itstool) path: option/_short
+msgid "Toggle Window Shade"
+msgstr "切换窗口卷影"
+
+#. (itstool) path: option/_long
+msgid "Toggles shade for the active window."
+msgstr "切换活动窗口的卷影状态。"
+
+#. (itstool) path: option/_short
+msgid "CSD Titlebar Height"
+msgstr "CSD 标题栏高度"
+
+#. (itstool) path: option/_long
+msgid ""
+"Because there is no way to know the client surface titlebar height, this is "
+"an option to adjust it."
+msgstr "由于无法知道客户端表面标题栏的高度，此选项用于调整该高度。"
