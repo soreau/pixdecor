@@ -1,0 +1,413 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2025-09-27 07:28-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. (itstool) path: plugin/_short
+msgid "Pix Decoration"
+msgstr "Decoración Pix"
+
+#. (itstool) path: plugin/_long
+msgid ""
+"A highly configurable and optionally fancy decorator plugin for wayfire."
+msgstr ""
+"Un complemento decorador altamente configurable y opcionalmente elegante para wayfire."
+
+#. (itstool) path: group/_short
+msgid "General"
+msgstr "General"
+
+#. (itstool) path: option/_short
+msgid "Border size"
+msgstr "Tamaño del borde"
+
+#. (itstool) path: option/_long
+msgid "Sets the border size in pixels."
+msgstr "Establece el tamaño del borde en píxeles."
+
+#. (itstool) path: option/_short
+msgid "When to render the titlebar"
+msgstr "Cuándo renderizar la barra de título"
+
+#. (itstool) path: option/_long
+msgid "When to render a titlebar with title text and buttons."
+msgstr "Cuándo renderizar una barra de título con el texto del título y los botones."
+
+#. (itstool) path: desc/_name
+msgid "Always"
+msgstr "Siempre"
+
+#. (itstool) path: desc/_name
+msgid "Only When Windowed"
+msgstr "Solo cuando está en ventana"
+
+#. (itstool) path: desc/_name
+msgid "Only When Maximized"
+msgstr "Solo cuando está maximizado"
+
+#. (itstool) path: desc/_name
+msgid "Never"
+msgstr "Nunca"
+
+#. (itstool) path: option/_short
+msgid "Draw borders on maximized windows"
+msgstr "Dibujar bordes en ventanas maximizadas"
+
+#. (itstool) path: option/_long
+msgid ""
+"Whether or not to render side and bottom decorations on maximized windows."
+msgstr ""
+"Si se deben renderizar o no las decoraciones laterales e inferiores en ventanas maximizadas."
+
+#. (itstool) path: option/_short
+msgid "Draw shadows on maximized windows"
+msgstr "Dibujar sombras en ventanas maximizadas"
+
+#. (itstool) path: option/_long
+msgid "Whether or not to allocate space for shadows on maximized windows."
+msgstr "Si se debe asignar o no espacio para sombras en ventanas maximizadas."
+
+#. (itstool) path: option/_short
+msgid "Decoration disabled for specified window types"
+msgstr "Decoración desactivada para tipos de ventana especificados"
+
+#. (itstool) path: option/_long
+msgid "Disables window decoration for windows matching the specified criteria."
+msgstr "Desactiva la decoración de ventana para las ventanas que coinciden con los criterios especificados."
+
+#. (itstool) path: option/_short
+msgid "Decoration applied for specified window types"
+msgstr "Decoración aplicada para tipos de ventana especificados"
+
+#. (itstool) path: option/_long
+msgid "Forces window decoration for windows matching the specified criteria."
+msgstr "Fuerza la decoración de ventana para las ventanas que coinciden con los criterios especificados."
+
+#. (itstool) path: option/_short
+msgid "Title Font"
+msgstr "Fuente del título"
+
+#. (itstool) path: option/_long
+msgid ""
+"Font to use for the titlebar. The font size determines the titlebar height."
+msgstr ""
+"Fuente a usar para la barra de título. El tamaño de la fuente determina la altura de la barra de título."
+
+#. (itstool) path: option/_short
+msgid "Color when focused"
+msgstr "Color cuando está enfocado"
+
+#. (itstool) path: option/_long
+msgid "Color of the window border when it has focus."
+msgstr "Color del borde de la ventana cuando está enfocada."
+
+#. (itstool) path: option/_short
+msgid "Color when not focused"
+msgstr "Color cuando no está enfocado"
+
+#. (itstool) path: option/_long
+msgid "Color of the window border when it does not have focus."
+msgstr "Color del borde de la ventana cuando no está enfocada."
+
+#. (itstool) path: option/_short
+msgid "Text color when focused"
+msgstr "Color del texto cuando está enfocado"
+
+#. (itstool) path: option/_long
+msgid "Color of the window titlebar text when it has focus."
+msgstr "Color del texto de la barra de título de la ventana cuando está enfocada."
+
+#. (itstool) path: option/_short
+msgid "Text color when not focused"
+msgstr "Color del texto cuando no está enfocado"
+
+#. (itstool) path: option/_long
+msgid "Color of the window titlebar text when it does not have focus."
+msgstr "Color del texto de la barra de título de la ventana cuando no está enfocada."
+
+#. (itstool) path: option/_short
+msgid "Titlebar Text Alignment"
+msgstr "Alineación del texto de la barra de título"
+
+#. (itstool) path: option/_long
+msgid "Sets the alignment of the titlebar text."
+msgstr "Establece la alineación del texto de la barra de título."
+
+#. (itstool) path: desc/_name
+msgid "Left"
+msgstr "Izquierda"
+
+#. (itstool) path: desc/_name
+msgid "Center"
+msgstr "Centro"
+
+#. (itstool) path: desc/_name
+msgid "Right"
+msgstr "Derecha"
+
+#. (itstool) path: option/_short
+msgid "Overlay Engine"
+msgstr "Motor de superposición"
+
+#. (itstool) path: option/_long
+msgid "Sets the overlay engine."
+msgstr "Establece el motor de superposición."
+
+#. (itstool) path: desc/_name
+msgid "None"
+msgstr "Ninguno"
+
+#. (itstool) path: desc/_name
+msgid "Rounded Corners"
+msgstr "Esquinas redondeadas"
+
+#. (itstool) path: desc/_name
+msgid "Beveled Glass"
+msgstr "Cristal biselado"
+
+#. (itstool) path: option/_short
+msgid "Effect Type"
+msgstr "Tipo de efecto"
+
+#. (itstool) path: option/_long
+msgid "Sets the effect type."
+msgstr "Establece el tipo de efecto."
+
+#. (itstool) path: desc/_name
+msgid "Smoke"
+msgstr "Humo"
+
+#. (itstool) path: desc/_name
+msgid "Ink"
+msgstr "Tinta"
+
+#. (itstool) path: desc/_name
+msgid "Clouds"
+msgstr "Nubes"
+
+#. (itstool) path: desc/_name
+msgid "Halftone"
+msgstr "Medio tono"
+
+#. (itstool) path: desc/_name
+msgid "Pattern"
+msgstr "Patrón"
+
+#. (itstool) path: desc/_name
+msgid "Lava"
+msgstr "Lava"
+
+#. (itstool) path: desc/_name
+msgid "Hex"
+msgstr "Hex"
+
+#. (itstool) path: desc/_name
+msgid "Zebra"
+msgstr "Cebra"
+
+#. (itstool) path: desc/_name
+msgid "Neural network"
+msgstr "Red neuronal"
+
+#. (itstool) path: desc/_name
+msgid "Hexagon maze"
+msgstr "Laberinto hexagonal"
+
+#. (itstool) path: desc/_name
+msgid "Raymarched truchet"
+msgstr "Truchet raymarched"
+
+#. (itstool) path: desc/_name
+msgid "Neon pattern"
+msgstr "Patrón neón"
+
+#. (itstool) path: desc/_name
+msgid "Neon rings"
+msgstr "Anillos neón"
+
+#. (itstool) path: desc/_name
+msgid "Deco"
+msgstr "Deco"
+
+#. (itstool) path: option/_short
+msgid "Effect Color"
+msgstr "Color del efecto"
+
+#. (itstool) path: option/_long
+msgid "Color of the titlebar background effect."
+msgstr "Color del efecto de fondo de la barra de título."
+
+#. (itstool) path: option/_short
+msgid "Animate Effects"
+msgstr "Animar efectos"
+
+#. (itstool) path: option/_long
+msgid ""
+"WARNING: Enabling this option can use lots of system resources. Enables "
+"animating and constant repainting of window decorations."
+msgstr ""
+"ADVERTENCIA: Habilitar esta opción puede consumir muchos recursos del sistema. "
+"Permite animar y repintar constantemente las decoraciones de la ventana."
+
+#. (itstool) path: option/_short
+msgid "Rounded Corner Radius"
+msgstr "Radio de las esquinas redondeadas"
+
+#. (itstool) path: option/_long
+msgid "The radius for corners."
+msgstr "El radio de las esquinas."
+
+#. (itstool) path: option/_short
+msgid "Shadow Radius"
+msgstr "Radio de la sombra"
+
+#. (itstool) path: option/_long
+msgid "The radius for shadows."
+msgstr "El radio de las sombras."
+
+#. (itstool) path: option/_short
+msgid "Shadow Color"
+msgstr "Color de la sombra"
+
+#. (itstool) path: option/_long
+msgid "Color of the drop shadows."
+msgstr "Color de las sombras proyectadas."
+
+#. (itstool) path: group/_short
+msgid "Buttons"
+msgstr "Botones"
+
+#. (itstool) path: option/_short
+msgid "Button Layout"
+msgstr "Disposición de los botones"
+
+#. (itstool) path: option/_long
+msgid ""
+"The layout of the 'minimize', 'maximize' and 'close' buttons. Use a comma to "
+"separate button strings and a colon to denote the seperation between left "
+"and right buttons."
+msgstr ""
+"La disposición de los botones 'minimizar', 'maximizar' y 'cerrar'. Use una coma para "
+"separar las cadenas de botones y dos puntos para denotar la separación entre "
+"los botones de la izquierda y la derecha."
+
+#. (itstool) path: option/_short
+msgid "Button Color"
+msgstr "Color del botón"
+
+#. (itstool) path: option/_long
+msgid "Color of the minimize, maximize and close buttons."
+msgstr "Color de los botones minimizar, maximizar y cerrar."
+
+#. (itstool) path: option/_short
+msgid "Button Line Thickness"
+msgstr "Grosor de la línea del botón"
+
+#. (itstool) path: option/_long
+msgid ""
+"The thickness used to draw the minimize, maximize and close button lines."
+msgstr ""
+"El grosor utilizado para dibujar las líneas de los botones minimizar, maximizar y cerrar."
+
+#. (itstool) path: option/_short
+msgid "Left Button Spacing"
+msgstr "Espaciado del botón izquierdo"
+
+#. (itstool) path: option/_long
+msgid "The space between each button on the left."
+msgstr "El espacio entre cada botón de la izquierda."
+
+#. (itstool) path: option/_short
+msgid "Right Button Spacing"
+msgstr "Espaciado del botón derecho"
+
+#. (itstool) path: option/_long
+msgid "The space between each button on the right."
+msgstr "El espacio entre cada botón de la derecha."
+
+#. (itstool) path: option/_short
+msgid "Left Button X Offset"
+msgstr "Desplazamiento X del botón izquierdo"
+
+#. (itstool) path: option/_long
+msgid "Use this option to move the buttons on the left to the left or right."
+msgstr "Use esta opción para mover los botones de la izquierda hacia la izquierda o la derecha."
+
+#. (itstool) path: option/_short
+msgid "Right Button X Offset"
+msgstr "Desplazamiento X del botón derecho"
+
+#. (itstool) path: option/_long
+msgid "Use this option to move the buttons on the right to the left or right."
+msgstr "Use esta opción para mover los botones de la derecha hacia la izquierda o la derecha."
+
+#. (itstool) path: option/_short
+msgid "Button Y Offset"
+msgstr "Desplazamiento Y del botón"
+
+#. (itstool) path: option/_long
+msgid "Use this option to move buttons up or down."
+msgstr "Use esta opción para mover los botones hacia arriba o hacia abajo."
+
+#. (itstool) path: option/_short
+msgid "Button Hover Animation Duration"
+msgstr "Duración de la animación al pasar el ratón por el botón"
+
+#. (itstool) path: option/_long
+msgid "The time the hover animation will last, in milliseconds."
+msgstr "El tiempo que durará la animación al pasar el ratón, en milisegundos."
+
+#. (itstool) path: option/_short
+msgid "Button Minimize Image"
+msgstr "Imagen del botón minimizar"
+
+#. (itstool) path: option/_long
+msgid "The png image to use for the minimize button."
+msgstr "La imagen png a usar para el botón minimizar."
+
+#. (itstool) path: option/_short
+msgid "Button Maximize Image"
+msgstr "Imagen del botón maximizar"
+
+#. (itstool) path: option/_long
+msgid "The png image to use for the maximize button."
+msgstr "La imagen png a usar para el botón maximizar."
+
+#. (itstool) path: option/_short
+msgid "Button Restore Image"
+msgstr "Imagen del botón restaurar"
+
+#. (itstool) path: option/_long
+msgid "The png image to use for the restore button."
+msgstr "La imagen png a usar para el botón restaurar."
+
+#. (itstool) path: option/_short
+msgid "Button Close Image"
+msgstr "Imagen del botón cerrar"
+
+#. (itstool) path: option/_long
+msgid "The png image to use for the close button."
+msgstr "La imagen png a usar para el botón cerrar."
+
+#. (itstool) path: option/_short
+msgid "Button Minimize Hover Image"
+msgstr "Imagen al pasar el ratón por el botón minimizar"
+
+#. (itstool) path: option/_long
+msgid "The png image to use when hovering the minimize button."
+msgstr "La imagen png a usar cuando se pasa el ratón por el botón minimizar."
+
+#. (itstool) path: option/_short
+msgid "Button Maximize Hover Image"
+msgstr "Imagen al pasar el ratón por el botón maximizar"
+
+#. (itstool) path: o
+msgid "The png image to use when hovering the maximize button."
+msgstr "La imagen png a usar cuando se pasa el ratón por el botón maximizar."
