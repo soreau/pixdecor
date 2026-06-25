@@ -47,7 +47,7 @@ struct decoration_area_t
      * @param theme The theme to use for the button.
      */
     decoration_area_t(wf::geometry_t g,
-        std::function<void(wlr_box)> damage_callback,
+        std::function<void(wf::geometry_t)> damage_callback,
         pixdecor_theme_t& theme);
 
     /** @return The geometry of the decoration area, relative to the layout */
@@ -61,7 +61,7 @@ struct decoration_area_t
     decoration_area_type_t get_type() const;
 
   private:
-    std::function<void(wlr_box)> damage_callback;
+    std::function<void(wf::geometry_t)> damage_callback;
     decoration_area_type_t type;
     wf::geometry_t geometry;
 
@@ -106,7 +106,7 @@ class pixdecor_layout_t
      * layout needs a repaint.
      */
     pixdecor_layout_t(pixdecor_theme_t& theme,
-        std::function<void(wlr_box)> damage_callback);
+        std::function<void(wf::geometry_t)> damage_callback);
     ~pixdecor_layout_t();
 
     /** Regenerate layout using the new size */
@@ -119,12 +119,12 @@ class pixdecor_layout_t
     std::vector<nonstd::observer_ptr<decoration_area_t>> get_renderable_areas();
 
     /** @return The combined region of all layout areas */
-    wf::region_t calculate_region() const;
+    wf::regionf_t calculate_region() const;
 
     /** Limit region to title bar area by region intersection
      *  @param region to limit by title area
      *  @return the intersection between region and the title bar area */
-    wf::region_t limit_region(wf::region_t & region) const;
+    wf::regionf_t limit_region(wf::regionf_t & region) const;
 
     struct action_response_t
     {
@@ -166,7 +166,7 @@ class pixdecor_layout_t
     pixdecor_theme_t& theme;
     bool maximized;
 
-    std::function<void(wlr_box)> damage_callback;
+    std::function<void(wf::geometry_t)> damage_callback;
 
     std::vector<std::unique_ptr<decoration_area_t>> layout_areas;
     wf::geometry_t cached_titlebar;

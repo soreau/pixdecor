@@ -2453,10 +2453,10 @@ void smoke_t::step_effect(const wf::scene::render_instruction_t& data, wf::geome
             rectangle.height - border_size * 2 - title_height - radius * 4,
         };
 
-        wf::region_t border_region = nonshadow_rect;
-        border_region ^= inner_part;
+        wf::region_t border_region = wf::to_integer_box(nonshadow_rect);
+        border_region ^= wf::to_integer_box(inner_part);
         border_region.expand_edges(1);
-        border_region &= nonshadow_rect;
+        border_region &= wf::to_integer_box(nonshadow_rect);
 
         if (smoke)
         {
@@ -2607,7 +2607,7 @@ void smoke_t::render_effect(const wf::scene::render_instruction_t& data, wf::geo
     {
         for (auto& box : data.damage)
         {
-            wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+            wf::gles::render_target_logic_scissor(data.target, box);
             OpenGL::draw_cached();
         }
     });

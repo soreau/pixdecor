@@ -25,7 +25,7 @@ decoration_area_t::decoration_area_t(decoration_area_type_t type, wf::geometry_t
  * Initialize a new decoration area holding a button
  */
 decoration_area_t::decoration_area_t(wf::geometry_t g,
-    std::function<void(wlr_box)> damage_callback,
+    std::function<void(wf::geometry_t)> damage_callback,
     pixdecor_theme_t& theme)
 {
     this->type     = DECORATION_AREA_BUTTON;
@@ -65,7 +65,7 @@ decoration_area_type_t decoration_area_t::get_type() const
 }
 
 pixdecor_layout_t::pixdecor_layout_t(pixdecor_theme_t& th,
-    std::function<void(wlr_box)> callback) :
+    std::function<void(wf::geometry_t)> callback) :
 
     titlebar_size(th.get_title_height()),
     border_size(th.get_input_size()),
@@ -264,7 +264,7 @@ void pixdecor_layout_t::resize(int width, int height)
             maximized ? 0 : border / 2 + (radius * 2),
             /* Up to the button, but subtract the padding to the left of the
              * title and the padding between title and button */
-            std::max(1, button_right_geometry_expanded.x - border),
+            std::max<double>(1, button_right_geometry_expanded.x - border),
             theme.get_title_height() + (maximized ? 0 : border / 2 + 1),
         };
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
@@ -352,9 +352,9 @@ std::vector<nonstd::observer_ptr<decoration_area_t>> pixdecor_layout_t::get_rend
     return renderable;
 }
 
-wf::region_t pixdecor_layout_t::calculate_region() const
+wf::regionf_t pixdecor_layout_t::calculate_region() const
 {
-    wf::region_t r{};
+    wf::regionf_t r{};
     for (auto& area : layout_areas)
     {
         auto g = area->get_geometry();
@@ -389,9 +389,9 @@ wf::region_t pixdecor_layout_t::calculate_region() const
     return r;
 }
 
-wf::region_t pixdecor_layout_t::limit_region(wf::region_t & region) const
+wf::regionf_t pixdecor_layout_t::limit_region(wf::regionf_t & region) const
 {
-    wf::region_t out = region & this->cached_titlebar;
+    wf::regionf_t out = region & this->cached_titlebar;
     return out;
 }
 

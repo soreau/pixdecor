@@ -79,7 +79,7 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
     {
         for (auto& box : data.damage)
         {
-            wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+            wf::gles::render_target_logic_scissor(data.target, box);
             OpenGL::draw_cached();
         }
     });
@@ -92,7 +92,7 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
     {
         for (auto& box : data.damage)
         {
-            wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+            wf::gles::render_target_logic_scissor(data.target, box);
             OpenGL::draw_cached();
         }
     });

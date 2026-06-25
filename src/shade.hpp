@@ -67,7 +67,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
 
         void schedule_instructions(
             std::vector<render_instruction_t>& instructions,
-            const wf::render_target_t& target, wf::region_t& damage)
+            const wf::render_target_t& target, wf::regionf_t& damage)
         {
             // We want to render ourselves only, the node does not have children
             instructions.push_back(render_instruction_t{
@@ -92,7 +92,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 (self->progression.shade *
                     ((src_box.height - titlebar) / float(src_box.height)));
             auto progress_height = src_box.height;
-            shade_region &= wf::region_t{src_box};
+            shade_region &= src_box;
             wf::gles::run_in_context([&]
             {
                 wf::gles::bind_render_buffer(data.target);
@@ -100,7 +100,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 {
                     for (const auto& box : shade_region)
                     {
-                        wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+                        wf::gles::render_target_logic_scissor(data.target, box);
                         OpenGL::render_transformed_texture(wf::gles_texture_t{src_tex},
                         {src_geometry.x1, src_geometry.y1 - (height - progress_height), src_geometry.x2,
                             src_geometry.y2 - (height - progress_height)}, {},
@@ -111,12 +111,12 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 shade_region = data.damage;
                 src_box = self->get_children_bounding_box();
                 src_box.height = self->titlebar_height;
-                shade_region  &= wf::region_t{src_box};
+                shade_region  &= src_box;
                 data.pass->custom_gles_subpass(data.target, [&]
                 {
                     for (const auto& box : shade_region)
                     {
-                        wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+                        wf::gles::render_target_logic_scissor(data.target, box);
                         OpenGL::render_transformed_texture(wf::gles_texture_t{src_tex}, src_geometry, {},
                             wf::gles::render_target_orthographic_projection(data.target), glm::vec4(1.0), 0);
                     }

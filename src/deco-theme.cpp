@@ -122,7 +122,7 @@ void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& 
         {
             for (auto& box : data.damage)
             {
-                wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+                wf::gles::render_target_logic_scissor(data.target, box);
                 OpenGL::render_rectangle(rectangle, get_decor_color(active),
                     wf::gles::render_target_orthographic_projection(data.target));
             }
