@@ -239,10 +239,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             g.x = g.y = 0;
             g   = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-r, -r, -r, -r});
             wf::regionf_t deco_region{g};
-            g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-border, -border, -border,
-                -theme.get_title_height() - border});
-            wf::regionf_t view_region{g};
-            deco_region ^= view_region;
+
             if (deco_region.contains_pointf(local))
             {
                 return wf::scene::input_node_t{
