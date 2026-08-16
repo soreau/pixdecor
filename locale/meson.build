@@ -9,7 +9,7 @@ po_files = files(po_files_raw)
 foreach po_file : po_files
     language = fs.name(fs.parent(fs.parent(po_file)))
     install_path = join_paths(wayfire_locale_dir, language, 'LC_MESSAGES')
-    mo_dir = join_paths(meson.project_build_root(), 'locale', language, 'LC_MESSAGES')
+    mo_dir = join_paths('.', 'locale', language, 'LC_MESSAGES')
     mo_file = fs.stem(po_file) + '.mo'
     mo_path = join_paths(mo_dir, mo_file)
     run_command('mkdir', '-p', mo_dir, check : true)
