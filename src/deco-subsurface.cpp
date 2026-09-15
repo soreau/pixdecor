@@ -570,6 +570,7 @@ simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
     view->connect(&on_view_geometry_changed);
     view->connect(&on_view_fullscreen);
     view->connect(&on_view_tiled);
+    view->connect(&on_view_mapped);
 
     on_view_activated = [this] (auto)
     {
@@ -595,6 +596,11 @@ simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
             deco->resize(wf::dimensions(this->view->get_geometry()));
             wf::get_core().tx_manager->schedule_object(this->view->toplevel());
         }
+    };
+
+    on_view_mapped = [this] (auto)
+    {
+        deco->resize(wf::dimensions(this->view->get_geometry()));
     };
 }
 
