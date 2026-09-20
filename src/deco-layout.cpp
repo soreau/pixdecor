@@ -417,8 +417,14 @@ pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_motion(
     if ((previous_area == current_area) && is_grabbed && current_area &&
         (current_area->get_type() & DECORATION_AREA_MOVE_BIT))
     {
-        is_grabbed = false;
-        return {DECORATION_ACTION_MOVE, 0};
+        wf::point_t position = {x, y};
+        wf::point_t delta    = position - grab_origin;
+
+        if (wf::abs(wf::pointf_t{(double)delta.x, (double)delta.y}) > 5)
+        {
+            is_grabbed = false;
+            return {DECORATION_ACTION_MOVE, 0};
+        }
     } else
     {
         unset_hover(current_input);
@@ -475,6 +481,8 @@ pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_press_event(
     if (!pressed && double_click_at_release)
     {
         double_click_at_release = false;
+        is_grabbed = false;
+
         return {DECORATION_ACTION_TOGGLE_MAXIMIZE, 0};
     } else if (!pressed && is_grabbed)
     {
