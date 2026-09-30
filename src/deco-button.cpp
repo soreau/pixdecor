@@ -72,31 +72,21 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
         add_idle_damage();
     }
 
-    OpenGL::render_texture(
-        wf::gles_texture_t{button_texture.get_texture()}, data.target, geometry, {1, 1, 1, this->hover},
-        OpenGL::RENDER_FLAG_CACHED);
-    data.pass->custom_gles_subpass(data.target, [&]
-    {
-        for (auto& box : data.damage)
-        {
-            wf::gles::render_target_logic_scissor(data.target, box);
-            OpenGL::draw_cached();
-        }
-    });
-    OpenGL::clear_cached();
+    float hover = this->hover;
 
-    OpenGL::render_texture(
-        wf::gles_texture_t{button_texture_hovered.get_texture()}, data.target, geometry, {1, 1, 1, 1.0 - this->hover},
-        OpenGL::RENDER_FLAG_CACHED);
-    data.pass->custom_gles_subpass(data.target, [&]
-    {
-        for (auto& box : data.damage)
-        {
-            wf::gles::render_target_logic_scissor(data.target, box);
-            OpenGL::draw_cached();
-        }
-    });
-    OpenGL::clear_cached();
+    data.pass->add_texture(
+        button_texture.get_texture(),
+        data.target,
+        geometry,
+        data.damage,
+        hover);
+
+    data.pass->add_texture(
+        button_texture_hovered.get_texture(),
+        data.target,
+        geometry,
+        data.damage,
+        1.0f - hover);
 }
 
 wf::dimensions_t button_t::update_texture()
