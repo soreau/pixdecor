@@ -120,12 +120,11 @@ void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& 
     {
         data.pass->custom_gles_subpass(data.target, [&]
         {
-            for (auto& box : data.damage)
+            wf::gles::for_each_scissor_rect(data.target, data.damage, [=] ()
             {
-                wf::gles::render_target_logic_scissor(data.target, box);
                 OpenGL::render_rectangle(rectangle, get_decor_color(active),
                     wf::gles::render_target_orthographic_projection(data.target));
-            }
+            });
         });
     } else
     {
