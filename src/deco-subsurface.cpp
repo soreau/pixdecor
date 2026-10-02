@@ -143,19 +143,15 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         const wf::geometry_t& geometry, int t_width, int border, int buttons_width)
     {
         update_title(geometry.width, geometry.height, t_width, border, buttons_width, data.target.scale);
-        OpenGL::render_texture(wf::gles_texture_t{title_texture.tex.get_texture()}, data.target, geometry,
-            glm::vec4(1.0f), OpenGL::RENDER_FLAG_CACHED);
 
-        data.pass->custom_gles_subpass(data.target, [&]
+        if (title_texture.tex.get_texture() != NULL)
         {
-            for (auto& box : data.damage)
-            {
-                wf::gles::render_target_logic_scissor(data.target, box);
-                OpenGL::draw_cached();
-            }
-        });
-
-        OpenGL::clear_cached();
+            data.pass->add_texture(
+                title_texture.tex.get_texture(),
+                data.target,
+                geometry,
+                data.damage);
+        }
     }
 
     void render_region(const wf::scene::render_instruction_t& data, wf::point_t origin)

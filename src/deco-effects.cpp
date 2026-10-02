@@ -2605,11 +2605,10 @@ void smoke_t::render_effect(const wf::scene::render_instruction_t& data, wf::geo
 
     data.pass->custom_gles_subpass(data.target, [&]
     {
-        for (auto& box : data.damage)
+        wf::gles::for_each_scissor_rect(data.target, data.damage, [=] ()
         {
-            wf::gles::render_target_logic_scissor(data.target, box);
             OpenGL::draw_cached();
-        }
+        });
     });
 
     OpenGL::clear_cached();
