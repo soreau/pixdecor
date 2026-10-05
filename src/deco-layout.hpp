@@ -4,6 +4,8 @@
 #include <wayfire/util.hpp>
 #include "deco-button.hpp"
 
+#include <linux/input-event-codes.h>
+
 namespace wf
 {
 namespace pixdecor
@@ -143,7 +145,7 @@ class pixdecor_layout_t
      * @return The action which needs to be carried out in response to this
      *  event.
      */
-    action_response_t handle_press_event(bool pressed = true);
+    action_response_t handle_press_event(uint32_t button, bool pressed = true);
 
     /**
      * Handle axis event.

@@ -9,8 +9,6 @@
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <linux/input-event-codes.h>
-
 #include <wayfire/nonstd/wlroots.hpp>
 #include <wayfire/output.hpp>
 #include <wayfire/opengl.hpp>
@@ -349,12 +347,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     void handle_pointer_button(const wlr_pointer_button_event& ev) override
     {
-        if (ev.button != BTN_LEFT)
-        {
-            return;
-        }
-
-        handle_action(layout.handle_press_event(ev.state == WL_POINTER_BUTTON_STATE_PRESSED));
+        handle_action(layout.handle_press_event(ev.button, ev.state == WL_POINTER_BUTTON_STATE_PRESSED));
     }
 
     void handle_pointer_axis(const wlr_pointer_axis_event& ev) override
@@ -471,12 +464,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     void handle_touch_down(uint32_t time_ms, int finger_id, wf::pointf_t position) override
     {
         handle_touch_motion(time_ms, finger_id, position);
-        handle_action(layout.handle_press_event());
+        handle_action(layout.handle_press_event(BTN_LEFT, true));
     }
 
     void handle_touch_up(uint32_t time_ms, int finger_id, wf::pointf_t lift_off_position) override
     {
-        handle_action(layout.handle_press_event(false));
+        handle_action(layout.handle_press_event(BTN_LEFT, false));
         layout.handle_focus_lost();
     }
 
