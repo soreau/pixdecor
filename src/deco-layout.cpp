@@ -3,8 +3,10 @@
 #include <wayfire/core.hpp>
 #include <wayfire/nonstd/reverse.hpp>
 #include <wayfire/nonstd/wlroots-full.hpp>
+#include <wayfire/signal-definitions.hpp>
 #include <wayfire/toplevel.hpp>
 #include <wayfire/util.hpp>
+#include <wayfire/seat.hpp>
 
 namespace wf
 {
@@ -447,9 +449,35 @@ pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_motion(
  * @return The action which needs to be carried out in response to this
  *  event.
  * */
-pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_press_event(
+pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_press_event(uint32_t button,
     bool pressed)
 {
+    if (button == BTN_RIGHT)
+    {
+        if (!pressed)
+        {
+            wayfire_view active_view = wf::get_core().seat->get_active_view();
+            if (active_view)
+            {
+                wf::view_show_window_menu_signal data;
+                data.view = active_view;
+                if (active_view->get_output())
+                {
+                    active_view->get_output()->emit(&data);
+                }
+
+                wf::get_core().emit(&data);
+            }
+        }
+
+        return {DECORATION_ACTION_NONE, 0};
+    }
+
+    if (button != BTN_LEFT)
+    {
+        return {DECORATION_ACTION_NONE, 0};
+    }
+
     if (pressed)
     {
         auto area = find_area_at(current_input);
