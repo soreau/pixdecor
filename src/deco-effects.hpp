@@ -26,7 +26,6 @@ class smoke_t
     wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
     wf::option_wrapper_t<bool> effect_animate{"pixdecor/animate"};
     wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
-    wf::option_wrapper_t<wf::color_t> shadow_color{"pixdecor/shadow_color"};
 
   public:
     smoke_t();
@@ -37,7 +36,7 @@ class smoke_t
     void dispatch_region(const wf::region_t& region);
 
     void step_effect(const wf::scene::render_instruction_t& data, wf::geometry_t rectangle,
-        bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
+        bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t shadow_color, wf::color_t effect_color,
         int title_height, int border_size, int shadow_radius);
     void render_effect(const wf::scene::render_instruction_t& data, wf::geometry_t rectangle);
     void recreate_textures(wf::geometry_t rectangle);
