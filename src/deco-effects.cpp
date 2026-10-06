@@ -2412,7 +2412,7 @@ void smoke_t::recreate_textures(wf::geometry_t rectangle)
 }
 
 void smoke_t::step_effect(const wf::scene::render_instruction_t& data, wf::geometry_t rectangle,
-    bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t effect_color,
+    bool ink, wf::pointf_t p, wf::color_t decor_color, wf::color_t shadow_color, wf::color_t effect_color,
     int title_height, int border_size, int shadow_radius)
 {
     bool smoke = (std::string(effect_type) == "smoke") || (std::string(effect_type) == "ink");
@@ -2582,8 +2582,8 @@ void smoke_t::step_effect(const wf::scene::render_instruction_t& data, wf::geome
             if (std::string(overlay_engine) == "rounded_corners")
             {
                 GLfloat shadow_color_f[4] =
-                {GLfloat(wf::color_t(shadow_color).r), GLfloat(wf::color_t(shadow_color).g),
-                    GLfloat(wf::color_t(shadow_color).b), GLfloat(wf::color_t(shadow_color).a)};
+                {GLfloat(shadow_color.r), GLfloat(shadow_color.g),
+                    GLfloat(shadow_color.b), GLfloat(shadow_color.a)};
                 GL_CALL(glUniform1i(8, radius));
                 GL_CALL(glUniform4fv(9, 1, shadow_color_f));
             }

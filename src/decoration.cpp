@@ -60,6 +60,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
     wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
     wf::option_wrapper_t<wf::color_t> shadow_color{"pixdecor/shadow_color"};
+    wf::option_wrapper_t<wf::color_t> inactive_shadow_color{"pixdecor/inactive_shadow_color"};
     wf::view_matcher_t ignore_views{"pixdecor/ignore_views"};
     wf::view_matcher_t always_decorate{"pixdecor/always_decorate"};
     wf::option_wrapper_t<wf::keybinding_t> shade_modifier{"pixdecor/shade_modifier"};
@@ -429,6 +430,19 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             option_changed_cb(false, (std::string(overlay_engine) == "rounded_corners"));
         });
         shadow_color.set_callback([=]
+        {
+            for (auto& view : wf::get_core().get_all_views())
+            {
+                auto toplevel = wf::toplevel_cast(view);
+                if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>())
+                {
+                    continue;
+                }
+
+                view->damage();
+            }
+        });
+        inactive_shadow_color.set_callback([=]
         {
             for (auto& view : wf::get_core().get_all_views())
             {

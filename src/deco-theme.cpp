@@ -15,6 +15,8 @@ wf::option_wrapper_t<wf::color_t> fg_color{"pixdecor/fg_color"};
 wf::option_wrapper_t<wf::color_t> bg_color{"pixdecor/bg_color"};
 wf::option_wrapper_t<wf::color_t> fg_text_color{"pixdecor/fg_text_color"};
 wf::option_wrapper_t<wf::color_t> bg_text_color{"pixdecor/bg_text_color"};
+wf::option_wrapper_t<wf::color_t> shadow_color{"pixdecor/shadow_color"};
+wf::option_wrapper_t<wf::color_t> inactive_shadow_color{"pixdecor/inactive_shadow_color"};
 wf::option_wrapper_t<std::string> button_minimize_image{"pixdecor/button_minimize_image"};
 wf::option_wrapper_t<std::string> button_maximize_image{"pixdecor/button_maximize_image"};
 wf::option_wrapper_t<std::string> button_restore_image{"pixdecor/button_restore_image"};
@@ -98,6 +100,11 @@ int pixdecor_theme_t::get_input_size() const
 wf::color_t pixdecor_theme_t::get_decor_color(bool active) const
 {
     return active ? fg : bg;
+}
+
+wf::color_t pixdecor_theme_t::get_shadow_color(bool active) const
+{
+    return active ? shadow_color : inactive_shadow_color;
 }
 
 void pixdecor_theme_t::set_maximize(bool state)

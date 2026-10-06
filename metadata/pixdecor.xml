@@ -204,6 +204,11 @@
 				<_long>Color of the drop shadows.</_long>
 				<default>0.0 0.0 0.0 0.25</default>
 			</option>
+			<option name="inactive_shadow_color" type="color">
+				<_short>Inactive Shadow Color</_short>
+				<_long>Color of the drop shadows for unfocused windows.</_long>
+				<default>0.0 0.0 0.0 0.25</default>
+			</option>
 		</group>
 		<group>
 			<_short>Buttons</_short>

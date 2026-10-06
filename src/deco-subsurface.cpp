@@ -318,7 +318,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             if ((std::string(effect_type) != "none") || (std::string(overlay_engine) != "none"))
             {
                 self->theme.smoke.step_effect(data, rectangle, std::string(effect_type) == "ink",
-                    self->current_cursor_position, self->theme.get_decor_color(activated), effect_color,
+                    self->current_cursor_position, self->theme.get_decor_color(activated),
+                    self->theme.get_shadow_color(activated), effect_color,
                     self->theme.get_title_height(), self->theme.get_border_size(),
                     (std::string(overlay_engine) == "rounded_corners" && !maximized) ? shadow_radius : 0);
             }
