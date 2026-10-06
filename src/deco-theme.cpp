@@ -137,7 +137,8 @@ void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& 
  * The caller is responsible for freeing the memory afterwards.
  */
 cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
-    int width, int height, int t_width, int border, int buttons_width, bool active)
+    int width, int height, int t_width, int border, int right_buttons_width, int left_buttons_width,
+    bool active)
 {
     const auto format = CAIRO_FORMAT_ARGB32;
     auto surface = cairo_image_surface_create(format, width, height);
@@ -157,29 +158,35 @@ cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
 
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, font_desc.get());
-    pango_layout_set_text(layout, text.c_str(), text.size());
+    pango_layout_set_text(layout, text.c_str(), -1);
     cairo_set_source_rgba(cr, active ? fg_text.r : bg_text.r, active ? fg_text.g : bg_text.g,
         active ? fg_text.b : bg_text.b, 1);
     pango_layout_get_pixel_size(layout, &w, &h);
+    int padding = 10;
+    int left    = left_buttons_width + border;
+    int right   = right_buttons_width + border + padding;
     switch (int(title_text_align))
     {
       // left
       case 0:
-        x = border;
+        x = left;
         break;
 
       // right
       case 2:
-        x = t_width - (w + buttons_width + border);
+        x = std::max(left, t_width - (w + right));
         break;
 
       // center
       case 1:
       default:
-        x = (t_width - w) / 2;
+        x = std::max(left, (t_width - w) / 2);
         break;
     }
 
+    auto text_width = std::max(0, t_width - (x + right));
+    pango_layout_set_width(layout, text_width * PANGO_SCALE);
+    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
     cairo_translate(cr, x, (height - h) / 2);
     pango_cairo_show_layout(cr, layout);
     g_object_unref(layout);

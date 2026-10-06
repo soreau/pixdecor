@@ -58,7 +58,7 @@ class pixdecor_theme_t
      * The caller is responsible for freeing the memory afterwards.
      */
     cairo_surface_t *render_text(std::string text, int width, int height, int t_width, int border,
-        int buttons_width, bool active);
+        int right_buttons_width, int left_buttons_width, bool active);
 
     struct button_state_t
     {
