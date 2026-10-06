@@ -58,7 +58,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
     };
 
-    void update_title(int width, int height, int t_width, int border, int buttons_width, double scale)
+    void update_title(int width, int height, int t_width, int border, int right_buttons_width,
+        int left_buttons_width, double scale)
     {
         if (auto view = _view.lock())
         {
@@ -72,8 +73,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 (target_height != title_texture.tex.get_size().height) ||
                 (view->activated != title_texture.rendered_for_activated_state))
             {
-                auto surface = theme.render_text(view->get_title(),
-                    target_width, target_height, t_width, border, buttons_width, view->activated);
+                auto surface = theme.render_text(
+                    view->get_title(),
+                    target_width, target_height, t_width, border, right_buttons_width, left_buttons_width,
+                    view->activated);
                 title_texture.tex = owned_texture_t{surface};
                 cairo_surface_destroy(surface);
                 title_texture.title_font_string = title_font;
@@ -138,9 +141,11 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     }
 
     void render_title(const wf::scene::render_instruction_t& data,
-        const wf::geometry_t& geometry, int t_width, int border, int buttons_width)
+        const wf::geometry_t& geometry, int t_width, int border, int right_buttons_width,
+        int left_buttons_width)
     {
-        update_title(geometry.width, geometry.height, t_width, border, buttons_width, data.target.scale);
+        update_title(geometry.width, geometry.height, t_width, border, right_buttons_width,
+            left_buttons_width, data.target.scale);
 
         if (title_texture.tex.get_texture() != NULL)
         {
@@ -185,12 +190,20 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 return;
             }
 
-            int buttons_width = 0;
+            auto t_width = size.width - border * 2;
+            int right_buttons_width = 0, left_buttons_width = 0;
             for (auto item : renderables)
             {
                 if (item->get_type() != DECORATION_AREA_TITLE)
                 {
-                    buttons_width += item->get_geometry().width;
+                    auto bg = item->get_geometry();
+                    if (bg.x > t_width / 2)
+                    {
+                        right_buttons_width += bg.width;
+                    } else
+                    {
+                        left_buttons_width += bg.width;
+                    }
                 }
             }
 
@@ -202,8 +215,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 if (item->get_type() == DECORATION_AREA_TITLE)
                 {
                     render_title(data,
-                        item->get_geometry() + wf::pointf_t{offset}, size.width - border * 2, title_border,
-                        buttons_width);
+                        item->get_geometry() + wf::pointf_t{offset}, t_width, title_border,
+                        right_buttons_width, left_buttons_width);
                 } else // button
                 {
                     item->as_button().render(data,
