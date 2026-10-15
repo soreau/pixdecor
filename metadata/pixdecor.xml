@@ -315,7 +315,7 @@
 			<option name="enable_shade" type="bool">
 				<_short>Enable Shade Effect</_short>
 				<_long>Use the axis binding or scroll on the titlebar of pixdecor windows to shade windows into their respective titlebars.</_long>
-				<default>true</default>
+				<default>false</default>
 			</option>
 			<option name="shade_duration" type="animation">
 				<_short>Shade Duration</_short>
