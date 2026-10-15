@@ -98,7 +98,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 wf::gles::bind_render_buffer(data.target);
                 data.pass->custom_gles_subpass(data.target, [&]
                 {
-                    wf::gles::for_each_scissor_rect(data.target, data.damage, [=] ()
+                    wf::gles::for_each_scissor_rect(data.target, shade_region, [=] ()
                     {
                         OpenGL::render_transformed_texture(wf::gles_texture_t{src_tex},
                         {src_geometry.x1, src_geometry.y1 - float(height - progress_height), src_geometry.x2,
@@ -113,7 +113,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 shade_region  &= src_box;
                 data.pass->custom_gles_subpass(data.target, [&]
                 {
-                    wf::gles::for_each_scissor_rect(data.target, data.damage, [=] ()
+                    wf::gles::for_each_scissor_rect(data.target, shade_region, [=] ()
                     {
                         OpenGL::render_transformed_texture(wf::gles_texture_t{src_tex}, src_geometry, {},
                             wf::gles::render_target_orthographic_projection(data.target), glm::vec4(1.0), 0);
