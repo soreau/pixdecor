@@ -4,6 +4,8 @@
 #include <map>
 #include <mutex>
 #include <stdlib.h>
+#include <gio/gdesktopappinfo.h>
+#include <gtk/gtk.h>
 
 namespace wf
 {
@@ -30,12 +32,146 @@ wf::option_wrapper_t<double> button_line_thickness{"pixdecor/button_line_thickne
 /** Create a new theme with the default parameters */
 pixdecor_theme_t::pixdecor_theme_t() : font_description(nullptr, pango_font_description_free)
 {
-    // read initial colours
     update_colors();
 }
 
 pixdecor_theme_t::~pixdecor_theme_t()
 {}
+
+
+/* Return an owned icon reference, including desktop-file and WM-class fallbacks. */
+static GIcon *get_application_icon(const std::string& app_id)
+{
+    if (app_id.empty())
+    {
+        return nullptr;
+    }
+
+    std::string desktop_id = app_id;
+    if ((desktop_id.size() < 8) ||
+        (desktop_id.compare(desktop_id.size() - 8, 8, ".desktop") != 0))
+    {
+        desktop_id += ".desktop";
+    }
+
+    GIcon *icon = nullptr;
+    if (auto info = g_desktop_app_info_new(desktop_id.c_str()))
+    {
+        if (auto candidate = g_app_info_get_icon(G_APP_INFO(info)))
+        {
+            icon = G_ICON(g_object_ref(candidate));
+        }
+
+        g_object_unref(info);
+    }
+
+    if (!icon)
+    {
+        auto applications = g_app_info_get_all();
+        for (auto item = applications; item; item = item->next)
+        {
+            auto info = G_APP_INFO(item->data);
+            if (!G_IS_DESKTOP_APP_INFO(info))
+            {
+                continue;
+            }
+
+            const char *wm_class = g_desktop_app_info_get_startup_wm_class(G_DESKTOP_APP_INFO(info));
+            const char *id = g_app_info_get_id(info);
+            if ((wm_class && (g_ascii_strcasecmp(wm_class, app_id.c_str()) == 0)) ||
+                (id && (g_ascii_strcasecmp(id, desktop_id.c_str()) == 0)))
+            {
+                if (auto candidate = g_app_info_get_icon(info))
+                {
+                    icon = G_ICON(g_object_ref(candidate));
+                    break;
+                }
+            }
+        }
+
+        g_list_free_full(applications, g_object_unref);
+    }
+
+    return icon;
+}
+
+bool pixdecor_theme_t::update_app_icon(const std::string& app_id, int scale)
+{
+    const bool enabled = show_app_icon;
+    const std::string theme_name = icon_theme;
+    if ((app_id == cached_app_id) && (theme_name == cached_icon_theme) &&
+        (scale == cached_icon_scale) && (enabled == cached_show_app_icon))
+    {
+        return false;
+    }
+
+    cached_app_id     = app_id;
+    cached_icon_theme = theme_name;
+    cached_icon_scale = scale;
+    cached_show_app_icon = enabled;
+    app_icon.reset();
+    if (!enabled)
+    {
+        return true;
+    }
+
+    /* A standalone theme avoids opening a display connection in the compositor. */
+    auto theme = gtk_icon_theme_new();
+    gtk_icon_theme_set_custom_theme(theme, theme_name.empty() ? "Adwaita" : theme_name.c_str());
+    const auto flags = GtkIconLookupFlags(GTK_ICON_LOOKUP_FORCE_SIZE);
+
+    auto load_icon = [&] (GIcon *icon) -> GdkPixbuf*
+    {
+        auto info = gtk_icon_theme_lookup_by_gicon_for_scale(theme, icon, 20, scale, flags);
+        if (!info)
+        {
+            return nullptr;
+        }
+
+        auto pixbuf = gtk_icon_info_load_icon(info, nullptr);
+        g_object_unref(info);
+        return pixbuf;
+    };
+
+    GdkPixbuf *pixbuf = nullptr;
+    if (auto icon = get_application_icon(app_id))
+    {
+        pixbuf = load_icon(icon);
+        g_object_unref(icon);
+    }
+
+    if (!pixbuf && !app_id.empty())
+    {
+        auto icon = g_themed_icon_new(app_id.c_str());
+        pixbuf = load_icon(icon);
+        g_object_unref(icon);
+    }
+
+    if (!pixbuf)
+    {
+        auto icon = g_themed_icon_new("application-x-executable");
+        pixbuf = load_icon(icon);
+        g_object_unref(icon);
+    }
+
+    if (pixbuf)
+    {
+        app_icon.reset(cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+            gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf)));
+        auto cr = cairo_create(app_icon.get());
+        gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+        cairo_paint(cr);
+        cairo_destroy(cr);
+        g_object_unref(pixbuf);
+        if (cairo_surface_status(app_icon.get()) != CAIRO_STATUS_SUCCESS)
+        {
+            app_icon.reset();
+        }
+    }
+
+    g_object_unref(theme);
+    return true;
+}
 
 void pixdecor_theme_t::update_colors(void)
 {
@@ -145,7 +281,7 @@ void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& 
  */
 cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
     int width, int height, int t_width, int border, int right_buttons_width, int left_buttons_width,
-    bool active)
+    bool active, double scale)
 {
     const auto format = CAIRO_FORMAT_ARGB32;
     auto surface = cairo_image_surface_create(format, width, height);
@@ -155,6 +291,8 @@ cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
         return surface;
     }
 
+    cairo_surface_set_device_scale(surface, scale, scale);
+    height = int(height / scale);
     auto cr = cairo_create(surface);
 
     PangoLayout *layout;
@@ -172,6 +310,43 @@ cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
     int padding = 10;
     int left    = left_buttons_width + border;
     int right   = right_buttons_width + border + padding;
+
+    if (app_icon)
+    {
+        const int icon_size = std::min(20, std::max(0, height - 8));
+        const bool icon_on_right = std::string(app_icon_position) == "right";
+        const int icon_x = icon_on_right ?
+            t_width - right - icon_size : left;
+        const int icon_y = (height - icon_size) / 2;
+        const int image_width  = cairo_image_surface_get_width(app_icon.get());
+        const int image_height = cairo_image_surface_get_height(app_icon.get());
+
+        if ((icon_size > 0) && (image_width > 0) && (image_height > 0) &&
+            (left + icon_size + padding <= t_width - right))
+        {
+            const double scale = std::min(
+                double(icon_size) / image_width,
+                double(icon_size) / image_height);
+
+            cairo_save(cr);
+            cairo_translate(cr,
+                icon_x + (icon_size - image_width * scale) / 2.0,
+                icon_y + (icon_size - image_height * scale) / 2.0);
+            cairo_scale(cr, scale, scale);
+            cairo_set_source_surface(cr, app_icon.get(), 0, 0);
+            cairo_paint(cr);
+            cairo_restore(cr);
+
+            if (icon_on_right)
+            {
+                right = t_width - icon_x + padding;
+            } else
+            {
+                left = icon_x + icon_size + padding;
+            }
+        }
+    }
+
     switch (int(title_text_align))
     {
       // left

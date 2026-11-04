@@ -24,6 +24,13 @@ class pixdecor_theme_t
     wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
     wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
     wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
+    wf::option_wrapper_t<bool> show_app_icon{"pixdecor/app_icon_enabled"};
+    wf::option_wrapper_t<std::string> app_icon_position{"pixdecor/app_icon_position"};
+    wf::option_wrapper_t<std::string> icon_theme{"pixdecor/app_icon_theme"};
+
+    /** Update the cached application icon. Returns true if the cache changed. */
+    bool update_app_icon(const std::string& app_id, int scale);
+
     /** Create a new theme with the default parameters */
     pixdecor_theme_t();
     ~pixdecor_theme_t();
@@ -60,7 +67,7 @@ class pixdecor_theme_t
      * The caller is responsible for freeing the memory afterwards.
      */
     cairo_surface_t *render_text(std::string text, int width, int height, int t_width, int border,
-        int right_buttons_width, int left_buttons_width, bool active);
+        int right_buttons_width, int left_buttons_width, bool active, double scale);
 
     struct button_state_t
     {
@@ -95,6 +102,12 @@ class pixdecor_theme_t
     wf::color_t bg_text;
     bool maximized;
     std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> font_description;
+    std::unique_ptr<cairo_surface_t, decltype(&cairo_surface_destroy)>
+        app_icon{nullptr, cairo_surface_destroy};
+    std::string cached_app_id;
+    std::string cached_icon_theme;
+    int cached_icon_scale     = 0;
+    bool cached_show_app_icon = false;
 };
 }
 }

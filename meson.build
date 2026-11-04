@@ -17,6 +17,8 @@ add_project_link_arguments(['-rdynamic','-fPIC'], language:'cpp')
 
 wayfire = dependency('wayfire', version: '>=0.11.0')
 glm    = dependency('glm')
+gtk = dependency('gtk+-3.0')
+gio_unix = dependency('gio-unix-2.0')
 
 subdir('src')
 subdir('metadata')
