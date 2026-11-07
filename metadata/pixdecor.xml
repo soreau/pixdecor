@@ -53,6 +53,29 @@
 				<_long>Forces window decoration for windows matching the specified criteria.</_long>
 				<default>none</default>
 			</option>
+			<option name="app_icon_enabled" type="bool">
+				<_short>Show Application Icon</_short>
+				<_long>Show the application icon in the window titlebar.</_long>
+				<default>false</default>
+			</option>
+			<option name="app_icon_position" type="string">
+			<_short>Application Icon Position</_short>
+			<_long>Place the application icon on the left or right of the titlebar.</_long>
+			<default>left</default>
+			<desc>
+				<value>left</value>
+				<_name>Left</_name>
+			</desc>
+			<desc>
+				<value>right</value>
+				<_name>Right</_name>
+			</desc>
+			</option>
+			<option name="app_icon_theme" type="string">
+				<_short>Application Icon Theme</_short>
+				<_long>Icon theme used to resolve application icons.</_long>
+				<default>Adwaita</default>
+			</option>
 			<option name="title_font" type="string">
 				<_short>Title Font</_short>
 				<_long>Font to use for the titlebar. The font size determines the titlebar height.</_long>

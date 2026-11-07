@@ -6,6 +6,7 @@
 #include "wayfire/signal-provider.hpp"
 #include "wayfire/toplevel.hpp"
 #include <memory>
+#include <cmath>
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -58,6 +59,15 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
     };
 
+    wf::signal::connection_t<wf::view_app_id_changed_signal> app_id_set =
+        [this] (wf::view_app_id_changed_signal*)
+    {
+        if (auto view = _view.lock())
+        {
+            view->damage();
+        }
+    };
+
     void update_title(int width, int height, int t_width, int border, int right_buttons_width,
         int left_buttons_width, double scale)
     {
@@ -66,7 +76,15 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             int target_width  = width * scale;
             int target_height = height * scale;
 
-            if ((int(title_text_align) != title_texture.title_text_align) ||
+            const bool icon_changed = theme.update_app_icon(view->get_app_id(),
+                std::max(1, int(std::ceil(scale))));
+            if (icon_changed ||
+                (std::string(theme.app_icon_position) != title_texture.app_icon_position) ||
+                (scale != title_texture.scale) ||
+                (t_width != title_texture.t_width) || (border != title_texture.border) ||
+                (right_buttons_width != title_texture.right_buttons_width) ||
+                (left_buttons_width != title_texture.left_buttons_width) ||
+                (int(title_text_align) != title_texture.title_text_align) ||
                 (view->get_title() != title_texture.current_text) ||
                 (target_width != title_texture.tex.get_size().width) ||
                 (std::string(title_font) != title_texture.title_font_string) ||
@@ -76,10 +94,16 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 auto surface = theme.render_text(
                     view->get_title(),
                     target_width, target_height, t_width, border, right_buttons_width, left_buttons_width,
-                    view->activated);
+                    view->activated, scale);
                 title_texture.tex = owned_texture_t{surface};
                 cairo_surface_destroy(surface);
-                title_texture.title_font_string = title_font;
+                title_texture.scale = scale;
+                title_texture.app_icon_position = std::string(theme.app_icon_position);
+                title_texture.t_width = t_width;
+                title_texture.border  = border;
+                title_texture.right_buttons_width = right_buttons_width;
+                title_texture.left_buttons_width  = left_buttons_width;
+                title_texture.title_font_string   = title_font;
                 title_texture.current_text     = view->get_title();
                 title_texture.title_text_align = int(title_text_align);
                 title_texture.rendered_for_activated_state = view->activated;
@@ -91,6 +115,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         wf::owned_texture_t tex;
         std::string current_text = "";
+        std::string app_icon_position;
+        double scale = 0.0;
+        int t_width  = 0;
+        int border   = 0;
+        int right_buttons_width = 0;
+        int left_buttons_width  = 0;
         bool rendered_for_activated_state = false;
         int title_text_align = int(title_text_align);
         std::string title_font_string = title_font;
@@ -117,6 +147,29 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         this->_view = view->weak_from_this();
         view->connect(&title_set);
+        view->connect(&app_id_set);
+
+        theme.show_app_icon.set_callback([this]
+        {
+            if (auto view = _view.lock())
+            {
+                view->damage();
+            }
+        });
+        theme.app_icon_position.set_callback([this]
+        {
+            if (auto view = _view.lock())
+            {
+                view->damage();
+            }
+        });
+        theme.icon_theme.set_callback([this]
+        {
+            if (auto view = _view.lock())
+            {
+                view->damage();
+            }
+        });
 
         // make sure to hide frame if the view is fullscreen
         update_decoration_size();
