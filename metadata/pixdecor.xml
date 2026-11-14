@@ -53,6 +53,11 @@
 				<_long>Forces window decoration for windows matching the specified criteria.</_long>
 				<default>none</default>
 			</option>
+			<option name="app_icon_theme" type="string">
+				<_short>Application Icon Theme</_short>
+				<_long>Icon theme used to resolve application icons.</_long>
+				<default>Adwaita</default>
+			</option>
 			<option name="title_font" type="string">
 				<_short>Title Font</_short>
 				<_long>Font to use for the titlebar. The font size determines the titlebar height.</_long>
@@ -214,7 +219,7 @@
 			<_short>Buttons</_short>
 			<option name="button_layout" type="string">
 				<_short>Button Layout</_short>
-				<_long>The layout of the 'minimize', 'maximize' and 'close' buttons. Use a comma to separate button strings and a colon to denote the seperation between left and right buttons.</_long>
+				<_long>Arrange the minimize, maximize, close and icon items from left to right. Separate items with commas and use a colon to divide the left and right groups. Include icon to show the application icon.</_long>
 				<default>:minimize,maximize,close</default>
 			</option>
 			<option name="button_color" type="color">

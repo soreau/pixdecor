@@ -6,6 +6,7 @@
 #include "wayfire/signal-provider.hpp"
 #include "wayfire/toplevel.hpp"
 #include <memory>
+#include <cmath>
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -58,6 +59,15 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
     };
 
+    wf::signal::connection_t<wf::view_app_id_changed_signal> app_id_set =
+        [this] (wf::view_app_id_changed_signal*)
+    {
+        if (auto view = _view.lock())
+        {
+            view->damage();
+        }
+    };
+
     void update_title(int width, int height, int t_width, int border, int right_buttons_width,
         int left_buttons_width, double scale)
     {
@@ -66,7 +76,11 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             int target_width  = width * scale;
             int target_height = height * scale;
 
-            if ((int(title_text_align) != title_texture.title_text_align) ||
+            if ((scale != title_texture.scale) ||
+                (t_width != title_texture.t_width) || (border != title_texture.border) ||
+                (right_buttons_width != title_texture.right_buttons_width) ||
+                (left_buttons_width != title_texture.left_buttons_width) ||
+                (int(title_text_align) != title_texture.title_text_align) ||
                 (view->get_title() != title_texture.current_text) ||
                 (target_width != title_texture.tex.get_size().width) ||
                 (std::string(title_font) != title_texture.title_font_string) ||
@@ -76,10 +90,15 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 auto surface = theme.render_text(
                     view->get_title(),
                     target_width, target_height, t_width, border, right_buttons_width, left_buttons_width,
-                    view->activated);
+                    view->activated, scale);
                 title_texture.tex = owned_texture_t{surface};
                 cairo_surface_destroy(surface);
-                title_texture.title_font_string = title_font;
+                title_texture.scale = scale;
+                title_texture.t_width = t_width;
+                title_texture.border  = border;
+                title_texture.right_buttons_width = right_buttons_width;
+                title_texture.left_buttons_width  = left_buttons_width;
+                title_texture.title_font_string   = title_font;
                 title_texture.current_text     = view->get_title();
                 title_texture.title_text_align = int(title_text_align);
                 title_texture.rendered_for_activated_state = view->activated;
@@ -91,10 +110,17 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         wf::owned_texture_t tex;
         std::string current_text = "";
+        double scale = 0.0;
+        int t_width  = 0;
+        int border   = 0;
+        int right_buttons_width = 0;
+        int left_buttons_width  = 0;
         bool rendered_for_activated_state = false;
         int title_text_align = int(title_text_align);
         std::string title_font_string = title_font;
     } title_texture;
+
+    wf::owned_texture_t icon_texture;
 
   public:
     pixdecor_theme_t theme;
@@ -117,6 +143,15 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         this->_view = view->weak_from_this();
         view->connect(&title_set);
+        view->connect(&app_id_set);
+
+        theme.icon_theme.set_callback([this]
+        {
+            if (auto view = _view.lock())
+            {
+                view->damage();
+            }
+        });
 
         // make sure to hide frame if the view is fullscreen
         update_decoration_size();
@@ -157,6 +192,37 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
     }
 
+    void render_app_icon(const wf::scene::render_instruction_t& data, wf::geometry_t geometry)
+    {
+        if (auto view = _view.lock())
+        {
+            if (theme.update_app_icon(view->get_app_id(), std::max(1, int(std::ceil(data.target.scale)))))
+            {
+                if (auto surface = theme.get_app_icon())
+                {
+                    icon_texture = wf::owned_texture_t{surface};
+                } else
+                {
+                    icon_texture = wf::owned_texture_t{};
+                }
+            }
+
+            if (auto texture = icon_texture.get_texture())
+            {
+                const auto icon_size = icon_texture.get_size();
+                const double scale = std::min(geometry.width / double(icon_size.width),
+                    geometry.height / double(icon_size.height));
+                const int width = std::max(1, int(icon_size.width * scale));
+                const int height = std::max(1, int(icon_size.height * scale));
+                geometry.x += (geometry.width - width) / 2;
+                geometry.y += (geometry.height - height) / 2;
+                geometry.width = width;
+                geometry.height = height;
+                data.pass->add_texture(texture, data.target, geometry, data.damage);
+            }
+        }
+    }
+
     void render_region(const wf::scene::render_instruction_t& data, wf::point_t origin)
     {
         int border = theme.get_border_size();
@@ -192,9 +258,11 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
             auto t_width = size.width - border * 2;
             int right_buttons_width = 0, left_buttons_width = 0;
+            bool has_icon = false;
             for (auto item : renderables)
             {
-                if (item->get_type() != DECORATION_AREA_TITLE)
+                has_icon |= item->get_type() == DECORATION_AREA_ICON;
+                if (item->get_type() == DECORATION_AREA_BUTTON)
                 {
                     auto bg = item->get_geometry();
                     if (bg.x > t_width / 2)
@@ -214,10 +282,26 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             {
                 if (item->get_type() == DECORATION_AREA_TITLE)
                 {
-                    render_title(data,
-                        item->get_geometry() + wf::pointf_t{offset}, t_width, title_border,
-                        right_buttons_width, left_buttons_width);
-                } else // button
+                    const auto title = item->get_geometry();
+                    if (has_icon)
+                    {
+                        // Convert the occupied bounds to coordinates within the title texture.
+                        const int left = std::max(0, layout.title_left_edge - int(title.x) + 5);
+                        const int right = std::min(t_width, layout.title_right_edge - int(title.x));
+                        render_title(data, title + wf::pointf_t{offset}, t_width, 0,
+                            t_width - right, left);
+                    } else
+                    {
+                        render_title(data, title + wf::pointf_t{offset}, t_width, title_border,
+                            right_buttons_width, left_buttons_width);
+                    }
+                } else if (item->get_type() == DECORATION_AREA_ICON)
+                {
+                    if (layout.title_left_edge <= layout.title_right_edge)
+                    {
+                        render_app_icon(data, item->get_geometry() + wf::pointf_t{origin});
+                    }
+                } else if (item->get_type() == DECORATION_AREA_BUTTON)
                 {
                     item->as_button().render(data,
                         item->get_geometry() + wf::pointf_t{origin});
@@ -501,6 +585,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         {
             auto size = wf::dimensions(view->get_pending_geometry());
             layout.resize(size.width, size.height);
+            if (!view->toplevel()->current().fullscreen)
+            {
+                cached_region = layout.calculate_region();
+            }
+
+            view->damage();
             wf::get_core().tx_manager->schedule_object(view->toplevel());
         }
     }

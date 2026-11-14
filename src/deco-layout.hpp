@@ -22,6 +22,8 @@ enum decoration_area_type_t
     DECORATION_AREA_MOVE          = DECORATION_AREA_MOVE_BIT,
     DECORATION_AREA_TITLE         =
         DECORATION_AREA_MOVE_BIT | DECORATION_AREA_RENDERABLE_BIT,
+    DECORATION_AREA_ICON          =
+        DECORATION_AREA_TITLE | (1 << 20),
     DECORATION_AREA_BUTTON        = DECORATION_AREA_RENDERABLE_BIT,
     DECORATION_AREA_SHADOW        = DECORATION_AREA_SHADOW_BIT,
     DECORATION_AREA_RESIZE_LEFT   = WLR_EDGE_LEFT | DECORATION_AREA_RESIZE_BIT,
@@ -120,6 +122,9 @@ class pixdecor_layout_t
      */
     std::vector<nonstd::observer_ptr<decoration_area_t>> get_renderable_areas();
 
+    int title_left_edge = 0;
+    int title_right_edge = 0;
+
     /** @return The combined region of all layout areas */
     wf::regionf_t calculate_region() const;
 
@@ -182,9 +187,9 @@ class pixdecor_layout_t
     wf::wl_timer<false> timer;
     bool double_click_at_release = false;
 
-    /** Create buttons in the layout, and return their total geometry */
-    wf::geometry_t create_left_buttons(int width, int height);
-    wf::geometry_t create_right_buttons(int width, int height);
+    /** Create the items on one side of the titlebar and return their total geometry. */
+    wf::geometry_t create_layout_items(const std::string& layout, double edge, double radius,
+        bool on_right);
 
     /** Calculate resize edges based on @current_input */
     uint32_t calculate_resize_edges() const;
