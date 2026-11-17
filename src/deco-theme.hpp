@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <wayfire/render-manager.hpp>
 #include "deco-button.hpp"
 #include "deco-effects.hpp"
@@ -85,7 +86,7 @@ class pixdecor_theme_t
     std::unique_ptr<button_surfaces_t> get_button_surface(button_type_t button,
         const button_state_t& state) const;
 
-    void set_maximize(bool state);
+    void set_tiled_edges(uint32_t edges);
 
   private:
 
@@ -93,7 +94,7 @@ class pixdecor_theme_t
     wf::color_t bg;
     wf::color_t fg_text;
     wf::color_t bg_text;
-    bool maximized;
+    uint32_t tiled_edges = 0;
     std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> font_description;
 };
 }

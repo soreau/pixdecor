@@ -111,8 +111,8 @@ class pixdecor_layout_t
         std::function<void(wf::geometry_t)> damage_callback);
     ~pixdecor_layout_t();
 
-    /** Regenerate layout using the new size */
-    void resize(int width, int height);
+    /** Regenerate layout using the new size and resize handle availability */
+    void resize(int width, int height, bool allow_resize);
 
     /**
      * @return The decoration areas which need to be rendered, in top to bottom
@@ -167,6 +167,7 @@ class pixdecor_layout_t
     const int border_size;
     pixdecor_theme_t& theme;
     bool maximized;
+    bool allow_resize = false;
 
     std::function<void(wf::geometry_t)> damage_callback;
 

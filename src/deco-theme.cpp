@@ -1,6 +1,7 @@
 #include "deco-theme.hpp"
 #include <wayfire/core.hpp>
 #include <wayfire/opengl.hpp>
+#include <wayfire/toplevel-view.hpp>
 #include <map>
 #include <mutex>
 #include <stdlib.h>
@@ -78,17 +79,18 @@ int pixdecor_theme_t::get_title_height()
         height = MIN_BAR_HEIGHT;
     }
 
-    return ((std::string(titlebar) == "always" ||
-        (std::string(titlebar) == "windowed" && !maximized) ||
-        (std::string(titlebar) == "maximized" && maximized)) &&
-        (std::string(titlebar) !=
-            "never")) ? height + ((maximized && !maximized_borders) ? border_size : 0) : 0;
+    const std::string titlebar_mode = titlebar;
+    const bool tiled = tiled_edges != 0;
+    const bool show_titlebar = titlebar_mode == "always" ||
+        (titlebar_mode == "windowed" && !tiled) ||
+        (titlebar_mode == "maximized" && tiled);
+    return show_titlebar ? height + int(border_size) - get_border_size() : 0;
 }
 
 /** @return The available border for resizing */
 int pixdecor_theme_t::get_border_size() const
 {
-    return (!maximized_borders && maximized) ? 0 : border_size;
+    return (!maximized_borders && (tiled_edges == wf::TILED_EDGES_ALL)) ? 0 : border_size;
 }
 
 /** @return The input area for resizing */
@@ -107,9 +109,9 @@ wf::color_t pixdecor_theme_t::get_shadow_color(bool active) const
     return active ? shadow_color : inactive_shadow_color;
 }
 
-void pixdecor_theme_t::set_maximize(bool state)
+void pixdecor_theme_t::set_tiled_edges(uint32_t edges)
 {
-    maximized = state;
+    tiled_edges = edges;
 }
 
 /**
@@ -303,7 +305,7 @@ std::unique_ptr<button_surfaces_t> pixdecor_theme_t::get_button_surface(button_t
         break;
 
       case BUTTON_TOGGLE_MAXIMIZE:
-        if (this->maximized)
+        if (tiled_edges != 0)
         {
             normal_same_as_hover = create_button_surfaces(button_surfaces, std::string(
                 button_restore_image), std::string(button_restore_hover_image));
