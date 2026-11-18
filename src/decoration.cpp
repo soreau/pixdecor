@@ -721,6 +721,11 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
     void update_view_decoration(wayfire_view view)
     {
+
+        if (!view->is_mapped())
+        {
+            return;
+        }
         if (auto toplevel = wf::toplevel_cast(view))
         {
             if (!toplevel)
