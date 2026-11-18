@@ -236,9 +236,9 @@ wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
     };
 }
 
-/** Regenerate layout using the new size */
-void pixdecor_layout_t::resize(int width, int height)
+void pixdecor_layout_t::resize(int width, int height, bool allow_resize)
 {
+    this->allow_resize = allow_resize;
     wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
     wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
     wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
@@ -281,7 +281,8 @@ void pixdecor_layout_t::resize(int width, int height)
     border = MIN_RESIZE_HANDLE_SIZE - theme.get_input_size();
     auto inverse_border = MIN_RESIZE_HANDLE_SIZE - theme.get_border_size();
 
-    if (!maximized || maximized_borders)
+    // Border geometry also determines the region that gets drawn.
+    if (allow_resize || !maximized || maximized_borders)
     {
         double w = width;
         double h = height;
@@ -574,6 +575,11 @@ nonstd::observer_ptr<decoration_area_t> pixdecor_layout_t::find_area_at(
 
         if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
         {
+            if (!allow_resize)
+            {
+                continue;
+            }
+
             if (b <= MIN_RESIZE_HANDLE_SIZE)
             {
                 g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
@@ -625,6 +631,11 @@ nonstd::observer_ptr<decoration_area_t> pixdecor_layout_t::find_area_at(
 /** Calculate resize edges based on @current_input */
 uint32_t pixdecor_layout_t::calculate_resize_edges() const
 {
+    if (!allow_resize)
+    {
+        return 0;
+    }
+
     wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
     wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
     int radius     = (std::string(overlay_engine) == "rounded_corners") ? int(shadow_radius) : 0;
