@@ -574,6 +574,8 @@ nonstd::observer_ptr<decoration_area_t> pixdecor_layout_t::find_area_at(
 
         if (area->get_type() & DECORATION_AREA_RESIZE_BIT)
         {
+            g.width  = g.width ?: 1;
+            g.height = g.height ?: 1;
             if (b <= MIN_RESIZE_HANDLE_SIZE)
             {
                 g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, b, b});
@@ -671,14 +673,9 @@ uint32_t pixdecor_layout_t::calculate_resize_edges() const
 /** Update the cursor based on @current_input */
 void pixdecor_layout_t::update_cursor()
 {
-    uint32_t edges = calculate_resize_edges();
     auto area = find_area_at(this->current_input);
-    if (area && (area->get_type() == DECORATION_AREA_BUTTON))
-    {
-        wf::get_core().set_cursor("default");
-        return;
-    }
-
+    uint32_t edges = (area && (area->get_type() & DECORATION_AREA_RESIZE_BIT)) ?
+        calculate_resize_edges() : 0;
     auto cursor_name = edges > 0 ?
         wlr_xcursor_get_resize_name((wlr_edges)edges) : "default";
     wf::get_core().set_cursor(cursor_name);
