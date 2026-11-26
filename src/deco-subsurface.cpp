@@ -129,6 +129,15 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         remove_shade_transformers();
     }
 
+    /** @return The window's content, in the same coordinates as get_offset() */
+    wf::geometry_t get_content_box()
+    {
+        auto offset = get_offset();
+        /* The left, right and bottom margins are the same (see get_margins()) */
+        double side = -offset.x;
+        return {0, 0, size.width - 2 * side, size.height + offset.y - side};
+    }
+
     wf::point_t get_offset()
     {
         auto view = _view.lock();
@@ -292,6 +301,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             const wf::render_target_t& target, wf::regionf_t& damage) override
         {
             auto our_region = self->cached_region + wf::pointf_t{self->get_offset()};
+            /* Never draw under the window's content: some layout areas reach
+             * into it, like the move areas of a maximized window, which are
+             * grown by the resize handle size on every side. */
+            our_region ^= self->get_content_box();
             wf::regionf_t our_damage = damage & our_region;
             if (!our_damage.empty())
             {
