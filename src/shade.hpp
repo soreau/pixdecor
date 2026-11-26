@@ -86,8 +86,9 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 1.0);
             auto shade_region = data.damage;
             int height    = src_box.height;
-            auto titlebar = self->titlebar_height + self->get_shadow_margin();
-            src_box.y += self->titlebar_height;
+            int kept_top  = self->get_kept_top();
+            auto titlebar = kept_top + self->get_shadow_margin();
+            src_box.y += kept_top;
             src_box.height *= 1.0 -
                 (self->progression.shade *
                     ((src_box.height - titlebar) / float(src_box.height)));
@@ -109,7 +110,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
 
                 shade_region = data.damage;
                 src_box = self->get_children_bounding_box();
-                src_box.height = self->titlebar_height;
+                src_box.height = kept_top;
                 shade_region  &= src_box;
                 data.pass->custom_gles_subpass(data.target, [&]
                 {
@@ -207,10 +208,11 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
 
     std::optional<wf::scene::input_node_t> find_node_at(const wf::pointf_t& at) override
     {
-        auto bbox = this->get_children_bounding_box();
+        auto bbox    = this->get_children_bounding_box();
+        int kept_top = get_kept_top();
         if (((at.y - bbox.y) <
              ((1.0 -
-               (this->progression.shade * ((bbox.height - this->titlebar_height) / float(bbox.height)))) *
+               (this->progression.shade * ((bbox.height - kept_top) / float(bbox.height)))) *
               bbox.height)) &&
             ((at.y - bbox.y) > 0.0))
         {
@@ -247,6 +249,29 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
     void set_titlebar_height(int titlebar_height)
     {
         this->titlebar_height = titlebar_height;
+    }
+
+    /**
+     * The height at the top of the surface that stays visible when shaded.
+     * For pixdecor's own decorations the title bar height already counts the
+     * shadow and border above it. For client-side decorations it's the height
+     * of the client's title bar, which starts below the client's own shadow:
+     * add that, or the shade keeps only the shadow and the title bar scrolls
+     * away with the rest of the window.
+     */
+    int get_kept_top()
+    {
+        if (!deco)
+        {
+            if (auto toplevel = wf::toplevel_cast(view))
+            {
+                auto bg = view->get_surface_root_node()->get_bounding_box();
+                auto vg = toplevel->get_geometry();
+                return titlebar_height + std::max(0, int(vg.y - bg.y));
+            }
+        }
+
+        return titlebar_height;
     }
 
     int get_shadow_margin()
