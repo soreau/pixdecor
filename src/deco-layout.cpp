@@ -260,14 +260,17 @@ void pixdecor_layout_t::resize(int width, int height)
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_MOVE, button_right_geometry_expanded));
 
-        /* Titlebar dragging area (for move) */
+        /* Titlebar dragging area (for move). It ends exactly where the window's
+         * content starts (title height + border + shadow); any taller and it
+         * covers the content's top row, which is then drawn in the title bar
+         * color and moves the window when clicked. */
         wf::geometry_t title_geometry = {
             border + button_left_geometry_expanded.x,
             maximized ? 0 : border / 2 + (radius * 2),
             /* Up to the button, but subtract the padding to the left of the
              * title and the padding between title and button */
             std::max<double>(1, button_right_geometry_expanded.x - border),
-            theme.get_title_height() + (maximized ? 0 : border / 2 + 1),
+            theme.get_title_height() + (maximized ? 0 : border / 2),
         };
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_TITLE, title_geometry));
